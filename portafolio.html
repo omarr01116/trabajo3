@@ -6,53 +6,112 @@
     <title>Portafolio - OMAR</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Estilos personalizados para replicar el look and feel de Tailwind/React */
-        /* pt-28 es el valor para desktop */
-        .pt-28 { padding-top: 7rem !important; } 
-        .pb-20 { padding-bottom: 5rem !important; }
-        .bg-gray-50 { background-color: #f9fafb; }
-        .text-gray-900 { color: #1f2937; }
-        .text-gray-600 { color: #4b5563; }
-        .text-blue-600 { color: #2563eb !important; }
-        .bg-blue-600 { background-color: #2563eb !important; }
-        .hover\:bg-blue-700:hover { background-color: #1d4ed8 !important; }
-        .hover\:text-gray-600:hover { color: #4b5563 !important; }
+        /* =================================================================
+           CONFIGURACIÓN DEL FONDO GLOBAL Y BASE (Copiado de index.html)
+           ================================================================= */
+        body {
+            background-image: url('imagen/fondo principal.jpg');
+            background-size: cover;
+            background-attachment: fixed; /* Mantiene la imagen fija al hacer scroll */
+            background-repeat: no-repeat;
+            background-position: center;
+            font-family: sans-serif;
+            color: #fff; /* Asegura color de texto blanco por defecto en el body */
+        }
         
-        /* Efecto de sombra y transformación al pasar el mouse (para las tarjetas) */
-        .card-hover-effect {
+        /* Estilos base (Copiado de index.html) */
+        .text-blue-600 { color: #ff3399 !important; } /* Magenta vibrante */
+        .btn-black { 
+            background-color: #000; 
+            border-color: #000;
+            color: white; 
             transition: all 0.3s ease;
         }
+        .btn-black:hover { 
+            background-color: #333; 
+            border-color: #333;
+            color: white; 
+        }
+        .btn-outline-dark { border-width: 2px; }
+        .btn-outline-dark:hover { background-color: #000; color: white; }
+        
+        /* Efecto de transición para las tarjetas (Copiado de index.html) */
+        .card-hover-effect {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
         .card-hover-effect:hover {
-            /* Sombra más marcada al hacer hover */
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
             transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        /* Contenedor para las imágenes de las tarjetas de curso (Copiado de index.html) */
+        .card-img-top-custom {
+            height: 150px;
+            object-fit: cover;
+            width: 100%;
+            border-radius: 0.25rem 0.25rem 0 0;
+        }
+        
+        /* ESTILO PARA EL LOGO (Copiado de index.html) */
+        .navbar-brand img {
+            height: 40px; /* Tamaño adaptado para el logo */
+            width: auto;
         }
 
         /* =================================================================
-           RESPONSIVIDAD: AJUSTES PARA DISPOSITIVOS MÓVILES (Max-width: 767px)
+           SECCIONES: OVERLAYS CON OPACIDAD GRADUAL (Adaptado para Portafolio)
+           ================================================================= */
+        
+        /* Estilo base para la sección principal de contenido */
+        #main-portafolio {
+            position: relative;
+            padding-top: 7rem !important; /* pt-28 */
+            padding-bottom: 5rem !important; /* pb-20 */
+            min-height: 100vh;
+            display: flex; /* Para centrar contenido verticalmente si es necesario */
+            align-items: center;
+        }
+        
+        #main-portafolio::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85); /* Opacidad fuerte para el portafolio */
+            z-index: 1;
+        }
+        
+        #main-portafolio > .container-xl {
+            position: relative;
+            z-index: 2;
+            color: white; /* Asegura que el texto principal sea blanco sobre el overlay */
+        }
+
+        /* Estilos para el texto dentro de las tarjetas */
+        #main-portafolio .card {
+            background-color: rgba(255, 255, 255, 0.95); /* Tarjetas casi blancas para contrastar */
+            color: #333; /* Texto dentro de las tarjetas */
+        }
+        #main-portafolio .text-secondary, #main-portafolio .text-gray-600 { /* Ajuste para los párrafos de las tarjetas */
+            color: #4b5563 !important; 
+        }
+
+        /* =================================================================
+           RESPONSIVIDAD (Adaptado de index.html)
            ================================================================= */
         @media (max-width: 767.98px) {
-            /* Reduce el padding superior en móvil */
-            .pt-28 {
+            #main-portafolio {
                 padding-top: 5rem !important; 
-            }
-            
-            /* Reduce el padding de la sección en móvil */
-            .pb-20 {
                 padding-bottom: 3rem !important;
             }
-            
-            /* Reduce el tamaño del título Display-4 en móvil */
             .container-xl h1.display-4 {
                 font-size: 2rem !important;
             }
-            
-            /* Reduce el padding de las tarjetas en móvil para ahorrar espacio */
-            .bg-white.p-4 {
-                padding: 1.5rem !important;
+            .card {
+                padding: 1.5rem !important; /* Ajuste para padding de tarjeta en móvil */
             }
-
-            /* Asegura que el contenedor no tenga paddings extremos */
             .container-xl {
                 padding-left: 0.5rem !important;
                 padding-right: 0.5rem !important;
@@ -60,11 +119,13 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 font-sans text-gray-900">
+<body class="font-sans">
 
-   <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
         <div class="container-xl px-4">
-            <a class="navbar-brand fs-4 fw-bold text-dark" href="index.html">OMAR</a>
+            <a class="navbar-brand fs-4 fw-bold text-dark" href="index.html">
+                <img src="imagen/logo.png" alt="Logo de Omar" class="d-inline-block align-text-top">
+            </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -73,10 +134,10 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0 fw-medium">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="index.html">Inicio</a>
+                        <a class="nav-link" href="index.html">Inicio</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="portafolio.html">Portafolio</a>
+                        <a class="nav-link active" aria-current="page" href="portafolio.html">Portafolio</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="sobremi.html">Sobre mí</a>
@@ -86,67 +147,85 @@
                     </li>
                 </ul>
                 
-                <a href="login.html" class="btn btn-primary rounded-pill px-4 py-2 ms-lg-3">
+                <a href="login.html" class="btn btn-black rounded-pill px-4 py-2 ms-lg-3">
                     Login
                 </a>
             </div>
         </div>
     </nav>
 
-    <div class="pt-28 pb-5 px-3 min-vh-100">
+    <div id="main-portafolio" class="px-3">
         <div class="container-xl text-center">
-            <h1 class="display-4 fw-bold mb-4">Portafolio</h1>
-            <p class="text-gray-600 fs-5 mx-auto mb-5" style="max-width: 600px;">
-                Mis cursos.
+            <h1 class="display-4 fw-bold mb-4">Mi Portafolio</h1>
+            <p class="fs-5 mx-auto mb-5" style="max-width: 600px; color: #f0f0f0;">
+                Explora los trabajos y proyectos que he realizado en mis diferentes cursos.
             </p>
 
             <div class="row row-cols-1 row-cols-md-3 g-4 mx-auto pb-20" style="max-width: 1200px;">
                 
                 <div class="col">
-                    <div class="bg-white p-4 p-md-5 rounded-4 shadow card-hover-effect h-100">
-                        <div class="fs-1 mb-3">💻</div>
-                        <h3 class="fs-5 fw-bold mb-2">Arquitectura de Software</h3>
-                        <p class="text-gray-600 mb-4">
-                            Trabajos y practicas.
-                        </p>
-                        <a
-                            href="file.html"
-                            class="text-blue-600 hover:underline fw-medium text-decoration-none"
+                    <div class="card p-0 rounded-4 shadow card-hover-effect h-100">
+                        <img 
+                            src="imagen/arquitectura.jpg" 
+                            class="card-img-top-custom" 
+                            alt="Arquitectura de Software"
                         >
-                            Ver Curso →
-                        </a>
+                        <div class="card-body p-4 text-start">
+                            <div class="fs-1 mb-3 text-blue-600">💻</div> <h3 class="fs-5 fw-bold mb-2">Arquitectura de Software</h3>
+                            <p class="text-secondary mb-4">
+                                Aquí encontrarás diagramas, análisis de requisitos y diseños de sistemas.
+                            </p>
+                            <a
+                                href="file.html"
+                                class="text-blue-600 fw-medium text-decoration-none"
+                            >
+                                Ver Curso →
+                            </a>
+                        </div>
                     </div>
                 </div>
 
                 <div class="col">
-                    <div class="bg-white p-4 p-md-5 rounded-4 shadow card-hover-effect h-100">
-                        <div class="fs-1 mb-3">🧠</div>
-                        <h3 class="fs-5 fw-bold mb-2">Machine Learning</h3>
-                        <p class="text-gray-600 mb-4">
-                            Trabajos y practicas.
-                        </p>
-                        <a
-                            href="file.html"
-                            class="text-blue-600 hover:underline fw-medium text-decoration-none"
+                    <div class="card p-0 rounded-4 shadow card-hover-effect h-100">
+                        <img 
+                            src="imagen/ai.jpg" 
+                            class="card-img-top-custom" 
+                            alt="Machine Learning"
                         >
-                            Ver Curso →
-                        </a>
+                        <div class="card-body p-4 text-start">
+                            <div class="fs-1 mb-3 text-blue-600">🧠</div> <h3 class="fs-5 fw-bold mb-2">Machine Learning</h3>
+                            <p class="text-secondary mb-4">
+                                Proyectos introductorios de modelos predictivos y análisis de datos con Python.
+                            </p>
+                            <a
+                                href="file.html"
+                                class="text-blue-600 fw-medium text-decoration-none"
+                            >
+                                Ver Curso →
+                            </a>
+                        </div>
                     </div>
                 </div>
 
                 <div class="col">
-                    <div class="bg-white p-4 p-md-5 rounded-4 shadow card-hover-effect h-100">
-                        <div class="fs-1 mb-3">📚</div>
-                        <h3 class="fs-5 fw-bold mb-2">Inglés</h3>
-                        <p class="text-gray-600 mb-4">
-                            Trabajos y practicas.
-                        </p>
-                        <a
-                            href="file.html"
-                            class="text-blue-600 hover:underline fw-medium text-decoration-none"
+                    <div class="card p-0 rounded-4 shadow card-hover-effect h-100">
+                        <img 
+                            src="imagen/ingles.jpg" 
+                            class="card-img-top-custom" 
+                            alt="Inglés Técnico"
                         >
-                            Ver Curso →
-                        </a>
+                        <div class="card-body p-4 text-start">
+                            <div class="fs-1 mb-3 text-blue-600">📚</div> <h3 class="fs-5 fw-bold mb-2">Inglés</h3>
+                            <p class="text-secondary mb-4">
+                                Ejercicios de comprensión lectora, redacción y vocabulario técnico.
+                            </p>
+                            <a
+                                href="file.html"
+                                class="text-blue-600 fw-medium text-decoration-none"
+                            >
+                                Ver Curso →
+                            </a>
+                        </div>
                     </div>
                 </div>
 
