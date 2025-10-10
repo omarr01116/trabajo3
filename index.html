@@ -51,18 +51,22 @@
             width: 100%;
             border-radius: 0.25rem 0.25rem 0 0;
         }
+        
+        /* ESTILO PARA EL LOGO */
+        .navbar-brand img {
+            height: 40px; /* Tamaño adaptado para el logo */
+            width: auto;
+        }
 
         /* =================================================================
-           SECCIONES: OVERLAYS Y EFECTO DE DIFUMINADO PROGRESIVO
+           SECCIONES: OVERLAYS CON OPACIDAD GRADUAL
            ================================================================= */
         
-        /* Estilo base para todas las secciones de contenido */
         section {
             position: relative;
             color: white;
         }
         
-        /* Capa de overlay común a todas las secciones */
         section::before {
             content: '';
             position: absolute;
@@ -70,34 +74,32 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 1); /* Usamos negro puro para el overlay */
+            background: rgba(0, 0, 0, 1);
             z-index: 1;
         }
         
-        /* Asegura que el contenido esté sobre el overlay */
         section > .container {
             position: relative;
             z-index: 2;
         }
         
-        /* 1. HERO SECTION (Más claro - Opacidad 70%) */
+        /* 1. HERO SECTION (Opacidad base: 60%) */
         .hero-section::before {
-            background: rgba(0, 0, 0, 0.70);
+            background: rgba(0, 0, 0, 0.60);
         }
         
-        /* Color de acento neón para el nombre en HERO */
         .hero-section h1 span {
             color: #00ff66; /* Verde Neón */
             text-shadow: 0 0 10px rgba(0, 255, 102, 0.5); 
         }
 
-        /* 2. HABILIDADES (Medio - Opacidad 80%) */
+        /* 2. HABILIDADES (Opacidad: 80%) */
         #habilidades::before {
             background: rgba(0, 0, 0, 0.80);
         }
         
-        #habilidades h2, #habilidades p {
-            color: #f0f0f0 !important;
+        #habilidades h2, #habilidades p, #habilidades h3 {
+            color: white !important;
         }
         
         #habilidades .fs-1 {
@@ -109,7 +111,7 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* 3. PORTAFOLIO (Oscuro - Opacidad 90%) - Para buen contraste de las tarjetas claras */
+        /* 3. PORTAFOLIO (Opacidad: 90%) */
         #portafolio-section::before {
             background: rgba(0, 0, 0, 0.90);
         }
@@ -118,15 +120,14 @@
             color: #f0f0f0 !important;
         }
         
-        /* Tarjetas de portafolio sobre fondo muy oscuro */
         #portafolio-section .card {
-            background-color: rgba(255, 255, 255, 0.95); /* Tarjetas casi blancas para contrastar */
+            background-color: rgba(255, 255, 255, 0.95);
             color: #333;
         }
         
-        /* 4. CONTACTO (Casi opaco - Opacidad 95%) */
+        /* 4. CONTACTO (Opacidad: 98%) */
         #contacto-cta::before {
-            background: rgba(0, 0, 0, 0.95);
+            background: rgba(0, 0, 0, 0.98);
         }
         
         /* =================================================================
@@ -137,7 +138,6 @@
         .typing-cursor { border-right: 0.15em solid #00ff66; animation: blink-caret 0.75s step-end infinite; }
         @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: #00ff66; } }
 
-        /* Media queries simplificados */
         .hero-section h1.display-3 { font-size: 2.5rem !important; }
         @media (min-width: 768px) {
             .hero-section h1.display-3 { font-size: 4rem !important; }
@@ -148,7 +148,9 @@
 
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
         <div class="container-xl px-4">
-            <a class="navbar-brand fs-4 fw-bold text-dark" href="index.html">OMAR</a>
+            <a class="navbar-brand fs-4 fw-bold text-dark" href="index.html">
+                <img src="imagen/logo.png" alt="Logo de Omar" class="d-inline-block align-text-top">
+            </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -245,33 +247,66 @@
                 
                 <div class="col">
                     <div class="card h-100 shadow border-0 transition">
-                        <img src="https://images.unsplash.com/photo-1594922329244-123491907d6a?fit=crop&w=600&h=300&q=80" class="card-img-top-custom" alt="Diagrama de Arquitectura de Software">
+                        <img 
+                            src="https://images.unsplash.com/photo-1579546929518-9e396f0ab87b?q=80&w=600&h=300&fit=crop" 
+                            class="card-img-top-custom" 
+                            alt="Diagrama de Arquitectura de Software"
+                        >
                         <div class="card-body p-4 text-start">
-                            <h3 class="fs-5 fw-bold mb-2">Ejercicios de Arquitectura</h3>
-                            <p class="text-secondary mb-3">Primeros pasos en el diseño de modelos básicos de software.</p>
-                            <a href="file.html" class="text-decoration-none text-blue-600 fw-medium">Ver Tareas →</a>
+                            <h3 class="fs-5 fw-bold mb-2">Arquitectura de Software</h3>
+                            <p class="text-secondary mb-3">
+                                Primeros pasos en el diseño de modelos y patrones de software.
+                            </p>
+                            <a
+                                href="file.html"
+                                class="text-decoration-none text-blue-600 fw-medium"
+                            >
+                                Ver Tareas →
+                            </a>
                         </div>
                     </div>
                 </div>
 
                 <div class="col">
                     <div class="card h-100 shadow border-0 transition">
-                        <img src="https://images.unsplash.com/photo-1542831371-29b0f74f9713?fit=crop&w=600&h=300&q=80" class="card-img-top-custom" alt="Código y Gráficos de Machine Learning">
+                        <img 
+                            src="https://images.unsplash.com/photo-1518770660439-4690ee32c1c6?q=80&w=600&h=300&fit=crop" 
+                            class="card-img-top-custom" 
+                            alt="Código y Gráficos de Machine Learning"
+                        >
                         <div class="card-body p-4 text-start">
-                            <h3 class="fs-5 fw-bold mb-2">Laboratorio de ML Básico</h3>
-                            <p class="text-secondary mb-3">Trabajos introductorios usando librerías de Python.</p>
-                            <a href="file.html" class="text-decoration-none text-blue-600 fw-medium">Ver Tareas →</a>
+                            <h3 class="fs-5 fw-bold mb-2">Machine Learning</h3>
+                            <p class="text-secondary mb-3">
+                                Trabajos introductorios usando librerías de Python para modelos básicos.
+                            </p>
+                            <a
+                                href="file.html"
+                                class="text-decoration-none text-blue-600 fw-medium"
+                            >
+                                Ver Tareas →
+                            </a>
                         </div>
                     </div>
                 </div>
 
                 <div class="col">
                     <div class="card h-100 shadow border-0 transition">
-                        <img src="https://images.unsplash.com/photo-1549298305-6a56e6d1c817?fit=crop&w=600&h=300&q=80" class="card-img-top-custom" alt="Libros y Estudio de Idiomas">
+                        <img 
+                            src="https://images.unsplash.com/photo-1531771686035-ceac878b6a37?q=80&w=600&h=300&fit=crop" 
+                            class="card-img-top-custom" 
+                            alt="Libros y Estudio de Idiomas"
+                        >
                         <div class="card-body p-4 text-start">
-                            <h3 class="fs-5 fw-bold mb-2">Comunicaciones Técnicas</h3>
-                            <p class="text-secondary mb-3">Prácticas de lectura y comprensión de documentación técnica en Inglés.</p>
-                            <a href="file.html" class="text-decoration-none text-blue-600 fw-medium">Ver Trabajos →</a>
+                            <h3 class="fs-5 fw-bold mb-2">Habilidades de Comunicación</h3>
+                            <p class="text-secondary mb-3">
+                                Prácticas de lectura y comprensión de documentación técnica en Inglés.
+                            </p>
+                            <a
+                                href="file.html"
+                                class="text-decoration-none text-blue-600 fw-medium"
+                            >
+                                Ver Trabajos →
+                            </a>
                         </div>
                     </div>
                 </div>
