@@ -208,7 +208,7 @@ async function handleUpload(e) {
 }
 
 // =================================================================
-// 🔹 Renombrar archivo (Solo admin) - VERSIÓN FINAL Y ROBUSTA
+// 🔹 Renombrar archivo (Solo admin) - ROBUSTO (Mover)
 // =================================================================
 async function handleEdit(oldFullPath, oldFileName) {
     if (role !== "admin") return setEstado("⚠️ Solo el admin puede editar nombres.", true);
@@ -252,7 +252,7 @@ async function handleEdit(oldFullPath, oldFileName) {
 }
 
 // =================================================================
-// 🔹 Borrar archivo (solo admin) - VERSIÓN FINAL Y ROBUSTA
+// 🔹 Borrar archivo (solo admin) - ROBUSTO (Eliminar)
 // =================================================================
 async function handleDelete(fullPath) {
     if (role !== "admin") return setEstado("⚠️ Solo el admin puede eliminar archivos.", true);
