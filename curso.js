@@ -23,7 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     for (let i = 1; i <= totalWeeks; i++) {
         const weekNumber = i;
-        const weekTitle = `Semana ${weekNumber}`;
+        // Importante: La semana se nombra "Semana 1", "Semana 2", etc.
+        const weekTitle = `Semana ${weekNumber}`; 
         
         // Crear la estructura de la tarjeta
         const col = document.createElement('div');
@@ -50,8 +51,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const encodedCourse = encodeURIComponent(selectedCourse);
             const encodedWeek = encodeURIComponent(selectedWeek);
 
-            // Redirigir a file.html pasando el curso y la semana como parámetros
-            window.location.href = `file.html?course=${encodedCourse}&week=${encodedWeek}`;
+            // 🌟 CORRECCIÓN: Redirigir a semana.html 🌟
+            // Ahora pasamos los parámetros a la nueva página de listado
+            window.location.href = `semana.html?course=${encodedCourse}&week=${encodedWeek}`;
         });
 
         col.appendChild(card);
