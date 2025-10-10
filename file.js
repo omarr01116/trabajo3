@@ -1,7 +1,7 @@
-// file.js
+// file.js - Lógica principal de la página de gestión de archivos
 
-// Las variables SUPABASE_URL, SUPABASE_ANON_KEY y la instancia 'supabase'
-// se asumen definidas en auth.js, que debe cargarse antes.
+// NOTA: Las variables SUPABASE_URL, SUPABASE_ANON_KEY y la instancia 'supabase'
+// se asumen definidas en auth.js, que DEBE cargarse antes.
 
 // =================================================================
 // 🔹 Variables de Estado (DOM Elements)
@@ -21,8 +21,11 @@ const previewTitle = document.getElementById('previewModalLabel');
 const previewContent = document.getElementById('preview-content');
 const previewLink = document.getElementById('preview-link');
 
-// Estado de la sesión (se inicializa con localStorage, aunque auth.js lo valida)
+// Estado de la sesión (se inicializa con localStorage)
 let role = localStorage.getItem('role') || 'usuario';
+
+// Define la URL de redirección si no hay sesión
+const LOGIN_URL = "./login.html"; 
 
 // =================================================================
 // 🔹 Funciones de Utilidad y UI
@@ -41,8 +44,8 @@ function detectType(name) {
 function setEstado(msg, isError = false) {
     fileStatus.textContent = msg;
     fileStatus.classList.remove('d-none');
-    fileStatus.classList.toggle('text-pink-700', !isError); // Éxito/Info
-    fileStatus.classList.toggle('text-danger', isError);   // Error
+    fileStatus.classList.toggle('text-pink-700', !isError); 
+    fileStatus.classList.toggle('text-danger', isError);   
 }
 
 /** Oculta el mensaje de estado */
@@ -50,6 +53,48 @@ function clearEstado() {
     fileStatus.textContent = '';
     fileStatus.classList.add('d-none');
 }
+
+// =================================================================
+// 🔹 Funciones de Inicialización y Autenticación (¡CORRECCIÓN CLAVE!)
+// =================================================================
+
+/**
+ * Verifica la sesión con Supabase y protege la ruta.
+ * Asume que 'supabase' está definida en auth.js
+ */
+async function checkAuthAndInit() {
+    // 1. Verificar sesión de Supabase
+    const { data: { session } } = await supabase.auth.getSession();
+
+    // 🚨 CORRECCIÓN CLAVE: Si NO hay sesión, forzar la redirección a login.
+    if (!session) {
+        console.warn("🚫 Sesión no encontrada. Redirigiendo a login.");
+        window.location.href = LOGIN_URL;
+        return; 
+    }
+    
+    // 2. Obtener el rol (ya debería estar en localStorage por auth.js)
+    role = localStorage.getItem('role') || 'usuario';
+    
+    // 3. (Opcional) Verificar si el rol es 'invitado' y redirigir a portafolio
+    if (role === 'invitado') {
+        console.warn("🚫 Acceso denegado a esta página para invitados. Redirigiendo.");
+        window.location.href = './portafolio.html';
+        return;
+    }
+
+    // Si pasamos las validaciones, inicializar la UI
+    console.log(`✅ Acceso concedido. Inicializando UI para rol: ${role.toUpperCase()}`);
+    roleDisplay.textContent = role.toUpperCase();
+
+    // 4. Cargar la lista inicial de archivos y asignar listeners
+    cargarArchivos();
+    uploadForm.addEventListener('submit', handleUpload);
+    cursoSelect.addEventListener('change', cargarArchivos);
+    semanaSelect.addEventListener('change', cargarArchivos);
+    logoutBtn.addEventListener('click', handleLogout);
+}
+
 
 // =================================================================
 // 🔹 Cargar Archivos por curso y semana
@@ -91,7 +136,6 @@ async function cargarArchivos() {
                 // Columna Nombre del Archivo
                 const nameCell = row.insertCell();
                 nameCell.className = 'py-3 px-4 text-sm text-primary font-medium break-words';
-                // Usamos el nombre del archivo como argumento para la función JS
                 nameCell.innerHTML = `<button onclick="openPreview('${archivo.name.replace(/'/g, "\\'")}')" class="btn btn-link p-0 text-decoration-none text-start">${archivo.name}</button>`;
 
                 // Columna Acciones
@@ -208,7 +252,7 @@ function openPreview(fileName) {
     } else if (type === "pdf") {
         contentHTML = `<iframe src="${publicUrl}" title="Vista previa PDF" class="w-100 h-100 border-0"></iframe>`;
     } else if (type === "document") {
-        // Uso de Google Docs Viewer para documentos (requiere que el archivo sea público)
+        // Uso de Google Docs Viewer para documentos 
         contentHTML = `
             <iframe 
                 src="https://docs.google.com/gview?url=${encodeURIComponent(publicUrl)}&embedded=true" 
@@ -235,32 +279,16 @@ function openPreview(fileName) {
 async function handleLogout() {
     await supabase.auth.signOut();
     localStorage.clear();
-    // Redirigir usando window.location para que auth.js tome el control
-    window.location.href = 'login.html'; 
+    // Redirigir al login
+    window.location.href = LOGIN_URL; 
 }
 
 // =================================================================
 // 🔹 Inicialización
 // =================================================================
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Mostrar rol
-    role = localStorage.getItem('role') || 'usuario';
-    roleDisplay.textContent = role.toUpperCase();
-
-    // Si no hay token, redirigir a login (aunque auth.js debería manejar esto)
-    if (!localStorage.getItem('token')) {
-        window.location.href = 'login.html';
-        return;
-    }
-    
-    // 2. Cargar la lista inicial de archivos
-    cargarArchivos();
-
-    // 3. Asignar listeners a los formularios y botones
-    uploadForm.addEventListener('submit', handleUpload);
-    cursoSelect.addEventListener('change', cargarArchivos);
-    semanaSelect.addEventListener('change', cargarArchivos);
-    logoutBtn.addEventListener('click', handleLogout);
+    // La función que contiene toda la lógica de validación e inicialización
+    checkAuthAndInit();
 });
 
 // Exponer funciones al scope global para que los botones dinámicos de la tabla funcionen
