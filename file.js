@@ -62,10 +62,12 @@ function clearEstado() {
 /**
  * CODIFICACIÓN CRÍTICA: Codifica una ruta para Supabase Storage.
  * Codifica caracteres especiales y espacios, pero deja las barras inclinadas ('/') sin codificar.
+ * Esto es NECESARIO para que la API de Storage reconozca las carpetas.
  */
 function getPathForStorage(path) {
+    // 1. Codifica la ruta completa (espacios a %20, / a %2F)
     let encodedPath = encodeURIComponent(path);
-    // Reemplazamos la codificación de '/' (%2F) por la barra literal
+    // 2. Deshace la codificación de la barra inclinada ('%2F' a '/')
     return encodedPath.replace(/%2F/g, '/');
 }
 
@@ -131,7 +133,8 @@ async function cargarArchivos() {
                 // Columna Nombre del Archivo
                 const nameCell = row.insertCell();
                 nameCell.className = 'py-3 px-4 text-sm text-primary font-medium break-words';
-                // Escapamos solo comillas para el onclick
+                
+                // Escapamos solo comillas simples para el onclick
                 const safeFileName = archivo.name.replace(/'/g, "\\'");
                 nameCell.innerHTML = `<button onclick="openPreview('${safeFileName}')" class="btn btn-link p-0 text-decoration-none text-start">${archivo.name}</button>`;
 
@@ -139,8 +142,8 @@ async function cargarArchivos() {
                 const actionsCell = row.insertCell();
                 actionsCell.className = 'py-3 px-4 text-center d-flex justify-content-center align-items-center';
 
-                // Escapamos fullPath y fileName para pasar a handleEdit/handleDelete de forma segura
-                const safeFullPath = fullPath.replace(/'/g, "\\'");
+                // Escapamos fullPath y fileName para pasar a handleEdit/handleDelete de forma segura
+                const safeFullPath = fullPath.replace(/'/g, "\\'");
 
                 actionsCell.innerHTML = `
                     <button onclick="openPreview('${safeFileName}')" class="btn btn-sm btn-primary rounded-pill font-medium me-2">Ver</button>
@@ -200,7 +203,7 @@ async function handleUpload(e) {
 }
 
 // =================================================================
-// 🔹 Renombrar archivo (Solo admin)
+// 🔹 Renombrar archivo (Solo admin) - CÓDIGO FINAL
 // =================================================================
 async function handleEdit(oldFullPath, oldFileName) {
     if (role !== "admin") return setEstado("⚠️ Solo el admin puede editar nombres.", true);
@@ -213,14 +216,14 @@ async function handleEdit(oldFullPath, oldFileName) {
     
     setEstado("⏳ Renombrando...");
     
-    // 1. Limpiamos las comillas escapadas que vienen del onclick
+    // 1. Limpiamos las comillas escapadas que vienen del onclick (CRÍTICO)
     const cleanOldFullPath = oldFullPath.replace(/\\'/g, "'"); 
     const cleanOldFileName = oldFileName.replace(/\\'/g, "'");
 
     // 2. Crear la nueva ruta completa
     const newFullPath = cleanOldFullPath.replace(cleanOldFileName, newName.trim());
 
-    // 3. ⭐ Aplicamos la codificación robusta a ambas rutas para la API de Supabase
+    // 3. Aplicamos la codificación robusta a ambas rutas para la API de Supabase
     const encodedOldPath = getPathForStorage(cleanOldFullPath);
     const encodedNewPath = getPathForStorage(newFullPath);
 
@@ -246,17 +249,17 @@ async function handleEdit(oldFullPath, oldFileName) {
 async function handleDelete(fullPath) {
     if (role !== "admin") return setEstado("⚠️ Solo el admin puede eliminar archivos.", true);
 
-    // Limpiamos las comillas escapadas que vienen del onclick
-    const cleanFullPath = fullPath.replace(/\\'/g, "'"); 
+    // Limpiamos las comillas escapadas que vienen del onclick
+    const cleanFullPath = fullPath.replace(/\\'/g, "'"); 
 
     const fileName = cleanFullPath.split('/').pop();
     const confirmed = confirm(`¿Eliminar ${fileName}?`);
     if (!confirmed) return;
 
     setEstado("⏳ Eliminando...");
-    
-    // ⭐ Aplicamos la codificación robusta para el borrado
-    const encodedPath = getPathForStorage(cleanFullPath);
+    
+    // Aplicamos la codificación robusta para el borrado
+    const encodedPath = getPathForStorage(cleanFullPath);
 
     try {
         const { error } = await supabase.storage
@@ -281,8 +284,8 @@ function openPreview(fileName) {
     const curso = cursoSelect.value;
     const semana = semanaSelect.value;
     
-    // CRÍTICO: El nombre del archivo debe codificarse para la URL pública si tiene espacios/caracteres especiales
-    const encodedFileName = encodeURIComponent(fileName);
+    // CRÍTICO: El nombre del archivo debe codificarse para la URL pública si tiene espacios/caracteres especiales
+    const encodedFileName = encodeURIComponent(fileName);
 
     const { data: publicData } = supabase.storage
         .from(BUCKET_NAME)
@@ -309,7 +312,6 @@ function openPreview(fileName) {
     let contentHTML;
     
     if (type === "image") {
-        // La URL pública ya está codificada por getPublicUrl, pero la usamos aquí
         contentHTML = `<div class="w-100 h-100 d-flex justify-content-center align-items-center">
             <img 
                 src="${publicUrl}" 
@@ -322,7 +324,6 @@ function openPreview(fileName) {
         
         let iframeSrc = publicUrl;
         if (type === "document") {
-            // Usa el visor de Google Docs, que requiere que la URL COMPLETA esté codificada
             iframeSrc = `https://docs.google.com/gview?url=${encodeURIComponent(publicUrl)}&embedded=true`;
         }
 
