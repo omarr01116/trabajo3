@@ -1,25 +1,28 @@
-// /pagina/auth.js (Frontend)
+// auth.js - Archivo de lógica del frontend
 
 // =================================================================
-// 🚨 CONFIGURACIÓN - ¡INSERTA TUS VALORES REALES AQUÍ!
+// 🚨 CONFIGURACIÓN SEGURA - VALORES INSERTADOS
 // =================================================================
-// 1. URL de Supabase
 const SUPABASE_URL = 'https://bazwwhwjruwgyfomyttp.supabase.co'; 
-// 2. CLAVE PÚBLICA (ANON KEY)
-const SUPABASE_ANON_KEY = 'TU_CLAVE_ANONIMA_REAL_AQUI'; // 🛑 ¡IMPORTANTE: ESTA NO ES LA SERVICE_ROLE KEY!
-// 3. URL del Backend Local
+
+// 🎯 CLAVE PÚBLICA (ANON KEY): SEGURA PARA EL FRONTEND.
+// Insertada según tu última configuración (rol:"anon").
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhend3aHdqcnV3Z3lmb215dHRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxNjA1NTAsImV4cCI6MjA3MzczNjU1MH0.RzpCKpYV-GqNIhTklsQtRqyiPCGGmVlUs7q_BeBHxUo'; 
+
+// 🔥 URL del Backend Local (Para obtener el rol)
 const BACKEND_URL = "http://localhost:3000/api/login"; 
 
 // URLs para la redirección post-OAuth
-const LOCAL_REDIRECT = "http://127.0.0.1:5500/pagina/login.html";
-const GITHUB_REDIRECT = "https://omarr01116.github.io/trabajo3/pagina/login.html"; // Ajustado a trabajo3
+const LOCAL_REDIRECT = "http://127.0.0.1:5500/pagina/login.html"; 
+const GITHUB_REDIRECT = "https://omarr01116.github.io/trabajo/login.html"; 
 
 // =================================================================
-// 🔹 Inicialización de Supabase
+// 🔹 Inicialización de Supabase (Sintaxis Corregida y Segura)
 // =================================================================
-// ⭐ CORRECCIÓN DE SINTAXIS: Usamos window.supabase.createClient para evitar el error.
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// ⭐ Soluciona el 'ReferenceError' y usa la clave pública.
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const redirectTo = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? LOCAL_REDIRECT : GITHUB_REDIRECT;
+
 
 // =================================================================
 // 🔹 Variables de Estado (Manejo de DOM y Loading)
@@ -45,16 +48,18 @@ function setErrorMsg(msg) {
 // ---------------------
 function setLoading(isLoading) {
     loading = isLoading;
-    if (isLoading) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Verificando...";
-        submitBtn.classList.add('bg-secondary', 'cursor-not-allowed');
-        submitBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
-    } else {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Entrar";
-        submitBtn.classList.remove('bg-secondary', 'cursor-not-allowed');
-        submitBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+    if (submitBtn) {
+        if (isLoading) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Verificando...";
+            submitBtn.classList.add('bg-secondary', 'cursor-not-allowed');
+            submitBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Entrar";
+            submitBtn.classList.remove('bg-secondary', 'cursor-not-allowed');
+            submitBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+        }
     }
 }
 
@@ -64,10 +69,11 @@ function setLoading(isLoading) {
 async function getRoleAndRedirect(token) {
     setLoading(true);
     try {
+        // Llama al backend (localhost:3000) para que verifique el rol con la Royale Key (secreta)
         const res = await fetch(BACKEND_URL, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`, // Envía el token al backend para su verificación
                 "Content-Type": "application/json",
             },
         });
@@ -77,9 +83,7 @@ async function getRoleAndRedirect(token) {
             try {
                 const errorResult = await res.json();
                 errorText = errorResult.error || errorText;
-            } catch (e) {
-                // No es JSON, usar el error por defecto
-            }
+            } catch (e) { /* ignore */ }
             throw new Error(errorText);
         }
 
@@ -104,8 +108,6 @@ async function getRoleAndRedirect(token) {
         console.error("Error al obtener rol/redireccionar:", err);
         setErrorMsg(err.message || "Error de backend o red. Intenta de nuevo.");
         setLoading(false);
-        // Opcional: Forzar cierre de sesión si el rol falla
-        // await supabase.auth.signOut(); 
     }
 }
 
@@ -121,6 +123,7 @@ async function handleSubmit(e) {
     const password = passwordInput.value;
 
     try {
+        // 1. Autenticación con Supabase (usa la Anon Key)
         const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
@@ -128,6 +131,7 @@ async function handleSubmit(e) {
 
         if (error || !data.session) throw new Error("Correo o contraseña incorrectos.");
 
+        // 2. Si es exitoso, llama al backend para obtener el rol
         await getRoleAndRedirect(data.session.access_token);
 
     } catch (err) {
@@ -143,7 +147,6 @@ async function handleSubmit(e) {
 async function handleGoogleLogin() {
     setErrorMsg("");
     try {
-        // Supabase redirige a la URL base que ya definimos
         const { error } = await supabase.auth.signInWithOAuth({
             provider: "google",
             options: { redirectTo },
@@ -156,7 +159,7 @@ async function handleGoogleLogin() {
 }
 
 // =================================================================
-// 🔹 Verificación y Limpieza de Sesión (el 'useEffect' de React)
+// 🔹 Verificación y Limpieza de Sesión
 // =================================================================
 async function checkInitialSession() {
     setLoading(true);
@@ -164,19 +167,17 @@ async function checkInitialSession() {
         data: { session },
     } = await supabase.auth.getSession();
     
-    // Si hay sesión, intentamos obtener el rol y redirigir
+    // Si hay sesión, intenta obtener el rol y redirigir
     if (session) {
         console.log("✅ Sesión activa detectada. Intentando obtener rol y redirigir...");
         await getRoleAndRedirect(session.access_token);
-        // Si la redirección falla o hay error de rol, loading se pondrá en false en getRoleAndRedirect
     } else {
         setLoading(false); // No hay sesión, mostramos el formulario
     }
 
-    // 🚨 Limpiar el hash de la URL después del callback de Google.
+    // Limpiar el hash de la URL después del callback de Google.
     if (window.location.hash.includes("access_token")) {
         console.log("Limpiando hash de OAuth de la URL...");
-        // Usar history.replaceState para limpiar el hash sin recargar
         window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
     }
 }
@@ -185,24 +186,19 @@ async function checkInitialSession() {
 // 🔹 Inicialización de Eventos
 // ---------------------
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Asignar listeners
     if (loginForm) loginForm.addEventListener('submit', handleSubmit);
     if (googleBtn) googleBtn.addEventListener('click', handleGoogleLogin);
-
-    // 2. Verificar sesión inicial
     checkInitialSession();
 });
 
 // ---------------------
-// 🔹 Escucha de cambios de Auth (maneja el callback post-OAuth)
+// 🔹 Escucha de cambios de Auth
 // ---------------------
 supabase.auth.onAuthStateChange((event, session) => {
-    // Disparamos la acción de redirección solo si hay una sesión y el evento es SIGNED_IN
     if (session && event === 'SIGNED_IN') {
         console.log(`✅ Evento Supabase: ${event}. Redirigiendo...`);
         getRoleAndRedirect(session.access_token);
     }
-    // Manejar el evento de cierre de sesión
     if (event === 'SIGNED_OUT') {
         localStorage.removeItem("role");
         localStorage.removeItem("token");
