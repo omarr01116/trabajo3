@@ -8,7 +8,7 @@
     <style>
         /* Estilos base */
         .bg-gray-50 { background-color: #f9fafb; }
-        .text-blue-600 { color: #2563eb; }
+        .text-blue-600 { color: #ff3399; } /* Nuevo color de acento: Magenta vibrante */
         .btn-black { 
             background-color: #000; 
             border-color: #000;
@@ -29,7 +29,7 @@
         }
         .transition:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2) !important;
         }
 
         /* Contenedor para las imágenes de las tarjetas de curso */
@@ -41,11 +41,11 @@
         }
 
         /* =================================================================
-           🌟 HERO SECTION: FONDO LOCAL (fondoPrincipal.jpg)
+           🌟 HERO SECTION: FONDO PRINCIPAL (fondo principal.jpg)
            ================================================================= */
         .hero-section {
-            /* IMAGEN DE FONDO LOCAL */
-            background-image: url('imagen/fondoPrincipal.jpg');
+            /* IMAGEN DE FONDO LOCAL: fondo principal.jpg */
+            background-image: url('imagen/fondo principal.jpg');
             background-size: cover;
             background-position: center;
             position: relative;
@@ -71,21 +71,24 @@
             z-index: 2;
         }
 
-        /* Color de acento neón para el nombre */
+        /* Color de acento neón para el nombre (Contraste con magenta/púrpura) */
         .hero-section h1 span {
-            color: #00ff66; /* Verde Neón brillante */
+            color: #00ff66; /* Verde Neón para resaltar el nombre */
             text-shadow: 0 0 10px rgba(0, 255, 102, 0.5); 
         }
         
         /* =================================================================
-           SECCIÓN DE FORTALEZAS: FONDO LOCAL (fondo2.jpg)
+           SECCIÓN DE FORTALEZAS: FONDO SECUNDARIO (fondo2.jpg)
            ================================================================= */
         #habilidades {
+            /* IMAGEN DE FONDO LOCAL: fondo2.jpg */
             background-image: url('imagen/fondo2.jpg');
             background-size: cover;
             background-position: center;
             position: relative;
             color: white;
+            padding-top: 6rem; /* Restablecido para que sea consistente */
+            padding-bottom: 6rem;
         }
 
         #habilidades::before {
@@ -95,11 +98,11 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.8); /* Overlay más oscuro para texto blanco */
+            background: rgba(0, 0, 0, 0.85); /* Overlay más oscuro para texto blanco */
             z-index: 1;
         }
-
-        #habilidades > .container {
+        
+        #habilidades .col {
             position: relative;
             z-index: 2;
         }
@@ -108,66 +111,64 @@
             color: white !important;
         }
         
+        #habilidades .fs-1 {
+            color: #ff3399 !important; /* Magenta vibrante para los iconos de habilidad */
+        }
+        
+        /* Ajuste de color del fondo de las tarjetas en Habilidades */
+        #habilidades .bg-black {
+            background-color: rgba(0, 0, 0, 0.7) !important; /* Semi-transparente para ver el fondo */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
         /* =================================================================
            ANIMACIÓN DE MÁQUINA DE ESCRIBIR (TYPING EFFECT)
            ================================================================= */
-        /* Contenedor del texto animado */
         .typing-container {
             display: inline-block;
-            overflow: hidden; /* Oculta el texto que aún no se ha "escrito" */
-            white-space: nowrap; /* Mantiene todo en una línea */
+            overflow: hidden;
+            white-space: nowrap;
         }
 
-        /* Cursor que parpadea */
         .typing-cursor {
-            border-right: 0.15em solid #00ff66; /* Línea que simula el cursor */
+            border-right: 0.15em solid #00ff66; /* Cursor en color neón */
             animation: 
                 blink-caret 0.75s step-end infinite;
         }
 
-        /* Keyframes para el parpadeo del cursor */
         @keyframes blink-caret {
             from, to { border-color: transparent }
             50% { border-color: #00ff66; }
         }
 
         /* =================================================================
-            RESPONSIVIDAD (Manteniendo los ajustes anteriores)
+            RESPONSIVIDAD
             ================================================================= */
-        /* ... (Tu media query se mantiene igual) ... */
-
-        /* 1. Estilo por defecto para el título principal (Móvil) */
         .hero-section h1.display-3 {
             font-size: 2.5rem !important;
         }
         
-        /* 2. Ajuste del padding del Hero en móvil */
         .hero-section {
             padding-top: 5rem;
             padding-bottom: 5rem;
         }
         
-        /* 3. Ajuste de padding de las secciones en móvil */
         #habilidades, #portafolio-section, #contacto-cta {
             padding-top: 3rem !important;
             padding-bottom: 3rem !important;
         }
 
-        /* MEDIA QUERY: Escritorio y Tablet (min-width: 768px) */
         @media (min-width: 768px) {
-            /* Restablece el padding del Hero para pantallas más grandes */
             .hero-section {
                 padding-top: 7rem;
                 padding-bottom: 7rem;
             }
             
-            /* Restablece el padding de las secciones */
             #habilidades, #portafolio-section, #contacto-cta {
                 padding-top: 6rem !important;
                 padding-bottom: 6rem !important;
             }
 
-            /* Restablece el tamaño del título Display-3 para escritorio */
             .hero-section h1.display-3 {
                 font-size: 4rem !important;
             }
@@ -255,8 +256,8 @@
             <div class="row row-cols-1 row-cols-md-3 g-4">
                 
                 <div class="col">
-                    <div class="p-4 rounded-4 h-100 bg-black bg-opacity-75 transition shadow-lg">
-                        <div class="fs-1 mb-3 text-white">🌐</div>
+                    <div class="p-4 rounded-4 h-100 bg-black transition shadow-lg">
+                        <div class="fs-1 mb-3">🌐</div>
                         <h3 class="fs-5 fw-bold mb-2">Desarrollo Web Full-Stack</h3>
                         <p>
                             Dominio de JavaScript (React), Python y bases de datos para construir aplicaciones robustas y escalables.
@@ -265,8 +266,8 @@
                 </div>
 
                 <div class="col">
-                    <div class="p-4 rounded-4 h-100 bg-black bg-opacity-75 transition shadow-lg">
-                        <div class="fs-1 mb-3 text-white">🔬</div>
+                    <div class="p-4 rounded-4 h-100 bg-black transition shadow-lg">
+                        <div class="fs-1 mb-3">🔬</div>
                         <h3 class="fs-5 fw-bold mb-2">Data Science & ML</h3>
                         <p>
                             Experiencia en la implementación de modelos de Machine Learning para optimizar procesos y tomar decisiones basadas en datos.
@@ -275,8 +276,8 @@
                 </div>
 
                 <div class="col">
-                    <div class="p-4 rounded-4 h-100 bg-black bg-opacity-75 transition shadow-lg">
-                        <div class="fs-1 mb-3 text-white">🏗️</div>
+                    <div class="p-4 rounded-4 h-100 bg-black transition shadow-lg">
+                        <div class="fs-1 mb-3">🏗️</div>
                         <h3 class="fs-5 fw-bold mb-2">Arquitectura y Nube</h3>
                         <p>
                             Diseño de sistemas modulares y eficientes, enfocados en la mantenibilidad y despliegue en plataformas en la nube.
@@ -399,27 +400,22 @@
         const textToType = "Ingeniero de Sistemas";
         const element = document.getElementById('typed-text');
         let index = 0;
-        let isTyping = true;
         
-        // Añade el cursor de CSS al inicio
         element.innerHTML = '<span class="typing-cursor"></span>';
         const cursor = element.querySelector('.typing-cursor');
 
         function typeText() {
             if (index < textToType.length) {
-                // Inserta la letra antes del cursor
                 element.insertBefore(document.createTextNode(textToType.charAt(index)), cursor);
                 index++;
-                setTimeout(typeText, 70); // Velocidad de escritura
+                setTimeout(typeText, 70); // Velocidad de escritura (70ms)
             } else {
-                // Detiene la animación del cursor después de terminar de escribir
                 cursor.style.animation = 'none';
                 cursor.style.borderRight = 'none';
             }
         }
 
-        // Inicia la animación al cargar la página
-        setTimeout(typeText, 500); // Pequeño retraso para que se note la entrada
+        setTimeout(typeText, 500); // Pequeño retraso al cargar
     </script>
 </body>
 </html>
