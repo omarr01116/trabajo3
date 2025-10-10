@@ -208,7 +208,7 @@ async function handleUpload(e) {
 }
 
 // =================================================================
-// 🔹 Renombrar archivo (Solo admin) - CÓDIGO FINAL
+// 🔹 Renombrar archivo (Solo admin) - VERSIÓN FINAL CON DECODIFICACIÓN
 // =================================================================
 async function handleEdit(oldFullPath, oldFileName) {
     if (role !== "admin") return setEstado("⚠️ Solo el admin puede editar nombres.", true);
@@ -221,15 +221,27 @@ async function handleEdit(oldFullPath, oldFileName) {
     
     setEstado("⏳ Renombrando...");
     
-    // 1. Limpiamos las comillas escapadas que vienen del onclick (CRÍTICO)
-    const cleanOldFullPath = oldFullPath.replace(/\\'/g, "'"); 
-    const cleanOldFileName = oldFileName.replace(/\\'/g, "'");
+    // 1. Limpiamos las comillas escapadas del onclick
+    const safeOldPath = oldFullPath.replace(/\\'/g, "'"); 
 
-    // 2. Crear la nueva ruta completa
-    const newFullPath = cleanOldFullPath.replace(cleanOldFileName, newName.trim());
+    // CRÍTICO: Decodificamos la ruta para obtener el formato limpio (con espacios),
+    // eliminando cualquier codificación previa de Supabase o JavaScript.
+    const fullyDecodedPath = decodeURIComponent(safeOldPath);
 
-    // 3. Aplicamos la codificación robusta por SEGMENTOS a ambas rutas
-    const encodedOldPath = getPathForStorage(cleanOldFullPath);
+    // 2. Separamos la ruta decodificada en partes
+    const pathParts = fullyDecodedPath.split('/');
+    
+    // 3. Reconstruimos la nueva ruta completa
+    // El último elemento es el nombre del archivo. Lo reemplazamos por el nuevo nombre.
+    pathParts.pop(); // Elimina el nombre del archivo antiguo
+    pathParts.push(newName.trim()); // Agrega el nuevo nombre del archivo
+    
+    // Reconstruimos la nueva ruta limpia (con espacios)
+    const newFullPath = pathParts.join('/'); 
+
+    // 4. Aplicamos la codificación correcta por SEGMENTOS solo a las rutas LIMPIAS
+    // NOTA: Aquí usamos fullyDecodedPath para oldPath porque es la versión limpia.
+    const encodedOldPath = getPathForStorage(fullyDecodedPath);
     const encodedNewPath = getPathForStorage(newFullPath);
 
     try {
@@ -247,7 +259,6 @@ async function handleEdit(oldFullPath, oldFileName) {
         console.error("Error al renombrar archivo:", err);
     }
 }
-
 // =================================================================
 // 🔹 Borrar archivo (solo admin)
 // =================================================================
