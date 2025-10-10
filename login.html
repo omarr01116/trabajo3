@@ -9,13 +9,34 @@
         /* Estilos personalizados para replicar el look and feel de Tailwind/React */
         .min-vh-100 { min-height: 100vh; }
         .bg-gray-100 { background-color: #f3f4f6; }
-        .pt-20 { padding-top: 5rem !important; }
+        .pt-20 { padding-top: 5rem !important; } /* Valor para Desktop */
         .text-indigo-600 { color: #4f46e5 !important; }
         .bg-indigo-600 { background-color: #4f46e5 !important; }
         .hover\:bg-indigo-700:hover { background-color: #4338ca !important; }
         .focus\:ring-indigo-500:focus {
             box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
             border-color: #6366f1;
+        }
+
+        /* -----------------------------------------------------------------
+           RESPONSIVIDAD: AJUSTES PARA DISPOSITIVOS MÓVILES (Max-width: 767px)
+           ----------------------------------------------------------------- */
+        @media (max-width: 767.98px) {
+            /* 1. Reducir el padding superior para centrar el formulario mejor en móviles */
+            .pt-20 {
+                padding-top: 3rem !important; 
+            }
+            
+            /* 2. Reducir el padding de la tarjeta del formulario en móvil */
+            .p-md-5 {
+                padding: 1.5rem !important;
+            }
+            
+            /* 3. Asegurar que el contenedor principal use todo el ancho disponible */
+            .w-100 {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
         }
     </style>
 </head>
@@ -25,16 +46,22 @@
         <div class="container-xl px-4">
             <a class="navbar-brand fs-4 fw-bold text-dark" href="index.html">OMAR</a>
             
-            <ul class="navbar-nav ms-auto mb-2 mb-lg-0 fw-medium">
-                <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
-                <li class="nav-item"><a class="nav-link" href="portafolio.html">Portafolio</a></li>
-                <li class="nav-item"><a class="nav-link" href="sobremi.html">Sobre mí</a></li>
-                <li class="nav-item"><a class="nav-link" href="contacto.html">Contacto</a></li>
-            </ul>
-            
-            <a href="login.html" class="btn btn-primary rounded-pill px-4 py-2 ms-lg-3 text-sm transition">
-                Login
-            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 fw-medium">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="portafolio.html">Portafolio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="sobremi.html">Sobre mí</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contacto.html">Contacto</a></li>
+                </ul>
+                
+                <a href="login.html" class="btn btn-primary rounded-pill px-4 py-2 ms-lg-3 text-sm transition">
+                    Login
+                </a>
+            </div>
         </div>
     </nav>
 
