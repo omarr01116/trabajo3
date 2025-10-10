@@ -1,8 +1,8 @@
 /* styles.css */
 
 /* =================================================================
-   ESTILOS BASE Y UTILITY (Diseño tipo Tailwind/Bootstrap)
-   ================================================================= */
+    ESTILOS BASE Y UTILITY (Diseño tipo Tailwind/Bootstrap)
+    ================================================================= */
 .pt-28 { 
     padding-top: 7rem !important; 
 } /* Espacio para el navbar fijo */
@@ -43,18 +43,17 @@
     color: white;
 }
 
----
+/* --- */
 
 /* =================================================================
-   CORRECCIÓN 1: BOTONES UNIFORMES EN LA TABLA (AJUSTE DE TAMAÑO)
-   ================================================================= */
+    CORRECCIÓN 1: BOTONES UNIFORMES EN LA TABLA (AJUSTE DE TAMAÑO)
+    ================================================================= */
 
 /* Targetea específicamente los botones dentro de la celda de acciones (d-flex) */
 .d-flex.justify-content-center .btn {
     /* ⭐ Aumentamos el ancho. 75px es un buen balance para 3 botones. */
     width: 75px; 
-    /* Esto asegura que la altura y el texto sean consistentes (clase btn-sm lo maneja, 
-       pero reforzamos si es necesario) */
+    /* Esto asegura que la altura y el texto sean consistentes */
     padding: 0.25rem 0.5rem !important; 
     white-space: nowrap; 
     text-align: center;
@@ -66,20 +65,32 @@
 .d-flex.justify-content-center > .btn:not(:last-child) {
     margin-right: 0.5rem !important;
 }
----
+
+/* --- */
 
 /* =================================================================
-   CORRECCIÓN 2: VISTA PREVIA (MODAL)
-   ================================================================= */
+    CORRECCIÓN 2: VISTA PREVIA (MODAL)
+    ================================================================= */
 
-/* 1. Define el alto del cuerpo del modal (modal-body-content) */
+/* 1. Opcional: Truncar el título si es muy largo (Solo necesario si el nombre es kilométrico) */
+#previewModalLabel {
+    /* Permite que el h5 se encoja para dar espacio a los botones */
+    flex-shrink: 1; 
+    /* Asegura que el texto se trunque con ... */
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    white-space: nowrap;
+}
+
+
+/* 2. Define el alto del cuerpo del modal (modal-body-content) */
 .modal-body-content { 
-    /* 90vh (modal-content) menos la altura del header (~58px) */
+    /* 90vh (modal-content) menos la altura del header (~58px, ajusta si tu header es diferente) */
     height: calc(90vh - 58px); 
     overflow-y: auto; 
 }
 
-/* 2. Asegura que el contenedor inyectado por JS ocupe el 100% del alto disponible */
+/* 3. Asegura que el contenedor inyectado por JS ocupe el 100% del alto disponible */
 /* Esto es fundamental para que el Flexbox en file.js pueda dimensionar el iframe */
 #preview-content,
 #preview-content > div {
@@ -87,7 +98,7 @@
     width: 100%;
 }
 
-/* 3. Asegura que el iframe ocupe el 100% del contenedor padre (Flex item) */
+/* 4. Asegura que el iframe ocupe el 100% del contenedor padre (Flex item) */
 #preview-content iframe {
     width: 100%;
     height: 100%; 
