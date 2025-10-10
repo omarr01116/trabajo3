@@ -27,7 +27,7 @@ let role = localStorage.getItem('role') || 'usuario';
 // Define la URL de redirección si no hay sesión
 const LOGIN_URL = "./login.html"; 
 
-// Nombre del bucket (asumimos que es 'archivos')
+// Nombre del bucket de Supabase Storage
 const BUCKET_NAME = 'archivos'; 
 
 // =================================================================
@@ -39,6 +39,7 @@ function detectType(name) {
     const ext = name.split(".").pop().toLowerCase();
     if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) return "image";
     if (ext === "pdf") return "pdf";
+    // Documentos de Office que requieren el visor de Google Docs
     if (["ppt", "pptx", "doc", "docx", "xls", "xlsx"].includes(ext)) return "document";
     return "other";
 }
@@ -48,7 +49,7 @@ function setEstado(msg, isError = false) {
     fileStatus.textContent = msg;
     fileStatus.classList.remove('d-none');
     fileStatus.classList.toggle('text-pink-700', !isError); 
-    fileStatus.classList.toggle('text-danger', isError);   
+    fileStatus.classList.toggle('text-danger', isError);  
 }
 
 /** Oculta el mensaje de estado */
@@ -65,7 +66,6 @@ function clearEstado() {
  * Verifica la sesión con Supabase y protege la ruta.
  */
 async function checkAuthAndInit() {
-    // 1. Verificar sesión de Supabase
     const { data: { session } } = await supabase.auth.getSession();
 
     if (!session) {
@@ -73,19 +73,15 @@ async function checkAuthAndInit() {
         return; 
     }
     
-    // 2. Obtener el rol 
     role = localStorage.getItem('role') || 'usuario';
     
-    // 3. Redirección de rol
     if (role === 'invitado') {
         window.location.href = './portafolio.html';
         return;
     }
 
-    // Si pasamos las validaciones, inicializar la UI
     roleDisplay.textContent = role.toUpperCase();
 
-    // 4. Cargar la lista inicial de archivos y asignar listeners
     cargarArchivos();
     uploadForm.addEventListener('submit', handleUpload);
     cursoSelect.addEventListener('change', cargarArchivos);
@@ -95,7 +91,7 @@ async function checkAuthAndInit() {
 
 
 // =================================================================
-// 🔹 Cargar Archivos por curso y semana (Renderizado y Estilo Corregido)
+// 🔹 Cargar Archivos (Renderizado de tabla)
 // =================================================================
 async function cargarArchivos() {
     setEstado("⏳ Cargando archivos...");
@@ -126,15 +122,13 @@ async function cargarArchivos() {
                 nameCell.className = 'py-3 px-4 text-sm text-primary font-medium break-words';
                 nameCell.innerHTML = `<button onclick="openPreview('${archivo.name.replace(/'/g, "\\'")}')" class="btn btn-link p-0 text-decoration-none text-start">${archivo.name}</button>`;
 
-                // Columna Acciones (Estilo Corregido)
+                // Columna Acciones (Restricción por Rol)
                 const actionsCell = row.insertCell();
-                // ⭐ Alinear y centrar botones en la celda
-                actionsCell.className = 'py-3 px-4 text-center d-flex justify-content-center align-items-center space-x-2';
+                actionsCell.className = 'py-3 px-4 text-center d-flex justify-content-center align-items-center';
                 actionsCell.innerHTML = `
                     <button onclick="openPreview('${archivo.name.replace(/'/g, "\\'")}')" class="btn btn-sm btn-primary rounded-pill font-medium me-2">Ver</button>
                     
                     ${role === 'admin' ? 
-                        // ⭐ BOTÓN EDITAR SOLO PARA ADMIN
                         `<button onclick="handleEdit('${fullPath.replace(/'/g, "\\'")}', '${archivo.name.replace(/'/g, "\\'")}')" 
                             class="btn btn-sm btn-warning rounded-pill font-medium me-2">Editar</button>` 
                         : ''
@@ -158,20 +152,18 @@ async function cargarArchivos() {
 }
 
 // =================================================================
-// 🔹 Subir archivo (Usa el nombre original - Correcto)
+// 🔹 Subir archivo (Restricción de rol a admin/usuario)
 // =================================================================
 async function handleUpload(e) {
     e.preventDefault();
     const file = fileInput.files[0];
     if (!file) return setEstado("⚠️ Selecciona un archivo primero", true);
     
-    // ⭐ Solo permitir subir a 'admin' o 'usuario'
-    if (role !== 'admin' && role !== 'usuario') return setEstado("⚠️ Debes tener un rol válido para subir archivos.", true);
+    if (role !== 'admin' && role !== 'usuario') return setEstado("⚠️ Debes tener un rol válido para subir archivos.", true);
 
     setEstado("⏳ Subiendo...");
     const curso = cursoSelect.value;
     const semana = semanaSelect.value;
-    // Ya está usando file.name, lo que asegura el nombre original
     const filePath = `${curso}/${semana}/${file.name}`; 
 
     try {
@@ -182,7 +174,7 @@ async function handleUpload(e) {
         if (error) throw error;
 
         setEstado("✅ Archivo subido con éxito");
-        fileInput.value = ''; // Limpiar input
+        fileInput.value = ''; 
         cargarArchivos();
     } catch (err) {
         console.error("Error al subir archivo:", err);
@@ -191,7 +183,7 @@ async function handleUpload(e) {
 }
 
 // =================================================================
-// ⭐ 🔹 Renombrar archivo (Solo admin)
+// 🔹 Renombrar archivo (Solo admin)
 // =================================================================
 async function handleEdit(oldFullPath, oldFileName) {
     if (role !== "admin") return setEstado("⚠️ Solo el admin puede editar nombres.", true);
@@ -199,12 +191,11 @@ async function handleEdit(oldFullPath, oldFileName) {
     const newName = prompt(`Renombrando "${oldFileName}".\nIngresa el nuevo nombre del archivo (incluye la extensión):`);
 
     if (!newName || newName.trim() === '' || newName.trim() === oldFileName) {
-        return; // Cancelado o nombre no cambiado
+        return; 
     }
     
     setEstado("⏳ Renombrando...");
     
-    // newFullPath es oldFullPath con el nombre antiguo reemplazado por el nuevo
     const newFullPath = oldFullPath.replace(oldFileName, newName.trim());
 
     try {
@@ -226,7 +217,6 @@ async function handleEdit(oldFullPath, oldFileName) {
 // 🔹 Borrar archivo (solo admin)
 // =================================================================
 async function handleDelete(fullPath) {
-    // ⭐ Restricción de rol
     if (role !== "admin") return setEstado("⚠️ Solo el admin puede eliminar archivos.", true);
 
     const fileName = fullPath.split('/').pop();
@@ -249,7 +239,7 @@ async function handleDelete(fullPath) {
 }
 
 // =================================================================
-// 🔹 Vista previa (Mejora de Estilo y Detección de Archivos)
+// 🔹 Vista previa (Solución Final de Estilo para iframes)
 // =================================================================
 function openPreview(fileName) {
     const curso = cursoSelect.value;
@@ -267,6 +257,9 @@ function openPreview(fileName) {
         return;
     }
 
+    // Limpiar antes de configurar el nuevo contenido
+    previewContent.innerHTML = ''; 
+
     // Configurar el Modal
     previewTitle.textContent = `Vista Previa - ${fileName}`;
     previewLink.href = publicUrl;
@@ -274,21 +267,35 @@ function openPreview(fileName) {
     let contentHTML;
     
     if (type === "image") {
-        // ⭐ Usar object-contain para asegurar que la imagen quepa sin cortar
-        contentHTML = `<img src="${publicUrl}" alt="${fileName}" class="img-fluid" style="max-height: 100%; object-fit: contain;">`;
-    } else if (type === "pdf") {
-        // ⭐ Usar un iframe directo para PDFs
-        contentHTML = `<iframe src="${publicUrl}" title="Vista previa PDF" class="w-100 h-100 border-0"></iframe>`;
-    } else if (type === "document") {
-        // ⭐ Mantener Google Docs Viewer para documentos de Office (doc, ppt, xls)
+        // Envuelve la imagen en un contenedor Flexbox para centrar y asegurar el object-fit
+        contentHTML = `<div class="w-100 h-100 d-flex justify-content-center align-items-center">
+            <img 
+                src="${publicUrl}" 
+                alt="${fileName}" 
+                class="img-fluid" 
+                style="max-height: 100%; max-width: 100%; object-fit: contain;"
+            >
+        </div>`;
+    } else if (type === "pdf" || type === "document") {
+        // ⭐ SOLUCIÓN FINAL para iframes (PDF y Office): Usa Flexbox para llenar el alto 
+        
+        let iframeSrc = publicUrl;
+        if (type === "document") {
+            // Usa el visor de Google Docs para documentos de Office
+            iframeSrc = `https://docs.google.com/gview?url=${encodeURIComponent(publicUrl)}&embedded=true`;
+        }
+
         contentHTML = `
-            <iframe 
-                src="https://docs.google.com/gview?url=${encodeURIComponent(publicUrl)}&embedded=true" 
-                title="Vista previa documento" 
-                class="w-100 h-100 border-0"
-            ></iframe>
-            <div class="text-center p-3 bg-light w-100">
-                <small class="text-muted">Si la previsualización falla, use el botón "Abrir en nueva pestaña" para descargar/ver.</small>
+            <div class="w-100 h-100 d-flex flex-column">
+                <iframe 
+                    src="${iframeSrc}" 
+                    title="Vista previa ${type}" 
+                    class="w-100 border-0"
+                    style="flex-grow: 1; height: 100%;" 
+                ></iframe>
+                <div class="text-center p-2 bg-light w-100 flex-shrink-0 border-top">
+                    <small class="text-muted">Si la previsualización falla, use el botón "Abrir en nueva pestaña" para descargar/ver.</small>
+                </div>
             </div>
         `;
     } else {
@@ -296,8 +303,6 @@ function openPreview(fileName) {
     }
     
     previewContent.innerHTML = contentHTML;
-    
-    // Mostrar el Modal
     previewModal.show();
 }
 
@@ -317,7 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAuthAndInit();
 });
 
-// Exponer funciones al scope global
+// Exponer funciones al scope global (necesario para onclick en el HTML generado)
 window.openPreview = openPreview;
 window.handleDelete = handleDelete;
 window.handleEdit = handleEdit;
