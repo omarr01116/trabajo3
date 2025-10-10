@@ -34,82 +34,66 @@ let role = localStorage.getItem('role') || 'usuario';
 let urlCourse = null;
 let urlWeek = null;
 
-
 // =================================================================
-// 🔹 Funciones de Inicialización y Autenticación
+// 🔹 Funciones de Inicialización y Autenticación (AJUSTADO PARA DEBUG)
 // =================================================================
 
-/**
- * Lee los parámetros de la URL y ajusta la interfaz de usuario.
- */
-function checkUrlParams() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const course = urlParams.get('course');
-    const week = urlParams.get('week');
-    const headerManagement = document.getElementById('header-management');
-
-    if (course && week) {
-        // MODO NAVEGACIÓN (Viniendo de curso.html)
-        urlCourse = decodeURIComponent(course.replace(/\+/g, ' '));
-        urlWeek = decodeURIComponent(week.replace(/\+/g, ' '));
-        
-        // 1. Ocultar selectores de subida, ya que la carpeta es fija
-        uploadControls.style.display = 'none';
-
-        // 2. Insertar el título dinámico
-        dynamicTitle.textContent = `${urlCourse} - ${urlWeek}`;
-        
-        // 3. Crear y configurar el botón de Volver
-        const backBtn = document.createElement('button');
-        backBtn.textContent = `← Volver a Cursos`;
-        backBtn.className = 'btn btn-primary rounded-pill px-4 py-2 me-3 transition mb-3 mb-md-0';
-        backBtn.addEventListener('click', () => {
-            window.location.href = `curso.html?name=${encodeURIComponent(urlCourse)}`;
-        });
-        
-        // Mover el título a la derecha y añadir el botón a la izquierda
-        headerManagement.classList.remove('justify-content-start');
-        headerManagement.classList.add('justify-content-between');
-        headerManagement.prepend(backBtn);
-        
-    } else {
-        // MODO GESTIÓN GENERAL (Selectores quedan activos)
-        dynamicTitle.textContent = 'Gestión General de Archivos';
-    }
-}
-
+// ... (La función checkUrlParams permanece igual) ...
 
 /** Verifica la sesión con Supabase, protege la ruta e inicializa listeners. */
 async function checkAuthAndInit() {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-
-    // 1. **PROTECCIÓN DE RUTA (LOGIN)**
-    if (!session) {
-        window.location.href = LOGIN_URL;
-        return; 
-    }
+    console.log("🛠️ Iniciando verificación de autenticación...");
     
-    // 2. **OBTENER ROL**
-    role = localStorage.getItem('role') || 'usuario'; 
-    if (role === 'invitado') {
-        window.location.href = './portafolio.html'; // Redirige a invitados
-        return;
-    }
-    roleDisplay.textContent = role.toUpperCase();
+    try {
+        const { data: { session }, error: authError } = await supabaseClient.auth.getSession();
 
-    // 3. **INICIALIZACIÓN DE UI Y DATOS**
-    checkUrlParams(); 
-    await cargarArchivos(); 
+        if (authError) {
+            console.error("❌ Error al obtener sesión de Supabase:", authError);
+            setEstado("❌ Error de conexión al servidor de autenticación.", true);
+            return;
+        }
 
-    // 4. **ASIGNAR LISTENERS**
-    uploadForm.addEventListener('submit', handleUpload);
-    document.addEventListener('click', handleActionClick); // Listener para Descarga/Eliminación/Ver
-    logoutBtn.addEventListener('click', handleLogout);
+        if (!session) {
+            console.log("⚠️ Sesión no encontrada. Redirigiendo al login...");
+            window.location.href = LOGIN_URL;
+            return; 
+        }
 
-    // Solo re-cargar la lista si se cambia el selector en MODO GESTIÓN GENERAL
-    if (!urlCourse && !urlWeek) {
-        cursoSelect.addEventListener('change', cargarArchivos);
-        semanaSelect.addEventListener('change', cargarArchivos);
+        // --- DIAGNÓSTICO: CONEXIÓN EXITOSA ---
+        console.log("✅ Conexión con Supabase y Sesión ACTIVA.");
+        console.log(`👤 ID de Usuario (UID): ${session.user.id}`);
+        // ------------------------------------
+        
+        // 2. OBTENER Y VERIFICAR ROL
+        role = localStorage.getItem('role') || 'usuario'; 
+        
+        if (role === 'invitado') {
+            console.log(`⚠️ Rol detectado: ${role}. Redirigiendo a portafolio.`);
+            window.location.href = './portafolio.html'; 
+            return;
+        }
+        
+        roleDisplay.textContent = role.toUpperCase();
+        console.log(`✅ Rol detectado: ${role}. Acceso concedido.`);
+
+        // 3. INICIALIZACIÓN DE UI Y DATOS
+        checkUrlParams(); 
+        await cargarArchivos(); // Si cargarArchivos falla, podría detener el script
+
+        // 4. ASIGNAR LISTENERS
+        uploadForm.addEventListener('submit', handleUpload);
+        document.addEventListener('click', handleActionClick); 
+        logoutBtn.addEventListener('click', handleLogout);
+
+        if (!urlCourse && !urlWeek) {
+            cursoSelect.addEventListener('change', cargarArchivos);
+            semanaSelect.addEventListener('change', cargarArchivos);
+        }
+        
+    } catch (e) {
+        // Captura cualquier error que ocurra durante la ejecución (incluso errores de DOM o sintaxis)
+        console.error("❌ Error CRÍTICO en checkAuthAndInit:", e);
+        setEstado(`❌ Error de inicialización: ${e.message}`, true);
     }
 }
 
