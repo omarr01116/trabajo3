@@ -17,6 +17,7 @@
             background-repeat: no-repeat;
             background-position: center;
             font-family: sans-serif;
+            color: #fff; /* Asegura color de texto blanco por defecto en el body */
         }
         
         /* Estilos base */
@@ -64,7 +65,7 @@
         
         section {
             position: relative;
-            color: white;
+            /* Ya no necesita 'color: white;' aquí, el body ya lo define */
         }
         
         section::before {
@@ -74,7 +75,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 1);
+            background: rgba(0, 0, 0, 1); /* Base para el overlay */
             z-index: 1;
         }
         
@@ -88,6 +89,9 @@
             background: rgba(0, 0, 0, 0.60);
         }
         
+        .hero-section h1, .hero-section p { /* Asegura que el texto sea blanco */
+            color: white !important;
+        }
         .hero-section h1 span {
             color: #00ff66; /* Verde Neón */
             text-shadow: 0 0 10px rgba(0, 255, 102, 0.5); 
@@ -117,12 +121,12 @@
         }
         
         #portafolio-section h2, #portafolio-section p {
-            color: #f0f0f0 !important;
+            color: #f0f0f0 !important; /* Color de texto para títulos y párrafos sobre el overlay oscuro */
         }
         
         #portafolio-section .card {
-            background-color: rgba(255, 255, 255, 0.95);
-            color: #333;
+            background-color: rgba(255, 255, 255, 0.95); /* Tarjetas casi blancas para contrastar */
+            color: #333; /* Texto dentro de las tarjetas */
         }
         
         /* 4. CONTACTO (Opacidad: 98%) */
