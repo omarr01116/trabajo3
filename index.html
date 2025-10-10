@@ -3,70 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inicio - OMAR</title>
+    <title>Inicio - OMAR | Ingeniería de Sistemas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Estilos personalizados para replicar el look and feel de Tailwind/Wix */
-        .hero-section {
-            padding-top: 6rem; /* Ajuste para el navbar fijo */
-            padding-bottom: 6rem;
-        }
-        .bg-gray-100 { background-color: #f7f7f7; }
+        /* Estilos base */
         .bg-gray-50 { background-color: #f9fafb; }
-        .text-blue-600 { color: #4f46e5; }
+        .text-blue-600 { color: #2563eb; } /* Color de acento moderno */
         .btn-black { 
             background-color: #000; 
             border-color: #000;
             color: white; 
+            transition: all 0.3s ease;
         }
         .btn-black:hover { 
             background-color: #333; 
             border-color: #333;
             color: white; 
         }
+        .btn-outline-dark { border-width: 2px; }
+        .btn-outline-dark:hover { background-color: #000; color: white; }
+        
+        /* Efecto de transición para las tarjetas */
+        .transition {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .transition:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+        }
 
         /* =================================================================
-           🌟 AJUSTES DE RESPONSIVIDAD (MOBILE-FIRST) 
+           🌟 HERO SECTION: FONDO DE IMAGEN Y OVERLAY OSCURO
            ================================================================= */
+        .hero-section {
+            /* Imagen de fondo de stock (ajustable) */
+            background-image: url('https://images.unsplash.com/photo-1517430485663-8a0a86d52f65?fit=crop&w=1920&h=1080&q=80');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            color: white; /* Texto blanco sobre fondo oscuro */
+            padding-top: 6rem;
+            padding-bottom: 6rem;
+        }
+        
+        /* Overlay oscuro para mejorar la legibilidad del texto */
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6); /* 60% de opacidad negra */
+            z-index: 1;
+        }
 
-        /* 1. Estilo por defecto para el título principal (Se aplica en móvil/small) */
-        /* Cambiamos a font-size relativo al viewport para mejor escalado */
+        /* Asegura que el contenido esté por encima del overlay */
+        .hero-section > .container {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-section h1 span {
+            color: #4CAF50; /* Color de acento brillante para el nombre */
+        }
+        
+        /* Contenedor para las imágenes de las tarjetas de curso */
+        .card-img-top-custom {
+            height: 150px; /* Altura fija para todas las imágenes */
+            object-fit: cover; /* Recorte inteligente */
+            width: 100%;
+            border-radius: 0.25rem 0.25rem 0 0; /* Bordes superiores redondeados */
+        }
+
+        /* =================================================================
+            RESPONSIVIDAD
+            ================================================================= */
+
+        /* 1. Estilo por defecto para el título principal (Móvil) */
         .hero-section h1.display-3 {
-            font-size: 3rem !important; /* Más pequeño para móviles */
-            margin-top: 2rem; /* Separación debajo del nav */
+            font-size: 2.5rem !important;
         }
         
         /* 2. Ajuste del padding del Hero en móvil */
         .hero-section {
-            padding-top: 4rem;
-            padding-bottom: 4rem;
+            padding-top: 5rem;
+            padding-bottom: 5rem;
         }
         
         /* 3. Ajuste de padding de las secciones en móvil */
-        #portafolio-section, #contacto-cta {
+        #habilidades, #portafolio-section, #contacto-cta {
             padding-top: 3rem !important;
             padding-bottom: 3rem !important;
         }
-
 
         /* MEDIA QUERY: Escritorio y Tablet (min-width: 768px) */
         @media (min-width: 768px) {
             /* Restablece el padding del Hero para pantallas más grandes */
             .hero-section {
-                padding-top: 6rem;
-                padding-bottom: 6rem;
+                padding-top: 7rem;
+                padding-bottom: 7rem;
             }
             
             /* Restablece el padding de las secciones */
-            #portafolio-section, #contacto-cta {
-                padding-top: 5rem !important;
-                padding-bottom: 5rem !important;
+            #habilidades, #portafolio-section, #contacto-cta {
+                padding-top: 6rem !important;
+                padding-bottom: 6rem !important;
             }
 
             /* Restablece el tamaño del título Display-3 para escritorio */
             .hero-section h1.display-3 {
                 font-size: 4rem !important;
-                margin-top: 0;
             }
         }
     </style>
@@ -97,7 +144,7 @@
                     </li>
                 </ul>
                 
-                <a href="login.html" class="btn btn-primary rounded-pill px-4 py-2 ms-lg-3">
+                <a href="login.html" class="btn btn-black rounded-pill px-4 py-2 ms-lg-3">
                     Login
                 </a>
             </div>
@@ -106,82 +153,78 @@
 
     <header
         id="inicio"
-        class="hero-section d-flex flex-column align-items-center justify-content-center text-center bg-gray-100 min-vh-100"
+        class="hero-section d-flex align-items-center min-vh-100"
     >
         <div class="container py-5 px-4">
-            <h1 class="display-3 fw-bold lh-sm mb-4"> 
-                Bienvenidos 
-                <br />
-            </h1>
-            <p class="fs-5 text-secondary mb-5 mx-auto" style="max-width: 600px;">
-                Mi nombre es Omar y son libres de explorar mi página web.
-            </p>
-            <a
-                href="sobremi.html"
-                class="btn btn-black btn-lg rounded-pill fw-medium px-5 py-3"
-            >
-                Sobre Mí →
-            </a>
+            
+            <div class="row align-items-center">
+                
+                <div class="col-md-9 text-center text-md-start mx-auto">
+                    <h1 class="display-3 fw-bolder lh-sm mb-4"> 
+                        Ingeniero de Sistemas 
+                        <br class="d-none d-md-block" />
+                        <span class="fw-bolder">| Omar Quispe</span>
+                    </h1>
+                    <p class="fs-5 mb-5 mx-auto mx-md-0" style="max-width: 700px; color: #f0f0f0;">
+                        Especializado en Arquitectura de Software, Machine Learning y Desarrollo Web. 
+                        Explora mis proyectos académicos y mi trayectoria tecnológica.
+                    </p>
+                    <div class="d-flex flex-column flex-md-row justify-content-center justify-content-md-start gap-3">
+                        <a
+                            href="portafolio.html"
+                            class="btn btn-black btn-lg rounded-pill fw-medium px-5 py-3"
+                        >
+                            Ver Portafolio →
+                        </a>
+                        <a
+                            href="sobremi.html"
+                            class="btn btn-outline-light btn-lg rounded-pill fw-medium px-5 py-3 border-white"
+                        >
+                            Conóceme
+                        </a>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </header>
 
-    <section
-        id="portafolio-section"
-        class="py-5 bg-white text-center border-top border-gray-200"
-    >
+    <section id="habilidades" class="py-5 bg-white text-center">
         <div class="container py-5">
-            <h2 class="display-6 fw-semibold mb-3">Portafolio</h2>
-            <p class="text-secondary mb-5">
-                Cursos que llevo actualmente
+            <h2 class="display-6 fw-semibold mb-3">Mis Fortalezas</h2>
+            <p class="text-secondary mb-5 mx-auto" style="max-width: 700px;">
+                Mi formación se enfoca en resolver problemas complejos de manera eficiente, aplicando tecnologías modernas y metodologías ágiles.
             </p>
 
             <div class="row row-cols-1 row-cols-md-3 g-4">
                 
                 <div class="col">
-                    <div class="p-4 bg-gray-50 rounded-4 h-100 shadow-sm transition">
-                        <div class="fs-1 mb-3">💻</div>
-                        <h3 class="fs-5 fw-bold mb-2">Arquitectura de Software</h3>
-                        <p class="text-secondary mb-3">
-                            trabajos
+                    <div class="p-4 rounded-4 h-100 bg-gray-50 transition shadow-sm">
+                        <div class="fs-1 mb-3 text-blue-600">🌐</div>
+                        <h3 class="fs-5 fw-bold mb-2">Desarrollo Web Full-Stack</h3>
+                        <p class="text-secondary">
+                            Dominio de JavaScript (React), Python y bases de datos para construir aplicaciones robustas y escalables.
                         </p>
-                        <a
-                            href="file.html"
-                            class="text-decoration-none text-blue-600 fw-medium"
-                        >
-                            Ver Curso →
-                        </a>
                     </div>
                 </div>
 
                 <div class="col">
-                    <div class="p-4 bg-gray-50 rounded-4 h-100 shadow-sm transition">
-                        <div class="fs-1 mb-3">🧠</div>
-                        <h3 class="fs-5 fw-bold mb-2">Machine Learning</h3>
-                        <p class="text-secondary mb-3">
-                            trabajos y practicas
+                    <div class="p-4 rounded-4 h-100 bg-gray-50 transition shadow-sm">
+                        <div class="fs-1 mb-3 text-blue-600">🔬</div>
+                        <h3 class="fs-5 fw-bold mb-2">Data Science & ML</h3>
+                        <p class="text-secondary">
+                            Experiencia en la implementación de modelos de Machine Learning para optimizar procesos y tomar decisiones basadas en datos.
                         </p>
-                        <a
-                            href="file.html"
-                            class="text-decoration-none text-blue-600 fw-medium"
-                        >
-                            Ver Curso →
-                        </a>
                     </div>
                 </div>
 
                 <div class="col">
-                    <div class="p-4 bg-gray-50 rounded-4 h-100 shadow-sm transition">
-                        <div class="fs-1 mb-3">📚</div>
-                        <h3 class="fs-5 fw-bold mb-2">Inglés</h3>
-                        <p class="text-secondary mb-3">
-                            trabajos y practicas.
+                    <div class="p-4 rounded-4 h-100 bg-gray-50 transition shadow-sm">
+                        <div class="fs-1 mb-3 text-blue-600">🏗️</div>
+                        <h3 class="fs-5 fw-bold mb-2">Arquitectura y Nube</h3>
+                        <p class="text-secondary">
+                            Diseño de sistemas modulares y eficientes, enfocados en la mantenibilidad y despliegue en plataformas en la nube.
                         </p>
-                        <a
-                            href="file.html"
-                            class="text-decoration-none text-blue-600 fw-medium"
-                        >
-                            Ver Curso →
-                        </a>
                     </div>
                 </div>
             </div>
@@ -189,19 +232,107 @@
     </section>
 
     <section
+        id="portafolio-section"
+        class="py-5 bg-light text-center border-top border-gray-200"
+    >
+        <div class="container py-5">
+            <h2 class="display-6 fw-semibold mb-3">Mis Cursos Recientes</h2>
+            <p class="text-secondary mb-5">
+                Proyectos y trabajos que demuestran la aplicación práctica de mis conocimientos.
+            </p>
+
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                
+                <div class="col">
+                    <div class="card h-100 shadow border-0 transition">
+                        <img 
+                            src="https://images.unsplash.com/photo-1594922329244-123491907d6a?fit=crop&w=600&h=300&q=80" 
+                            class="card-img-top-custom" 
+                            alt="Diagrama de Arquitectura de Software"
+                        >
+                        <div class="card-body p-4 text-start">
+                            <h3 class="fs-5 fw-bold mb-2">Arquitectura de Software</h3>
+                            <p class="text-secondary mb-3">
+                                Diseño de patrones y modelos para sistemas empresariales robustos.
+                            </p>
+                            <a
+                                href="file.html"
+                                class="text-decoration-none text-blue-600 fw-medium"
+                            >
+                                Ver Proyectos →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="card h-100 shadow border-0 transition">
+                        <img 
+                            src="https://images.unsplash.com/photo-1542831371-29b0f74f9713?fit=crop&w=600&h=300&q=80" 
+                            class="card-img-top-custom" 
+                            alt="Código y Gráficos de Machine Learning"
+                        >
+                        <div class="card-body p-4 text-start">
+                            <h3 class="fs-5 fw-bold mb-2">Machine Learning</h3>
+                            <p class="text-secondary mb-3">
+                                Implementación de modelos predictivos con Python y frameworks avanzados.
+                            </p>
+                            <a
+                                href="file.html"
+                                class="text-decoration-none text-blue-600 fw-medium"
+                            >
+                                Ver Proyectos →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="card h-100 shadow border-0 transition">
+                        <img 
+                            src="https://images.unsplash.com/photo-1549298305-6a56e6d1c817?fit=crop&w=600&h=300&q=80" 
+                            class="card-img-top-custom" 
+                            alt="Libros y Estudio de Idiomas"
+                        >
+                        <div class="card-body p-4 text-start">
+                            <h3 class="fs-5 fw-bold mb-2">Habilidades de Comunicación</h3>
+                            <p class="text-secondary mb-3">
+                                Dominio del idioma Inglés esencial para documentación técnica y colaboración global.
+                            </p>
+                            <a
+                                href="file.html"
+                                class="text-decoration-none text-blue-600 fw-medium"
+                            >
+                                Ver Trabajos →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <a 
+                href="portafolio.html" 
+                class="btn btn-outline-dark rounded-pill fw-medium px-5 py-3 mt-5"
+            >
+                Ver Portafolio Completo
+            </a>
+        </div>
+    </section>
+
+    <section
         id="contacto-cta"
-        class="py-5 bg-gray-100 text-center border-top border-gray-200"
+        class="py-5 bg-dark text-white text-center border-top border-gray-200"
     >
         <div class="container py-5 mx-auto" style="max-width: 800px;">
-            <h2 class="display-6 fw-semibold mb-3">¿Quieres saber más?</h2>
-            <p class="text-secondary mb-4">
-                Contactame.
+            <h2 class="display-6 fw-semibold mb-3">¿Tienes un proyecto en mente?</h2>
+            <p class="mb-4" style="color: #ccc;">
+                Me encantaría aplicar mis habilidades para crear soluciones tecnológicas innovadoras. Contáctame y hablemos de tu idea.
             </p>
             <a
                 href="contacto.html"
-                class="btn btn-black btn-lg rounded-pill fw-medium px-5 py-3"
+                class="btn btn-black btn-lg rounded-pill fw-medium px-5 py-3 bg-white text-dark border-white"
             >
-                Aqui
+                Contactar Ahora
             </a>
         </div>
     </section>
