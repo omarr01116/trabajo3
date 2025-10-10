@@ -8,7 +8,7 @@
     <style>
         /* Estilos base */
         .bg-gray-50 { background-color: #f9fafb; }
-        .text-blue-600 { color: #2563eb; } /* Color de acento moderno */
+        .text-blue-600 { color: #2563eb; }
         .btn-black { 
             background-color: #000; 
             border-color: #000;
@@ -34,27 +34,27 @@
 
         /* Contenedor para las imágenes de las tarjetas de curso */
         .card-img-top-custom {
-            height: 150px; /* Altura fija para todas las imágenes */
-            object-fit: cover; /* Recorte inteligente */
+            height: 150px;
+            object-fit: cover;
             width: 100%;
-            border-radius: 0.25rem 0.25rem 0 0; /* Bordes superiores redondeados */
+            border-radius: 0.25rem 0.25rem 0 0;
         }
 
         /* =================================================================
-           🌟 HERO SECTION: FONDO GEOMÉTRICO FUNCIONAL Y COLORES JUGADOS
+           🌟 HERO SECTION: FONDO LOCAL (fondoPrincipal.jpg)
            ================================================================= */
         .hero-section {
-            /* Imagen de fondo ABSTRACTA / GEOMÉTRICA (Functional URL) */
-            background-image: url('https://images.unsplash.com/photo-1579546929518-9e396f0ab87b?q=80&w=1920&fit=crop');
+            /* IMAGEN DE FONDO LOCAL */
+            background-image: url('imagen/fondoPrincipal.jpg');
             background-size: cover;
             background-position: center;
             position: relative;
-            color: white; /* Texto blanco sobre fondo oscuro */
+            color: white; 
             padding-top: 6rem;
             padding-bottom: 6rem;
         }
         
-        /* Overlay oscuro para mejorar la legibilidad del texto */
+        /* Overlay oscuro para la legibilidad */
         .hero-section::before {
             content: '';
             position: absolute;
@@ -62,25 +62,79 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.75); /* 75% de opacidad negra para máxima legibilidad */
+            background: rgba(0, 0, 0, 0.7); /* 70% de opacidad negra */
             z-index: 1;
         }
 
-        /* Asegura que el contenido esté por encima del overlay */
         .hero-section > .container {
             position: relative;
             z-index: 2;
         }
 
-        /* Ajuste del color del nombre para que JUEGUE con el fondo (Verde Neón) */
+        /* Color de acento neón para el nombre */
         .hero-section h1 span {
             color: #00ff66; /* Verde Neón brillante */
-            text-shadow: 0 0 10px rgba(0, 255, 102, 0.5); /* Efecto de brillo sutil */
+            text-shadow: 0 0 10px rgba(0, 255, 102, 0.5); 
         }
         
         /* =================================================================
-            RESPONSIVIDAD
+           SECCIÓN DE FORTALEZAS: FONDO LOCAL (fondo2.jpg)
+           ================================================================= */
+        #habilidades {
+            background-image: url('imagen/fondo2.jpg');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            color: white;
+        }
+
+        #habilidades::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8); /* Overlay más oscuro para texto blanco */
+            z-index: 1;
+        }
+
+        #habilidades > .container {
+            position: relative;
+            z-index: 2;
+        }
+        
+        #habilidades h2, #habilidades p, #habilidades h3 {
+            color: white !important;
+        }
+        
+        /* =================================================================
+           ANIMACIÓN DE MÁQUINA DE ESCRIBIR (TYPING EFFECT)
+           ================================================================= */
+        /* Contenedor del texto animado */
+        .typing-container {
+            display: inline-block;
+            overflow: hidden; /* Oculta el texto que aún no se ha "escrito" */
+            white-space: nowrap; /* Mantiene todo en una línea */
+        }
+
+        /* Cursor que parpadea */
+        .typing-cursor {
+            border-right: 0.15em solid #00ff66; /* Línea que simula el cursor */
+            animation: 
+                blink-caret 0.75s step-end infinite;
+        }
+
+        /* Keyframes para el parpadeo del cursor */
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: #00ff66; }
+        }
+
+        /* =================================================================
+            RESPONSIVIDAD (Manteniendo los ajustes anteriores)
             ================================================================= */
+        /* ... (Tu media query se mantiene igual) ... */
 
         /* 1. Estilo por defecto para el título principal (Móvil) */
         .hero-section h1.display-3 {
@@ -163,7 +217,7 @@
                 
                 <div class="col-md-9 text-center text-md-start mx-auto">
                     <h1 class="display-3 fw-bolder lh-sm mb-4"> 
-                        Ingeniero de Sistemas 
+                        <span id="typed-text" class="typing-container"></span>
                         <br class="d-none d-md-block" />
                         <span class="fw-bolder">| Omar Quispe</span>
                     </h1>
@@ -191,40 +245,40 @@
         </div>
     </header>
 
-    <section id="habilidades" class="py-5 bg-white text-center">
+    <section id="habilidades" class="py-5 text-center">
         <div class="container py-5">
             <h2 class="display-6 fw-semibold mb-3">Mis Fortalezas</h2>
-            <p class="text-secondary mb-5 mx-auto" style="max-width: 700px;">
+            <p class="mb-5 mx-auto" style="max-width: 700px;">
                 Mi formación se enfoca en resolver problemas complejos de manera eficiente, aplicando tecnologías modernas y metodologías ágiles.
             </p>
 
             <div class="row row-cols-1 row-cols-md-3 g-4">
                 
                 <div class="col">
-                    <div class="p-4 rounded-4 h-100 bg-gray-50 transition shadow-sm">
-                        <div class="fs-1 mb-3 text-blue-600">🌐</div>
+                    <div class="p-4 rounded-4 h-100 bg-black bg-opacity-75 transition shadow-lg">
+                        <div class="fs-1 mb-3 text-white">🌐</div>
                         <h3 class="fs-5 fw-bold mb-2">Desarrollo Web Full-Stack</h3>
-                        <p class="text-secondary">
+                        <p>
                             Dominio de JavaScript (React), Python y bases de datos para construir aplicaciones robustas y escalables.
                         </p>
                     </div>
                 </div>
 
                 <div class="col">
-                    <div class="p-4 rounded-4 h-100 bg-gray-50 transition shadow-sm">
-                        <div class="fs-1 mb-3 text-blue-600">🔬</div>
+                    <div class="p-4 rounded-4 h-100 bg-black bg-opacity-75 transition shadow-lg">
+                        <div class="fs-1 mb-3 text-white">🔬</div>
                         <h3 class="fs-5 fw-bold mb-2">Data Science & ML</h3>
-                        <p class="text-secondary">
+                        <p>
                             Experiencia en la implementación de modelos de Machine Learning para optimizar procesos y tomar decisiones basadas en datos.
                         </p>
                     </div>
                 </div>
 
                 <div class="col">
-                    <div class="p-4 rounded-4 h-100 bg-gray-50 transition shadow-sm">
-                        <div class="fs-1 mb-3 text-blue-600">🏗️</div>
+                    <div class="p-4 rounded-4 h-100 bg-black bg-opacity-75 transition shadow-lg">
+                        <div class="fs-1 mb-3 text-white">🏗️</div>
                         <h3 class="fs-5 fw-bold mb-2">Arquitectura y Nube</h3>
-                        <p class="text-secondary">
+                        <p>
                             Diseño de sistemas modulares y eficientes, enfocados en la mantenibilidad y despliegue en plataformas en la nube.
                         </p>
                     </div>
@@ -340,5 +394,32 @@
     </section>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const textToType = "Ingeniero de Sistemas";
+        const element = document.getElementById('typed-text');
+        let index = 0;
+        let isTyping = true;
+        
+        // Añade el cursor de CSS al inicio
+        element.innerHTML = '<span class="typing-cursor"></span>';
+        const cursor = element.querySelector('.typing-cursor');
+
+        function typeText() {
+            if (index < textToType.length) {
+                // Inserta la letra antes del cursor
+                element.insertBefore(document.createTextNode(textToType.charAt(index)), cursor);
+                index++;
+                setTimeout(typeText, 70); // Velocidad de escritura
+            } else {
+                // Detiene la animación del cursor después de terminar de escribir
+                cursor.style.animation = 'none';
+                cursor.style.borderRight = 'none';
+            }
+        }
+
+        // Inicia la animación al cargar la página
+        setTimeout(typeText, 500); // Pequeño retraso para que se note la entrada
+    </script>
 </body>
 </html>
