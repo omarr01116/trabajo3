@@ -40,7 +40,6 @@ function detectType(name) {
     const ext = name.split(".").pop().toLowerCase();
     if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) return "image";
     if (ext === "pdf") return "pdf";
-    // Documentos de Office que requieren el visor de Google Docs
     if (["ppt", "pptx", "doc", "docx", "xls", "xlsx"].includes(ext)) return "document";
     return "other";
 }
@@ -60,17 +59,12 @@ function clearEstado() {
 }
 
 /**
- * CODIFICACIÓN CRÍTICA: Codifica una ruta para Supabase Storage, 
- * procesando cada segmento (carpeta/archivo) individualmente.
+ * Codifica una ruta para Supabase Storage,
+ * procesando cada segmento individualmente.
  */
 function getPathForStorage(path) {
-    // 1. Divide la ruta en segmentos (curso, semana, archivo)
     const segments = path.split('/');
-    
-    // 2. Codifica cada segmento individualmente (esto maneja los espacios)
     const encodedSegments = segments.map(segment => encodeURIComponent(segment));
-    
-    // 3. Reúne los segmentos con el separador original '/'
     return encodedSegments.join('/');
 }
 
@@ -78,9 +72,7 @@ function getPathForStorage(path) {
 // 🔹 Funciones de Inicialización y Autenticación
 // =================================================================
 
-/**
- * Verifica la sesión con Supabase y protege la ruta.
- */
+/** Verifica la sesión con Supabase y protege la ruta. */
 async function checkAuthAndInit() {
     const { data: { session } } = await supabase.auth.getSession();
 
@@ -98,13 +90,12 @@ async function checkAuthAndInit() {
 
     roleDisplay.textContent = role.toUpperCase();
 
-    cargarArchivos();
+    await cargarArchivos(); // ✅ Hacemos la carga inicial síncrona
     uploadForm.addEventListener('submit', handleUpload);
     cursoSelect.addEventListener('change', cargarArchivos);
     semanaSelect.addEventListener('change', cargarArchivos);
     logoutBtn.addEventListener('click', handleLogout);
 }
-
 
 // =================================================================
 // 🔹 Cargar Archivos (Renderizado de tabla)
@@ -118,7 +109,6 @@ async function cargarArchivos() {
     fileListBody.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-secondary font-semibold">Cargando...</td></tr>`;
 
     try {
-        // .list NO NECESITA CODIFICACIÓN de folderPath
         const { data, error } = await supabase.storage
             .from(BUCKET_NAME)
             .list(folderPath, { limit: 100 });
@@ -134,19 +124,13 @@ async function cargarArchivos() {
                 const row = fileListBody.insertRow();
                 row.className = 'border-t hover:bg-light transition';
 
-                // Columna Nombre del Archivo
                 const nameCell = row.insertCell();
                 nameCell.className = 'py-3 px-4 text-sm text-primary font-medium break-words';
-                
-                // Escapamos solo comillas simples para el onclick
                 const safeFileName = archivo.name.replace(/'/g, "\\'");
                 nameCell.innerHTML = `<button onclick="openPreview('${safeFileName}')" class="btn btn-link p-0 text-decoration-none text-start">${archivo.name}</button>`;
 
-                // Columna Acciones (Restricción por Rol)
                 const actionsCell = row.insertCell();
                 actionsCell.className = 'py-3 px-4 text-center d-flex justify-content-center align-items-center';
-
-                // Escapamos fullPath y fileName para pasar a handleEdit/handleDelete de forma segura
                 const safeFullPath = fullPath.replace(/'/g, "\\'");
 
                 actionsCell.innerHTML = `
@@ -176,20 +160,20 @@ async function cargarArchivos() {
 }
 
 // =================================================================
-// 🔹 Subir archivo (Restricción de rol a admin/usuario)
+// 🔹 Subir archivo
 // =================================================================
 async function handleUpload(e) {
     e.preventDefault();
     const file = fileInput.files[0];
     if (!file) return setEstado("⚠️ Selecciona un archivo primero", true);
     
-    if (role !== 'admin' && role !== 'usuario') return setEstado("⚠️ Debes tener un rol válido para subir archivos.", true);
+    if (role !== 'admin' && role !== 'usuario') 
+        return setEstado("⚠️ Debes tener un rol válido para subir archivos.", true);
 
     setEstado("⏳ Subiendo...");
     const curso = cursoSelect.value;
     const semana = semanaSelect.value;
-    // .upload NO NECESITA CODIFICACIÓN de filePath
-    const filePath = `${curso}/${semana}/${file.name}`; 
+    const filePath = `${curso}/${semana}/${file.name.trim()}`; // ✅ Evita espacios al final
 
     try {
         const { error } = await supabase.storage
@@ -208,30 +192,22 @@ async function handleUpload(e) {
 }
 
 // =================================================================
-// 🔹 Renombrar archivo (Solo admin) - ROBUSTO (Mover)
+// 🔹 Renombrar archivo (solo admin)
 // =================================================================
 async function handleEdit(oldFullPath, oldFileName) {
     if (role !== "admin") return setEstado("⚠️ Solo el admin puede editar nombres.", true);
 
     const newName = prompt(`Renombrando "${oldFileName}".\nIngresa el nuevo nombre del archivo (incluye la extensión):`);
-
-    if (!newName || newName.trim() === '' || newName.trim() === oldFileName) {
-        return; 
-    }
+    if (!newName || newName.trim() === '' || newName.trim() === oldFileName) return;
+    if (newName.includes('/')) return setEstado("⚠️ El nombre no puede contener '/'", true); // ✅ Previene rutas rotas
     
     setEstado("⏳ Renombrando...");
-    
-    // 1. Limpieza y Decodificación (eliminar doble codificación)
     const safeOldPath = oldFullPath.replace(/\\'/g, "'"); 
-    const fullyDecodedPath = decodeURIComponent(safeOldPath); // Ruta antigua LIMPIA (con espacios)
-
-    // 2. Reconstrucción de la nueva ruta (a partir de la ruta LIMPIA)
+    const fullyDecodedPath = decodeURIComponent(safeOldPath);
     const pathParts = fullyDecodedPath.split('/');
-    pathParts.pop(); // Elimina el nombre del archivo antiguo
-    pathParts.push(newName.trim()); // Agrega el nuevo nombre
-    const newFullPath = pathParts.join('/'); // Ruta nueva LIMPIA (con espacios)
-
-    // 3. Codificación Única: Ambas rutas se codifican una sola vez aquí
+    pathParts.pop();
+    pathParts.push(newName.trim());
+    const newFullPath = pathParts.join('/');
     const encodedOldPath = getPathForStorage(fullyDecodedPath);
     const encodedNewPath = getPathForStorage(newFullPath);
 
@@ -245,57 +221,47 @@ async function handleEdit(oldFullPath, oldFileName) {
         setEstado(`✏️ Archivo renombrado a: ${newName.trim()}`);
         cargarArchivos();
     } catch (err) {
-        const errorMsg = err.message || "Error desconocido";
-        setEstado(`❌ Error al renombrar archivo: ${errorMsg}`, true);
+        setEstado(`❌ Error al renombrar archivo: ${err.message || "Error desconocido"}`, true);
         console.error("Error al renombrar archivo:", err);
     }
 }
 
 // =================================================================
-// 🔹 Borrar archivo (solo admin) - ROBUSTO (Eliminar)
+// 🔹 Borrar archivo (solo admin)
 // =================================================================
 async function handleDelete(fullPath) {
     if (role !== "admin") return setEstado("⚠️ Solo el admin puede eliminar archivos.", true);
 
-    // 1. Limpiamos las comillas escapadas que vienen del onclick
     const safeFullPath = fullPath.replace(/\\'/g, "'"); 
-    
-    // CRÍTICO: Decodificamos la ruta para obtener el formato limpio (con espacios)
     const fullyDecodedPath = decodeURIComponent(safeFullPath);
-
     const fileName = fullyDecodedPath.split('/').pop();
     const confirmed = confirm(`¿Eliminar ${fileName}?`);
     if (!confirmed) return;
 
     setEstado("⏳ Eliminando...");
-    
-    // 2. Aplicamos la codificación única y robusta a la ruta LIMPIA
     const encodedPath = getPathForStorage(fullyDecodedPath);
 
     try {
         const { error } = await supabase.storage
             .from(BUCKET_NAME)
-            .remove([encodedPath]); // .remove espera un array de paths codificados
+            .remove([encodedPath]); 
 
         if (error) throw error;
 
         setEstado("🗑️ Archivo eliminado correctamente");
         cargarArchivos();
     } catch (err) {
-        const errorMsg = err.message || "Error desconocido";
-        setEstado(`❌ Error al eliminar archivo: ${errorMsg}`, true);
+        setEstado(`❌ Error al eliminar archivo: ${err.message || "Error desconocido"}`, true);
         console.error("Error al eliminar archivo:", err);
     }
 }
 
 // =================================================================
-// 🔹 Vista previa (Corregida para alineación de Bootstrap)
+// 🔹 Vista previa
 // =================================================================
 function openPreview(fileName) {
     const curso = cursoSelect.value;
     const semana = semanaSelect.value;
-    
-    // getPublicUrl es la única que necesita una ruta codificada
     const encodedFileName = encodeURIComponent(fileName);
 
     const { data: publicData } = supabase.storage
@@ -305,55 +271,31 @@ function openPreview(fileName) {
     const publicUrl = publicData?.publicUrl || null;
     const type = detectType(fileName);
 
-    if (!publicUrl) {
-        setEstado("⚠️ No se pudo obtener la URL pública del archivo", true);
-        return;
-    }
+    if (!publicUrl) return setEstado("⚠️ No se pudo obtener la URL pública del archivo", true);
 
-    // Limpiar antes de configurar el nuevo contenido
     previewContent.innerHTML = ''; 
-
-    // Configurar el Modal
-    if (previewFileNameSpan) {
-        previewFileNameSpan.textContent = fileName;
-    }
-    
+    if (previewFileNameSpan) previewFileNameSpan.textContent = fileName;
     previewLink.href = publicUrl;
     
     let contentHTML;
     
     if (type === "image") {
         contentHTML = `<div class="w-100 h-100 d-flex justify-content-center align-items-center">
-            <img 
-                src="${publicUrl}" 
-                alt="${fileName}" 
-                class="img-fluid" 
-                style="max-height: 100%; max-width: 100%; object-fit: contain;"
-            >
+            <img src="${publicUrl}" alt="${fileName}" class="img-fluid" style="max-height: 100%; max-width: 100%; object-fit: contain;">
         </div>`;
     } else if (type === "pdf" || type === "document") {
-        
         let iframeSrc = publicUrl;
-        if (type === "document") {
-            // Usar el visor de Google Docs para documentos de Office
-            iframeSrc = `https://docs.google.com/gview?url=${encodeURIComponent(publicUrl)}&embedded=true`;
-        }
+        if (type === "document") iframeSrc = `https://docs.google.com/gview?url=${encodeURIComponent(publicUrl)}&embedded=true`;
 
         contentHTML = `
             <div class="w-100 h-100 d-flex flex-column">
-                <iframe 
-                    src="${iframeSrc}" 
-                    title="Vista previa ${type}" 
-                    class="w-100 border-0"
-                    style="flex-grow: 1; height: 100%;" 
-                ></iframe>
+                <iframe src="${iframeSrc}" title="Vista previa ${type}" class="w-100 border-0" style="flex-grow: 1; height: 100%;"></iframe>
                 <div class="text-center p-2 bg-light w-100 flex-shrink-0 border-top">
-                    <small class="text-muted">Si la previsualización falla, use el botón "Abrir en nueva pestaña" para descargar/ver.</small>
+                    <small class="text-muted">Si la previsualización falla, use el botón "Abrir en nueva pestaña".</small>
                 </div>
-            </div>
-        `;
+            </div>`;
     } else {
-        contentHTML = `<p class="text-center text-muted p-5">No se puede previsualizar este tipo de archivo. Descárguelo o ábralo en una nueva pestaña.</p>`;
+        contentHTML = `<p class="text-center text-muted p-5">No se puede previsualizar este tipo de archivo.</p>`;
     }
     
     previewContent.innerHTML = contentHTML;
@@ -376,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAuthAndInit();
 });
 
-// Exponer funciones al scope global (necesario para onclick en el HTML generado)
+// Exponer funciones al scope global (para los onclick)
 window.openPreview = openPreview;
 window.handleDelete = handleDelete;
 window.handleEdit = handleEdit;
