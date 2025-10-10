@@ -70,12 +70,89 @@ function getPathForStorage(path) {
 
 
 // =================================================================
+// 🔹 Funciones de Carga de Archivos (Definidas antes de ser llamadas)
+// =================================================================
+
+/**
+ * Carga los archivos del Storage para la ruta seleccionada.
+ */
+async function cargarArchivos() {
+    // Verificaciones básicas
+    if (!cursoSelect || !semanaSelect || !fileListBody) {
+        console.error("❌ Elementos DOM de selección/lista no encontrados.");
+        setEstado("❌ Error de inicialización del DOM para los selectores/lista.", true);
+        return;
+    }
+    
+    setEstado("⏳ Cargando archivos...");
+    
+    const curso = urlCourse || cursoSelect.value;
+    const semana = urlWeek || semanaSelect.value;
+    
+    const folderPath = `${curso}/${semana}`;
+    
+    fileListBody.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-secondary font-semibold">Cargando ${curso} - ${semana}...</td></tr>`;
+
+    try {
+        const { data, error } = await supabaseClient.storage
+            .from(BUCKET_NAME)
+            .list(getPathForStorage(folderPath), { limit: 100 }); 
+
+        if (error) throw error;
+        
+        fileListBody.innerHTML = ''; 
+
+        if (data && data.length > 0) {
+            data.forEach(archivo => {
+                 const fullPath = `${folderPath}/${archivo.name}`; 
+                
+                const row = fileListBody.insertRow();
+                row.className = 'border-t hover:bg-light transition';
+
+                const nameCell = row.insertCell();
+                nameCell.className = 'py-3 px-4 text-sm text-primary font-medium break-words';
+                nameCell.innerHTML = `<button class="btn btn-link p-0 text-decoration-none text-start btn-action btn-action-view" data-path="${fullPath}">${archivo.name}</button>`;
+
+                const actionsCell = row.insertCell();
+                actionsCell.className = 'py-3 px-4 text-center d-flex justify-content-center align-items-center';
+
+                actionsCell.innerHTML = `
+                    <button class="btn btn-sm btn-primary rounded-pill font-medium me-2 btn-action btn-action-view" data-path="${fullPath}">Ver</button>
+                    
+                    ${role === 'admin' ? 
+                        `<button class="btn btn-sm btn-warning rounded-pill font-medium me-2 btn-action btn-action-edit" data-path="${fullPath}" data-filename="${archivo.name}">Editar</button>` 
+                        : ''
+                    }
+
+                    ${role === 'admin' || role === 'usuario' ? 
+                        `<button class="btn btn-sm btn-danger rounded-pill font-medium btn-action btn-action-delete" data-path="${fullPath}">Borrar</button>` 
+                        : ''
+                    }
+                `;
+            });
+            clearEstado();
+        } else {
+            setEstado(`📭 Sin archivos en ${curso} - ${semana}`);
+            fileListBody.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-secondary font-semibold">📭 No hay archivos en este curso/semana</td></tr>`;
+        }
+    } catch (err) {
+        console.error("Error al cargar archivos (Storage List):", err);
+        if (err.status === 403 || err.message.includes("Policy")) {
+            setEstado("🚫 Permiso denegado por políticas RLS. Revisa tus políticas de SELECT.", true);
+        } else {
+            setEstado(`❌ Error al obtener archivos: ${err.message}`, true);
+        }
+    }
+}
+
+
+// =================================================================
 // 🔹 Funciones de Inicialización y Autenticación (ORDEN CORREGIDO)
 // =================================================================
 
 /**
  * Lee los parámetros de la URL y ajusta la interfaz de usuario.
- * (MOVIDA A ESTA POSICIÓN PARA RESOLVER EL ReferenceError)
+ * (MOVIDA A ESTA POSICIÓN: DEBE ESTAR ANTES de checkAuthAndInit)
  */
 function checkUrlParams() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -174,81 +251,6 @@ async function checkAuthAndInit() {
 
 
 // =================================================================
-// 🔹 Cargar Archivos (SELECT)
-// =================================================================
-async function cargarArchivos() {
-    // Verificaciones básicas
-    if (!cursoSelect || !semanaSelect || !fileListBody) {
-        console.error("❌ Elementos DOM de selección/lista no encontrados.");
-        setEstado("❌ Error de inicialización del DOM para los selectores/lista.", true);
-        return;
-    }
-    
-    setEstado("⏳ Cargando archivos...");
-    
-    const curso = urlCourse || cursoSelect.value;
-    const semana = urlWeek || semanaSelect.value;
-    
-    const folderPath = `${curso}/${semana}`;
-    
-    fileListBody.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-secondary font-semibold">Cargando ${curso} - ${semana}...</td></tr>`;
-
-    try {
-        const { data, error } = await supabaseClient.storage
-            .from(BUCKET_NAME)
-            .list(getPathForStorage(folderPath), { limit: 100 }); 
-
-        if (error) throw error;
-        
-        fileListBody.innerHTML = ''; 
-
-        if (data && data.length > 0) {
-            // ... (Lógica de renderizado de la tabla) ...
-            data.forEach(archivo => {
-                 const fullPath = `${folderPath}/${archivo.name}`; 
-                
-                const row = fileListBody.insertRow();
-                row.className = 'border-t hover:bg-light transition';
-
-                const nameCell = row.insertCell();
-                nameCell.className = 'py-3 px-4 text-sm text-primary font-medium break-words';
-                nameCell.innerHTML = `<button class="btn btn-link p-0 text-decoration-none text-start btn-action btn-action-view" data-path="${fullPath}">${archivo.name}</button>`;
-
-                const actionsCell = row.insertCell();
-                actionsCell.className = 'py-3 px-4 text-center d-flex justify-content-center align-items-center';
-
-                actionsCell.innerHTML = `
-                    <button class="btn btn-sm btn-primary rounded-pill font-medium me-2 btn-action btn-action-view" data-path="${fullPath}">Ver</button>
-                    
-                    ${role === 'admin' ? 
-                        `<button class="btn btn-sm btn-warning rounded-pill font-medium me-2 btn-action btn-action-edit" data-path="${fullPath}" data-filename="${archivo.name}">Editar</button>` 
-                        : ''
-                    }
-
-                    ${role === 'admin' || role === 'usuario' ? 
-                        `<button class="btn btn-sm btn-danger rounded-pill font-medium btn-action btn-action-delete" data-path="${fullPath}">Borrar</button>` 
-                        : ''
-                    }
-                `;
-            });
-            clearEstado();
-        } else {
-            setEstado(`📭 Sin archivos en ${curso} - ${semana}`);
-            fileListBody.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-secondary font-semibold">📭 No hay archivos en este curso/semana</td></tr>`;
-        }
-    } catch (err) {
-        console.error("Error al cargar archivos (Storage List):", err);
-        // Si el error es de permiso (403), puedes mostrar un mensaje específico
-        if (err.status === 403 || err.message.includes("Policy")) {
-            setEstado("🚫 Permiso denegado por políticas RLS. Revisa tus políticas de SELECT.", true);
-        } else {
-            setEstado(`❌ Error al obtener archivos: ${err.message}`, true);
-        }
-    }
-}
-
-
-// =================================================================
 // 🔹 Subir archivo (INSERT)
 // =================================================================
 async function handleUpload(e) {
@@ -283,4 +285,164 @@ async function handleUpload(e) {
 }
 
 
-// ... (El resto de las funciones: handleActionClick, handleEdit, handleDelete, openPreview, handleLogout, y el listener DOMContentLoaded permanecen IGUAL) ...
+// =================================================================
+// 🔹 Escucha de Acciones (Descarga/Eliminación/Edición/Vista previa)
+// =================================================================
+
+function handleActionClick(e) {
+    const button = e.target.closest('.btn-action');
+    if (!button) return;
+    
+    const fullPath = button.getAttribute('data-path');
+    const fileName = button.getAttribute('data-filename');
+
+    // Descodificamos el path para el uso interno (prompts, confirmaciones)
+    const fullyDecodedPath = decodeURIComponent(fullPath || '');
+
+    if (button.classList.contains('btn-action-view')) {
+        openPreview(fullyDecodedPath.split('/').pop());
+
+    } else if (button.classList.contains('btn-action-edit')) {
+        handleEdit(fullyDecodedPath, fileName);
+
+    } else if (button.classList.contains('btn-action-delete')) {
+        if (confirm(`¿Eliminar ${fullyDecodedPath.split('/').pop()}?`)) {
+            handleDelete(fullyDecodedPath);
+        }
+    }
+}
+
+
+// =================================================================
+// 🔹 Renombrar archivo (MOVE)
+// =================================================================
+async function handleEdit(oldFullPath, oldFileName) {
+    // Aquí puedes añadir una verificación más flexible para el rol si es necesario.
+    if (role !== "admin") return setEstado("⚠️ Solo el admin puede editar nombres.", true);
+
+    const newName = prompt(`Renombrando "${oldFileName}".\nIngresa el nuevo nombre del archivo (incluye la extensión):`);
+    if (!newName || newName.trim() === '' || newName.trim() === oldFileName) return;
+    if (newName.includes('/')) return setEstado("⚠️ El nombre no puede contener '/'", true); 
+    
+    setEstado("⏳ Renombrando...");
+    
+    const pathParts = oldFullPath.split('/');
+    pathParts.pop(); 
+    pathParts.push(newName.trim());
+    
+    const newFullPath = pathParts.join('/');
+    
+    const encodedOldPath = getPathForStorage(oldFullPath);
+    const encodedNewPath = getPathForStorage(newFullPath);
+
+    try {
+        const { error } = await supabaseClient.storage
+            .from(BUCKET_NAME)
+            .move(encodedOldPath, encodedNewPath); 
+
+        if (error) throw error;
+
+        setEstado(`✏️ Archivo renombrado a: ${newName.trim()}`);
+        cargarArchivos();
+    } catch (err) {
+        setEstado(`❌ Error al renombrar archivo: ${err.message || "Error desconocido"}`, true);
+        console.error("Error al renombrar archivo:", err);
+    }
+}
+
+// =================================================================
+// 🔹 Borrar archivo (DELETE)
+// =================================================================
+async function handleDelete(fullPath) {
+    // Permitir a usuarios y admin eliminar, ya que la política de storage de Supabase
+    // debería proteger para que solo puedan eliminar los que subieron (user_id = auth.uid())
+    if (role !== "admin" && role !== "usuario") return setEstado("⚠️ No tienes permiso para eliminar.", true);
+
+    setEstado("⏳ Eliminando...");
+    
+    const encodedPath = getPathForStorage(fullPath);
+
+    try {
+        const { error } = await supabaseClient.storage
+            .from(BUCKET_NAME)
+            .remove([encodedPath]);
+
+        if (error) {
+            if (error.message.includes("permission") || error.message.includes("not authorized")) {
+                throw new Error("🚫 No tienes permiso para eliminar este archivo (solo el que subió o un admin).");
+            }
+            throw error;
+        }
+
+        setEstado("🗑️ Archivo eliminado correctamente");
+        cargarArchivos();
+    } catch (err) {
+        console.error("Error al eliminar archivo:", err);
+        setEstado(`❌ Error al eliminar archivo: ${err.message}`, true);
+    }
+}
+
+// =================================================================
+// 🔹 Vista previa
+// =================================================================
+function openPreview(fileName) {
+    const curso = urlCourse || cursoSelect.value;
+    const semana = urlWeek || semanaSelect.value;
+    
+    const encodedFileName = encodeURIComponent(fileName); 
+    const folderPathEncoded = getPathForStorage(`${curso}/${semana}`);
+
+    const { data: publicData } = supabaseClient.storage
+        .from(BUCKET_NAME)
+        .getPublicUrl(`${folderPathEncoded}/${encodedFileName}`);
+
+    const publicUrl = publicData?.publicUrl || null;
+    const type = detectType(fileName);
+
+    if (!publicUrl) return setEstado("⚠️ No se pudo obtener la URL pública del archivo", true);
+
+    previewContent.innerHTML = ''; 
+    if (previewFileNameSpan) previewFileNameSpan.textContent = fileName;
+    previewLink.href = publicUrl;
+    
+    let contentHTML;
+    
+    if (type === "image") {
+        contentHTML = `<div class="w-100 h-100 d-flex justify-content-center align-items-center">
+            <img src="${publicUrl}" alt="${fileName}" class="img-fluid" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+        </div>`;
+    } else if (type === "pdf" || type === "document") {
+        let iframeSrc = publicUrl;
+        if (type === "document") iframeSrc = `https://docs.google.com/gview?url=${encodeURIComponent(publicUrl)}&embedded=true`;
+
+        contentHTML = `
+            <div class="w-100 h-100 d-flex flex-column">
+                <iframe src="${iframeSrc}" title="Vista previa ${type}" class="w-100 border-0" style="flex-grow: 1; height: 100%;"></iframe>
+                <div class="text-center p-2 bg-light w-100 flex-shrink-0 border-top">
+                    <small class="text-muted">Si la previsualización falla, use el botón "Abrir en nueva pestaña".</small>
+                </div>
+            </div>`;
+    } else {
+        contentHTML = `<p class="text-center text-muted p-5">No se puede previsualizar este tipo de archivo.</p>`;
+    }
+    
+    previewContent.innerHTML = contentHTML;
+    previewModal.show();
+}
+
+// =================================================================
+// 🔹 Logout
+// =================================================================
+async function handleLogout() {
+    await supabaseClient.auth.signOut();
+    localStorage.clear();
+    window.location.href = LOGIN_URL; 
+}
+
+
+// =================================================================
+// 🔹 Inicialización
+// =================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    checkAuthAndInit();
+});
