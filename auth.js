@@ -14,10 +14,11 @@ const GITHUB_REDIRECT = "https://omarr01116.github.io/trabajo/login.html"; // Tu
 // =================================================================
 // 🔹 Inicialización de Supabase
 // =================================================================
-// ⭐ CORRECCIÓN APLICADA: Usamos window.supabase para acceder a la librería.
+// ⭐ ESTA ES LA LÍNEA QUE DEBES CORREGIR ⭐
+// Tienes: const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// DEBE SER: 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const redirectTo = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? LOCAL_REDIRECT : GITHUB_REDIRECT;
-
 
 // =================================================================
 // 🔹 Variables de Estado (Manejo de DOM y Loading)
