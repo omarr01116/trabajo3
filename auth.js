@@ -4,8 +4,6 @@
 // 🚨 CONFIGURACIÓN SEGURA - VALORES INSERTADOS
 // =================================================================
 const SUPABASE_URL = 'https://bazwwhwjruwgyfomyttp.supabase.co'; 
-
-// 🎯 CLAVE PÚBLICA (ANON KEY): SEGURA PARA EL FRONTEND.
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhend3aHdqcnV3Z3lmb215dHRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxNjA1NTAsImV4cCI6MjA3MzczNjU1MH0.RzpCKpYV-GqNIhTklsQtRqyiPCGGmVlUs7q_BeBHxUo'; 
 
 // 🔥 URL del Backend Local (Para obtener el rol)
@@ -13,7 +11,8 @@ const BACKEND_URL = "http://localhost:3000/api/login";
 
 // URLs para la redirección post-OAuth
 const LOCAL_REDIRECT = "http://127.0.0.1:5500/pagina/login.html"; 
-const GITHUB_REDIRECT = "https://omarr01116.github.io/trabajo/login.html"; 
+// ⭐ CORRECCIÓN DE RUTA: Cambiado de /trabajo/ a /trabajo3/
+const GITHUB_REDIRECT = "https://omarr01116.github.io/trabajo3/login.html"; 
 
 // =================================================================
 // 🔹 Inicialización de Supabase
@@ -71,7 +70,7 @@ async function getRoleAndRedirect(token) {
         const res = await fetch(BACKEND_URL, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${token}`, // Envía el token al backend
+                Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
             },
         });
@@ -99,21 +98,19 @@ async function getRoleAndRedirect(token) {
 
         const destino = destinos[rol] || "file.html";
         
-        // ⭐ CORRECCIÓN CLAVE: Evitar el bucle infinito
+        // ⭐ Lógica de Redirección Final (Evita el bucle al comparar la URL)
         const currentPage = window.location.pathname.split('/').pop().toLowerCase();
 
-        // Solo redirige si la página actual NO es la página de destino.
         if (currentPage !== destino.toLowerCase()) {
             console.log(`Redireccionando de ${currentPage} a ${destino}`);
             window.location.href = destino; 
         } else {
             console.log(`Ya estamos en la página de destino (${destino}). Deteniendo redirección.`);
-            setLoading(false); // Detener el loader si ya estamos en la página
+            setLoading(false);
         }
-        // FIN DE LA CORRECCIÓN
-
     } catch (err) {
         console.error("Error al obtener rol/redireccionar:", err);
+        // ⭐ NOTA: Si este error es un 404 (Fallo de Backend), la página se queda en login.html
         setErrorMsg(err.message || "Error de backend o red. Intenta de nuevo.");
         setLoading(false);
     }
@@ -131,7 +128,6 @@ async function handleSubmit(e) {
     const password = passwordInput.value;
 
     try {
-        // 1. Autenticación con Supabase
         const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
@@ -139,7 +135,6 @@ async function handleSubmit(e) {
 
         if (error || !data.session) throw new Error("Correo o contraseña incorrectos.");
 
-        // 2. Si es exitoso, llama al backend para obtener el rol
         await getRoleAndRedirect(data.session.access_token);
 
     } catch (err) {
@@ -171,22 +166,19 @@ async function handleGoogleLogin() {
 // =================================================================
 
 /**
- * Verifica la sesión solo si estamos en la página de login
+ * Verifica la sesión y limpia el hash de la URL.
+ * La redirección principal se maneja en el listener.
  */
 async function checkInitialSession() {
-    setLoading(true);
-    const {
-        data: { session },
-    } = await supabase.auth.getSession();
-    
-    const currentPage = window.location.pathname.split('/').pop().toLowerCase();
-    
-    // Solo redirigimos a la página de destino si estamos en la página de login
-    if (session && currentPage.includes('login.html')) {
-        console.log("✅ Sesión activa detectada. Redirigiendo desde login...");
-        await getRoleAndRedirect(session.access_token);
-    } else {
-        setLoading(false); // No hay sesión o no estamos en la página de login
+    // Si ya estamos en DOMContentLoaded y el hash no está presente, 
+    // solo establecemos el estado de carga y verificamos.
+    if (!window.location.hash.includes("access_token")) {
+        setLoading(true);
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+            setLoading(false);
+        }
     }
 
     // Limpiar el hash de la URL después del callback de Google.
@@ -199,31 +191,48 @@ async function checkInitialSession() {
 // ---------------------
 // 🔹 Escucha de cambios de Auth (Listener)
 // ---------------------
-let initialLoad = true; // Control para evitar el doble disparo del listener
+let hasRedirected = false; // Flag para asegurar la redirección única
 
 supabase.auth.onAuthStateChange((event, session) => {
-    const currentPage = window.location.pathname.split('/').pop().toLowerCase();
-    
-    // Solo actuamos si el evento es SIGNED_IN. 
-    // Usamos 'initialLoad' para que la redirección sólo ocurra una vez si no estamos en login.html
-    if (session && event === 'SIGNED_IN') {
-        if (currentPage.includes('login.html') || initialLoad) {
-             console.log(`✅ Evento Supabase: ${event}. Redirigiendo...`);
-             getRoleAndRedirect(session.access_token);
-        }
-        initialLoad = false; // Desactivar después de la primera carga/evento
+    // Solo actuamos si el evento es SIGNED_IN y NO hemos redirigido ya.
+    if (session && event === 'SIGNED_IN' && !hasRedirected) {
+        console.log(`✅ Evento Supabase: ${event} detectado. Iniciando redirección.`);
+        getRoleAndRedirect(session.access_token);
+        hasRedirected = true; // Bloquea futuras redirecciones por este evento/carga
     }
     
     if (event === 'SIGNED_OUT') {
         localStorage.removeItem("role");
         localStorage.removeItem("token");
+        hasRedirected = false;
     }
 });
 
-// ---------------------
-// 🔹 Inicialización de Eventos
-// ---------------------
+
+// =================================================================
+// 🔹 Inicialización de Eventos (¡CORRECCIÓN DE FLUJO CRÍTICA!)
+// =================================================================
 document.addEventListener('DOMContentLoaded', () => {
+    
+    // ⭐ LÓGICA CRÍTICA DE REDIRECCIÓN DE HASH (Máxima prioridad)
+    if (window.location.hash.includes("access_token")) {
+        try {
+            const params = new URLSearchParams(window.location.hash.substring(1));
+            const token = params.get('access_token');
+            
+            if (token) {
+                console.log("Token detectado en Hash. Forzando obtención de rol y redirección.");
+                // Llamamos a la lógica principal de redirección
+                getRoleAndRedirect(token); 
+                return; // 🛑 Detiene el resto de la ejecución para priorizar la redirección
+            }
+        } catch (e) {
+            console.error("Error al procesar hash de URL:", e);
+        }
+    }
+    // ⭐ FIN DE LÓGICA CRÍTICA
+
+    // Si no hay token en el hash, procedemos con la inicialización normal
     if (loginForm) loginForm.addEventListener('submit', handleSubmit);
     if (googleBtn) googleBtn.addEventListener('click', handleGoogleLogin);
     checkInitialSession();
