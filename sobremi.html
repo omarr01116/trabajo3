@@ -89,6 +89,46 @@
                 margin-bottom: 2rem; /* Reduce el margen inferior */
             }
         }
+        /* =================================================================
+            NUEVO ESTILO PARA LA IMAGEN DE PERFIL
+            ================================================================= */
+            .profile-img-container {
+                width: 200px; /* Tamaño más grande para desktop (antes 150px) */
+                height: 200px; /* Tamaño más grande para desktop (antes 150px) */
+                margin-left: auto;
+                margin-right: auto;
+                margin-bottom: 2.5rem; /* Separación del texto */
+                border-radius: 50%; /* Forma circular */
+                overflow: hidden; /* Recorta la imagen a la forma circular */
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+                transition: transform 0.3s ease-in-out; /* Animación al pasar el mouse */
+            }
+
+            .profile-img-container:hover {
+                transform: scale(1.05); /* Ligeramente más grande al pasar el mouse */
+            }
+
+            .profile-img-container img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover; /* Asegura que la imagen cubra el contenedor sin distorsionarse */
+                object-position: center; /* Centra la imagen si es recortada */
+            }
+
+
+            /* =================================================================
+            RESPONSIVIDAD: AJUSTES PARA DISPOSITIVOS MÓVILES (Max-width: 767px)
+            ================================================================= */
+            @media (max-width: 767.98px) {
+                /* ... (El resto de tus estilos responsivos) ... */
+                
+                /* Ajusta el tamaño de la imagen de perfil en móviles */
+                .profile-img-container {
+                    width: 150px; /* Más grande en móvil (antes 120px) */
+                    height: 150px; /* Más grande en móvil (antes 120px) */
+                    margin-bottom: 2rem; /* Reduce el margen inferior */
+                }
+            }
     </style>
 </head>
 <body class="bg-gray-50 font-sans text-gray-900">
@@ -110,7 +150,7 @@
                         <a class="nav-link" href="portafolio.html">Portafolio</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="sobremi.html">Sobre mí</a>
+                        <a class="nav-link" href="sobremi.html">Perfil</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="contacto.html">Contacto</a>
@@ -126,7 +166,7 @@
 
     <div class="pt-28 pb-5 px-3 min-vh-100">
         <div class="container-xl text-center">
-            <h1 class="display-4 fw-bold mb-4">Sobre mí</h1>
+            <h1 class="display-4 fw-bold mb-4">perfil</h1>
             <p class="text-gray-600 fs-5 mx-auto mb-5" style="max-width: 800px;">
                 Me llamo <span class="fw-semibold">Omar Quispe Ore</span>, soy estudiante de 
                 <span class="fw-semibold">Ingeniería de Sistemas</span> en Huancayo, Perú.  
@@ -144,8 +184,7 @@
                         <div class="fs-1 mb-3">🎓</div>
                         <h3 class="fs-5 fw-bold mb-2">Formación Académica</h3>
                         <p class="text-gray-600">
-                            Estudiante de Ingeniería de Sistemas en la Universidad Nacional del Centro del Perú.  
-                            Me especializo en análisis de datos, redes y desarrollo web.
+                            Estudiante de Ingeniería de Sistemas en la Universidad Peruana los Andes.  
                         </p>
                     </div>
                 </div>
@@ -155,8 +194,11 @@
                         <div class="fs-1 mb-3">💻</div>
                         <h3 class="fs-5 fw-bold mb-2">Habilidades Técnicas</h3>
                         <p class="text-gray-600">
-                            Manejo de lenguajes como JavaScript, Python y Java.  
-                            Experiencia con React, TailwindCSS, Firebase y control de versiones con Git.
+                          he adquirido conocimientos básicos en Java, HTML, CSS y Python, lo que me ha permitido comprender los fundamentos de la
+                          lógica de programación y la creación de interfaces web.
+                          Me gusta aprender nuevas tecnologías y mejorar mis habilidades día a día.
+                          Mi objetivo es seguir desarrollándome profesionalmente en el área de la programación, combinando la teoría con la práctica para crear 
+                          proyectos útiles y bien estructurados.
                         </p>
                     </div>
                 </div>
@@ -167,7 +209,7 @@
                         <h3 class="fs-5 fw-bold mb-2">Objetivos Profesionales</h3>
                         <p class="text-gray-600">
                             Mi meta es convertirme en un ingeniero de software capaz de liderar proyectos tecnológicos 
-                            que impulsen la innovación y el desarrollo digital en el país.
+                            que impulsen la innovación y el desarrollo digital.
                         </p>
                     </div>
                 </div>
@@ -176,8 +218,7 @@
             <div class="mt-5 pt-5 pb-20"> <h2 class="fs-3 fw-semibold mb-3">Intereses y Pasatiempos</h2>
                 <p class="text-gray-600 fs-5 mx-auto" style="max-width: 900px;">
                     Me interesa el mundo de la inteligencia artificial, la ciberseguridad y el diseño web.  
-                    En mi tiempo libre disfruto aprender nuevas tecnologías, jugar videojuegos y compartir ideas  
-                    con otros estudiantes apasionados por la programación.
+                    En mi tiempo libre disfruto jugar videojuegos, escuchar música, ver películas 
                 </p>
             </div>
         </div>
