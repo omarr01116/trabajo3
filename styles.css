@@ -1,161 +1,258 @@
 /* styles.css */
 
 /* =================================================================
-    ESTILOS BASE Y UTILITY (Diseño tipo Tailwind/Bootstrap)
-    ================================================================= */
-.pt-28 { 
-    padding-top: 7rem !important; 
-} /* Espacio para el navbar fijo */
-
-.bg-gray-50 { 
-    background-color: #f9fafb; 
+   CONFIGURACIÓN DEL FONDO GLOBAL Y BASE (Diseño Oscuro)
+   ================================================================= */
+body {
+    background-image: url('imagen/fondo principal.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-position: center;
+    font-family: sans-serif;
+    color: #fff; /* Texto blanco sobre fondo oscuro */
 }
 
-/* Colores de Alertas y Formulario (Mantenidos) */
-.border-pink-400 { 
-    border-color: #f472b6 !important; 
+/* Variables de Color de Marca */
+:root {
+    --color-magenta: #ff3399; /* Magenta vibrante */
+    --color-magenta-dark: #cc0077; 
+    --color-green: #00b300; /* Verde para éxito/descarga */
+    --color-dark-overlay: rgba(0, 0, 0, 0.85);
 }
-.bg-pink-50 { 
-    background-color: #fdf2f8 !important; 
-}
-.text-pink-600 { 
-    color: #db2777 !important; 
-}
-.border-green-400 { 
-    border-color: #4ade80 !important; 
-}
-.bg-green-50 { 
-    background-color: #f0fdf4 !important; 
-}
-.text-green-700 { 
-    color: #15803d !important; 
-}
-
-/* Estilos de gradiente para el botón de Subir (Mantenidos) */
-.btn-gradient-upload {
-    background: linear-gradient(to right, #fb923c, #db2777); /* Orange-400 to Pink-600 */
-    border: none;
-    color: white;
-    font-weight: 600;
-}
-.btn-gradient-upload:hover {
-    opacity: 0.9;
-    color: white;
-}
-
-/* --- */
 
 /* =================================================================
-    🌟 MEJORA ESTÉTICA: CONTENEDORES (CARDS) MODERNOS 
-    ================================================================= */
+   NAVBAR Y BOTONES DE ACCESO
+   ================================================================= */
 
-/* ⭐ NUEVO ESTILO: Contenedor base para el formulario y la tabla */
+/* Estilo para el logo */
+.navbar-brand img {
+    height: 40px; 
+    width: auto;
+}
+
+/* Enlaces de navegación */
+.navbar-light .navbar-nav .nav-link {
+    color: rgba(0,0,0,.55);
+}
+.navbar-light .navbar-nav .nav-link:hover,
+.navbar-light .navbar-nav .nav-link.active {
+    color: var(--color-magenta); 
+    font-weight: 600;
+}
+
+/* Badge de Rol (Color de acento Magenta) */
+.badge.bg-primary {
+    background-color: var(--color-magenta) !important; 
+    color: white;
+}
+
+/* Botón de Cerrar Sesión (Estilo Black/Dark) */
+.btn-danger {
+    background-color: #000 !important;
+    border-color: #000 !important;
+    transition: all 0.3s ease;
+    color: white;
+}
+.btn-danger:hover {
+    background-color: #333 !important;
+    border-color: #333 !important;
+}
+
+/* =================================================================
+   SECCIÓN PRINCIPAL: OVERLAY Y BASE DE CONTENIDO
+   ================================================================= */
+
+.pt-28 { 
+    padding-top: 7rem !important; 
+} 
+#main-files {
+    position: relative;
+    padding-top: 7rem !important; 
+    padding-bottom: 5rem !important; 
+    min-height: 100vh;
+}
+
+/* Overlay Oscuro */
+#main-files::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--color-dark-overlay); 
+    z-index: 1;
+}
+
+#main-files > .container-xl {
+    position: relative;
+    z-index: 2;
+    color: white; 
+}
+
+/* Título principal en Magenta */
+#main-files .display-6 {
+    color: var(--color-magenta); 
+}
+
+/* =================================================================
+   CONTENEDORES (CARDS) MODERNOS DE GESTIÓN (.management-card)
+   ================================================================= */
+
 .management-card {
-    /* Fondo limpio y blanco para modernizar el look */
-    background-color: white !important; 
-    /* Elimina el borde punteado y usa una sombra sutil pero definida */
-    border: 1px solid #e5e7eb; /* Gris muy claro para el marco */
-    border-radius: 1rem !important; /* Bordes redondeados más suaves */
-    /* Sombra elegante que da profundidad sin ser pesada */
+    background-color: rgba(255, 255, 255, 0.95) !important; /* Fondo casi blanco */
+    border: 1px solid #e5e7eb; 
+    border-radius: 1rem !important; 
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
     padding: 1.5rem !important;
     height: 100%;
+    color: #333; /* Texto oscuro */
+    transition: box-shadow 0.3s ease;
 }
-
-/* Aplicamos los estilos a los contenedores específicos del HTML */
-/* Debes actualizar tu HTML para reemplazar las clases bg-pink-50/border-pink-400 
-   y bg-green-50/border-green-400 por la clase 'management-card' */
-/* .col-md-4 form { /* Si no puedes cambiar el HTML, usa esto * / } */
-/* .col-md-8 > div { /* Si no puedes cambiar el HTML, usa esto * / } */
-
-
-/* ----------------- ESTILOS DEL FORMULARIO DE SUBIDA (Colores de acento) ----------------- */
-
-.management-card .text-pink-600 { 
-    color: #db2777 !important; 
+.management-card:hover {
+    /* Sombra más marcada al pasar el mouse */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
-
-/* Enfocamos los inputs al hacer click */
-.form-select:focus,
-.form-control:focus {
-    border-color: #db2777 !important; /* Un rosa profundo para el foco */
-    box-shadow: 0 0 0 0.2rem rgba(219, 39, 119, 0.25) !important;
-}
-
-
-/* ----------------- ESTILOS DE LA TABLA (Más limpio) ----------------- */
-
-/* Eliminamos bordes superiores innecesarios en la tabla */
-.table thead th {
-    border-top: none;
-}
-.table > :not(caption) > * > * {
-    padding: 0.85rem 1rem; /* Aumentamos un poco el padding de las celdas */
-}
-
-
-/* --- */
 
 /* =================================================================
-    🌟 MEJORA ESTÉTICA: BOTONES DE LA TABLA (Más largos y espaciados)
-    ================================================================= */
+   FORMULARIO DE SUBIDA (Acento Magenta)
+   ================================================================= */
 
-/* Aumentamos el ancho de los botones y la separación */
+/* Título del formulario */
+.text-pink-600 { 
+    color: var(--color-magenta) !important; 
+}
+
+/* Enfocamos los inputs y selects con Magenta */
+.form-select:focus,
+.form-control:focus {
+    border-color: var(--color-magenta) !important; 
+    box-shadow: 0 0 0 0.2rem rgba(255, 51, 153, 0.25) !important;
+}
+
+/* Botón de Subir (Gradient en tonos Magenta) */
+.btn-gradient-upload {
+    background: linear-gradient(to right, var(--color-magenta), var(--color-magenta-dark)); 
+    border: none;
+    color: white;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+.btn-gradient-upload:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(255, 51, 153, 0.4);
+    background: linear-gradient(to left, var(--color-magenta), var(--color-magenta-dark)); 
+    color: white;
+}
+
+/* Mensajes de Estado (Magenta Oscuro) */
+.text-pink-700 { color: var(--color-magenta-dark) !important; }
+
+/* =================================================================
+   LISTADO DE ARCHIVOS (TABLA)
+   ================================================================= */
+
+/* Título del listado (Verde para diferenciación) */
+.text-green-700 { color: var(--color-green) !important; }
+
+.table {
+    color: #333; 
+    margin-bottom: 0;
+}
+/* Separador sutil en el encabezado de la tabla */
+.table thead th {
+    border-top: none;
+    border-bottom: 2px solid #e5e7eb; 
+    background-color: #f8f9fa;
+    color: #6c757d;
+}
+/* Aumentamos el padding en las celdas */
+.table > :not(caption) > * > * {
+    padding: 0.85rem 1rem; 
+}
+/* Resaltado de fila al pasar el mouse con acento Magenta */
+.table-hover tbody tr:hover {
+    color: #333;
+    background-color: rgba(255, 51, 153, 0.05) !important; 
+}
+
+/* Estilos para los botones de acción en la tabla */
 .d-flex.justify-content-center .btn {
-    /* ⭐ Aumentamos el ancho para que se vean más modernos y largos */
     width: 90px; 
-    /* Padding más generoso para el estilo pill */
     padding: 0.35rem 0.75rem !important; 
     white-space: nowrap; 
     text-align: center;
     font-size: 0.8rem; 
-    /* Transición suave para los estados hover/focus */
     transition: all 0.2s ease-in-out; 
 }
 
-/* ⭐ Aseguramos la separación entre botones (ya lo tienes, solo confirmamos) */
-/* Esta regla es esencial si el JS no usa 'me-2' en todos, pero si usa 'me-2' en el JS, se puede omitir */
 .d-flex.justify-content-center > .btn {
-    margin-right: 0.5rem !important; /* Espacio uniforme entre todos */
+    margin-right: 0.5rem !important; 
 }
-/* Eliminamos el margen del último botón si está presente */
 .d-flex.justify-content-center > .btn:last-child {
     margin-right: 0 !important;
 }
 
+/* Botón Descargar (Verde) */
+.btn-action-download {
+    color: var(--color-green);
+}
+.btn-action-download:hover {
+    color: #008000;
+}
 
-/* --- */
+/* Botón Eliminar (Rojo/Error) */
+.btn-action-delete {
+    color: #dc3545;
+}
+.btn-action-delete:hover {
+    color: #a71d2a;
+}
 
 /* =================================================================
-    CORRECCIÓN 2: VISTA PREVIA (MODAL) - Se mantiene el tamaño y estructura
-    ================================================================= */
+   MODAL DE VISTA PREVIA
+   ================================================================= */
 
-/* Opcional: Truncar el título si es muy largo (Solo necesario si el nombre es kilométrico) */
-#previewModalLabel {
-    flex-shrink: 1; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    white-space: nowrap;
-    margin-right: 1rem; /* Asegura espacio con el enlace/botón */
-}
-
-
-/* Define el alto del cuerpo del modal (modal-body-content) */
 .modal-body-content { 
-    /* 90vh (modal-content) menos la altura del header (~58px, ajusta si tu header es diferente) */
+    /* Calcula el 90% del alto de la ventana menos el header del modal */
     height: calc(90vh - 58px); 
     overflow-y: auto; 
+    background-color: #f9fafb !important;
 }
 
-/* Asegura que el contenedor inyectado por JS ocupe el 100% del alto disponible */
 #preview-content,
 #preview-content > div {
     height: 100%;
     width: 100%;
 }
 
-/* Asegura que el iframe ocupe el 100% del contenedor padre (Flex item) */
 #preview-content iframe {
     width: 100%;
     height: 100%; 
+    border: none;
+}
+
+/* =================================================================
+   RESPONSIVIDAD
+   ================================================================= */
+
+@media (max-width: 991.98px) { 
+     #main-files {
+        padding-top: 5rem !important; 
+    }
+     .management-card {
+        padding: 1.5rem;
+    }
+    .navbar-collapse .d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+        margin-top: 1rem;
+    }
+    .navbar-collapse .d-flex .badge {
+        margin-bottom: 0.5rem;
+    }
+    .navbar-collapse .d-flex .btn-danger {
+         margin-left: 0 !important;
+    }
 }
