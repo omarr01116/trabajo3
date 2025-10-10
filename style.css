@@ -1,6 +1,8 @@
 /* styles.css */
 
-/* Estilos personalizados para replicar el diseño del componente React (Tailwind) */
+/* =================================================================
+   ESTILOS BASE Y UTILITY (Diseño tipo Tailwind/Bootstrap)
+   ================================================================= */
 .pt-28 { 
     padding-top: 7rem !important; 
 } /* Espacio para el navbar fijo */
@@ -9,7 +11,7 @@
     background-color: #f9fafb; 
 }
 
-/* Colores de Alertas y Formulario */
+/* Colores de Alertas y Formulario (Mantenidos) */
 .border-pink-400 { 
     border-color: #f472b6 !important; 
 }
@@ -29,20 +31,7 @@
     color: #15803d !important; 
 }
 
-/* ⭐ Estilos de la Vista Previa (Corrección de estética) */
-.modal-body-content { 
-    /* 90vh (modal-content) menos la altura del header (~58px) */
-    height: calc(90vh - 58px); 
-    overflow-y: auto; 
-}
-
-/* Asegura que el contenido interno (iframe/img) ocupe todo el espacio del body */
-#preview-content iframe {
-    width: 100%;
-    height: 100%;
-}
-
-/* Estilos de gradiente para el botón de Subir */
+/* Estilos de gradiente para el botón de Subir (Mantenidos) */
 .btn-gradient-upload {
     background: linear-gradient(to right, #fb923c, #db2777); /* Orange-400 to Pink-600 */
     border: none;
@@ -52,4 +41,52 @@
 .btn-gradient-upload:hover {
     opacity: 0.9;
     color: white;
+}
+
+---
+
+/* =================================================================
+   CORRECCIÓN 1: BOTONES UNIFORMES EN LA TABLA
+   ================================================================= */
+
+/* Targetea específicamente los botones dentro de la celda de acciones (d-flex) */
+.d-flex.justify-content-center .btn {
+    /* ⭐ Esto fuerza un ancho uniforme para todos los botones (Ver, Editar, Borrar) */
+    width: 65px; 
+    /* Esto asegura que la altura y el texto sean consistentes */
+    padding: 0.375rem 0.5rem !important; /* Ajuste de padding vertical y horizontal */
+    white-space: nowrap; /* Evita que el texto del botón se rompa en dos líneas */
+    text-align: center;
+}
+
+/* Ajuste fino para la celda que contiene los botones */
+.space-x-2 > .btn:not(:last-child) {
+    margin-right: 0.5rem;
+}
+
+---
+
+/* =================================================================
+   CORRECCIÓN 2: VISTA PREVIA (MODAL)
+   ================================================================= */
+
+/* 1. Define el alto del cuerpo del modal (modal-body-content) */
+.modal-body-content { 
+    /* 90vh (modal-content) menos la altura del header (~58px) */
+    height: calc(90vh - 58px); 
+    overflow-y: auto; 
+}
+
+/* 2. Asegura que el contenedor inyectado por JS ocupe el 100% del alto disponible */
+/* Esto es fundamental para que el Flexbox en file.js pueda dimensionar el iframe */
+#preview-content,
+#preview-content > div {
+    height: 100%;
+    width: 100%;
+}
+
+/* 3. Asegura que el iframe ocupe el 100% del contenedor padre (Flex item) */
+#preview-content iframe {
+    width: 100%;
+    height: 100%; 
 }
