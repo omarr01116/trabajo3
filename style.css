@@ -46,59 +46,115 @@
 /* --- */
 
 /* =================================================================
-    CORRECCIÓN 1: BOTONES UNIFORMES EN LA TABLA (AJUSTE DE TAMAÑO)
+    🌟 MEJORA ESTÉTICA: CONTENEDORES (CARDS) MODERNOS 
     ================================================================= */
 
-/* Targetea específicamente los botones dentro de la celda de acciones (d-flex) */
-.d-flex.justify-content-center .btn {
-    /* ⭐ Aumentamos el ancho. 75px es un buen balance para 3 botones. */
-    width: 75px; 
-    /* Esto asegura que la altura y el texto sean consistentes */
-    padding: 0.25rem 0.5rem !important; 
-    white-space: nowrap; 
-    text-align: center;
-    /* Para que el texto no se sienta aplastado */
-    font-size: 0.85rem; 
+/* ⭐ NUEVO ESTILO: Contenedor base para el formulario y la tabla */
+.management-card {
+    /* Fondo limpio y blanco para modernizar el look */
+    background-color: white !important; 
+    /* Elimina el borde punteado y usa una sombra sutil pero definida */
+    border: 1px solid #e5e7eb; /* Gris muy claro para el marco */
+    border-radius: 1rem !important; /* Bordes redondeados más suaves */
+    /* Sombra elegante que da profundidad sin ser pesada */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem !important;
+    height: 100%;
 }
 
-/* Ajuste de margen para la separación entre botones (opcional, si no usas 'me-2' en el JS) */
-.d-flex.justify-content-center > .btn:not(:last-child) {
-    margin-right: 0.5rem !important;
+/* Aplicamos los estilos a los contenedores específicos del HTML */
+/* Debes actualizar tu HTML para reemplazar las clases bg-pink-50/border-pink-400 
+   y bg-green-50/border-green-400 por la clase 'management-card' */
+/* .col-md-4 form { /* Si no puedes cambiar el HTML, usa esto * / } */
+/* .col-md-8 > div { /* Si no puedes cambiar el HTML, usa esto * / } */
+
+
+/* ----------------- ESTILOS DEL FORMULARIO DE SUBIDA (Colores de acento) ----------------- */
+
+.management-card .text-pink-600 { 
+    color: #db2777 !important; 
 }
+
+/* Enfocamos los inputs al hacer click */
+.form-select:focus,
+.form-control:focus {
+    border-color: #db2777 !important; /* Un rosa profundo para el foco */
+    box-shadow: 0 0 0 0.2rem rgba(219, 39, 119, 0.25) !important;
+}
+
+
+/* ----------------- ESTILOS DE LA TABLA (Más limpio) ----------------- */
+
+/* Eliminamos bordes superiores innecesarios en la tabla */
+.table thead th {
+    border-top: none;
+}
+.table > :not(caption) > * > * {
+    padding: 0.85rem 1rem; /* Aumentamos un poco el padding de las celdas */
+}
+
 
 /* --- */
 
 /* =================================================================
-    CORRECCIÓN 2: VISTA PREVIA (MODAL)
+    🌟 MEJORA ESTÉTICA: BOTONES DE LA TABLA (Más largos y espaciados)
     ================================================================= */
 
-/* 1. Opcional: Truncar el título si es muy largo (Solo necesario si el nombre es kilométrico) */
-#previewModalLabel {
-    /* Permite que el h5 se encoja para dar espacio a los botones */
-    flex-shrink: 1; 
-    /* Asegura que el texto se trunque con ... */
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    white-space: nowrap;
+/* Aumentamos el ancho de los botones y la separación */
+.d-flex.justify-content-center .btn {
+    /* ⭐ Aumentamos el ancho para que se vean más modernos y largos */
+    width: 90px; 
+    /* Padding más generoso para el estilo pill */
+    padding: 0.35rem 0.75rem !important; 
+    white-space: nowrap; 
+    text-align: center;
+    font-size: 0.8rem; 
+    /* Transición suave para los estados hover/focus */
+    transition: all 0.2s ease-in-out; 
+}
+
+/* ⭐ Aseguramos la separación entre botones (ya lo tienes, solo confirmamos) */
+/* Esta regla es esencial si el JS no usa 'me-2' en todos, pero si usa 'me-2' en el JS, se puede omitir */
+.d-flex.justify-content-center > .btn {
+    margin-right: 0.5rem !important; /* Espacio uniforme entre todos */
+}
+/* Eliminamos el margen del último botón si está presente */
+.d-flex.justify-content-center > .btn:last-child {
+    margin-right: 0 !important;
 }
 
 
-/* 2. Define el alto del cuerpo del modal (modal-body-content) */
+/* --- */
+
+/* =================================================================
+    CORRECCIÓN 2: VISTA PREVIA (MODAL) - Se mantiene el tamaño y estructura
+    ================================================================= */
+
+/* Opcional: Truncar el título si es muy largo (Solo necesario si el nombre es kilométrico) */
+#previewModalLabel {
+    flex-shrink: 1; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    white-space: nowrap;
+    margin-right: 1rem; /* Asegura espacio con el enlace/botón */
+}
+
+
+/* Define el alto del cuerpo del modal (modal-body-content) */
 .modal-body-content { 
     /* 90vh (modal-content) menos la altura del header (~58px, ajusta si tu header es diferente) */
     height: calc(90vh - 58px); 
     overflow-y: auto; 
 }
 
-/* 3. Asegura que el contenedor inyectado por JS ocupe el 100% del alto disponible */
-/* Esto es fundamental para que el Flexbox en file.js pueda dimensionar el iframe */
+/* Asegura que el contenedor inyectado por JS ocupe el 100% del alto disponible */
 #preview-content,
 #preview-content > div {
     height: 100%;
     width: 100%;
 }
 
-/* 4. Asegura que el iframe ocupe el 100% del contenedor padre (Flex item) */
+/* Asegura que el iframe ocupe el 100% del contenedor padre (Flex item) */
 #preview-content iframe {
     width: 100%;
     height: 100%; 
