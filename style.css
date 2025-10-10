@@ -46,24 +46,26 @@
 ---
 
 /* =================================================================
-   CORRECCIÓN 1: BOTONES UNIFORMES EN LA TABLA
+   CORRECCIÓN 1: BOTONES UNIFORMES EN LA TABLA (AJUSTE DE TAMAÑO)
    ================================================================= */
 
 /* Targetea específicamente los botones dentro de la celda de acciones (d-flex) */
 .d-flex.justify-content-center .btn {
-    /* ⭐ Esto fuerza un ancho uniforme para todos los botones (Ver, Editar, Borrar) */
-    width: 65px; 
-    /* Esto asegura que la altura y el texto sean consistentes */
-    padding: 0.375rem 0.5rem !important; /* Ajuste de padding vertical y horizontal */
-    white-space: nowrap; /* Evita que el texto del botón se rompa en dos líneas */
+    /* ⭐ Aumentamos el ancho. 75px es un buen balance para 3 botones. */
+    width: 75px; 
+    /* Esto asegura que la altura y el texto sean consistentes (clase btn-sm lo maneja, 
+       pero reforzamos si es necesario) */
+    padding: 0.25rem 0.5rem !important; 
+    white-space: nowrap; 
     text-align: center;
+    /* Para que el texto no se sienta aplastado */
+    font-size: 0.85rem; 
 }
 
-/* Ajuste fino para la celda que contiene los botones */
-.space-x-2 > .btn:not(:last-child) {
-    margin-right: 0.5rem;
+/* Ajuste de margen para la separación entre botones (opcional, si no usas 'me-2' en el JS) */
+.d-flex.justify-content-center > .btn:not(:last-child) {
+    margin-right: 0.5rem !important;
 }
-
 ---
 
 /* =================================================================
