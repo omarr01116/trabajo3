@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio - OMAR</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Estilos personalizados para replicar el look and feel de Tailwind/Wix */
+        .hero-section {
+            padding-top: 6rem; /* Ajuste para el navbar fijo */
+            padding-bottom: 6rem;
+        }
+        .bg-gray-100 { background-color: #f7f7f7; }
+        .bg-gray-50 { background-color: #f9fafb; }
+        .text-blue-600 { color: #4f46e5; }
+        .btn-black { 
+            background-color: #000; 
+            border-color: #000;
+            color: white; 
+        }
+        .btn-black:hover { 
+            background-color: #333; 
+            border-color: #333;
+            color: white; 
+        }
+    </style>
+</head>
+<body class="bg-light font-sans">
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+        <div class="container-xl px-4">
+            <a class="navbar-brand fs-4 fw-bold text-dark" href="index.html">OMAR</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 fw-medium">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="index.html">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="portafolio.html">Portafolio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="sobremi.html">Sobre mí</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contacto.html">Contacto</a>
+                    </li>
+                </ul>
+                
+                <a href="login.html" class="btn btn-primary rounded-pill px-4 py-2 ms-lg-3">
+                    Login
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <header
+        id="inicio"
+        class="hero-section d-flex flex-column align-items-center justify-content-center text-center bg-gray-100 min-vh-100"
+    >
+        <div class="container py-5 px-4">
+            <h1 class="display-3 fw-bold lh-sm mb-4" style="font-size: 4rem;">
+                Bienvenidos 
+                <br />
+            </h1>
+            <p class="fs-5 text-secondary mb-5 mx-auto" style="max-width: 600px;">
+                Mi nombre es Omar y son libres de explorar mi página web.
+            </p>
+            <a
+                href="sobremi.html"
+                class="btn btn-black btn-lg rounded-pill fw-medium px-5 py-3"
+            >
+                Sobre Mí →
+            </a>
+        </div>
+    </header>
+
+    <section
+        id="portafolio-section"
+        class="py-5 bg-white text-center border-top border-gray-200"
+    >
+        <div class="container py-5">
+            <h2 class="display-6 fw-semibold mb-3">Portafolio</h2>
+            <p class="text-secondary mb-5">
+                Cursos que llevo actualmente
+            </p>
+
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                
+                <div class="col">
+                    <div class="p-4 bg-gray-50 rounded-4 h-100 shadow-sm transition">
+                        <div class="fs-1 mb-3">💻</div>
+                        <h3 class="fs-5 fw-bold mb-2">Arquitectura de Software</h3>
+                        <p class="text-secondary mb-3">
+                            trabajos
+                        </p>
+                        <a
+                            href="file.html"
+                            class="text-decoration-none text-blue-600 fw-medium"
+                        >
+                            Ver Curso →
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="p-4 bg-gray-50 rounded-4 h-100 shadow-sm transition">
+                        <div class="fs-1 mb-3">🧠</div>
+                        <h3 class="fs-5 fw-bold mb-2">Machine Learning</h3>
+                        <p class="text-secondary mb-3">
+                            Algoritmos, redes neuronales y aplicaciones prácticas.
+                        </p>
+                        <a
+                            href="file.html"
+                            class="text-decoration-none text-blue-600 fw-medium"
+                        >
+                            Ver Curso →
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="p-4 bg-gray-50 rounded-4 h-100 shadow-sm transition">
+                        <div class="fs-1 mb-3">📚</div>
+                        <h3 class="fs-5 fw-bold mb-2">Inglés</h3>
+                        <p class="text-secondary mb-3">
+                            Prácticas de escritura, lectura, conversación y listening.
+                        </p>
+                        <a
+                            href="file.html"
+                            class="text-decoration-none text-blue-600 fw-medium"
+                        >
+                            Ver Curso →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section
+        id="contacto-cta"
+        class="py-5 bg-gray-100 text-center border-top border-gray-200"
+    >
+        <div class="container py-5 mx-auto" style="max-width: 800px;">
+            <h2 class="display-6 fw-semibold mb-3">¿Quieres saber más?</h2>
+            <p class="text-secondary mb-4">
+                Contactame.
+            </p>
+            <a
+                href="contacto.html"
+                class="btn btn-black btn-lg rounded-pill fw-medium px-5 py-3"
+            >
+                Aqui
+            </a>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

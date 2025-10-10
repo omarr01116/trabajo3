@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre Mí - OMAR</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Estilos personalizados para replicar el look and feel de Tailwind/React */
+        .pt-28 { padding-top: 7rem !important; } /* Espacio para el navbar fijo */
+        .pb-20 { padding-bottom: 5rem !important; }
+        .bg-gray-50 { background-color: #f9fafb; }
+        .text-gray-900 { color: #1f2937; }
+        .text-gray-600 { color: #4b5563; }
+        .bg-blue-600 { background-color: #2563eb !important; }
+        .hover\:bg-blue-700:hover { background-color: #1d4ed8 !important; }
+        .hover\:text-gray-600:hover { color: #4b5563 !important; }
+        
+        /* Efecto de sombra y transformación al pasar el mouse */
+        .card-hover-effect {
+            transition: all 0.3s ease;
+        }
+        .card-hover-effect:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-900">
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+        <div class="container-xl px-4">
+            <a class="navbar-brand fs-4 fw-bold text-dark" href="index.html">OMAR</a>
+            
+            <ul class="navbar-nav mx-auto mb-2 mb-lg-0 fw-medium">
+                <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
+                <li class="nav-item"><a class="nav-link" href="portafolio.html">Portafolio</a></li>
+                <li class="nav-item"><a class="nav-link active" aria-current="page" href="sobremi.html">Sobre mí</a></li>
+                <li class="nav-item"><a class="nav-link" href="contacto.html">Contacto</a></li>
+            </ul>
+            
+            <a
+                href="login.html"
+                class="btn bg-blue-600 text-white px-4 py-2 rounded-pill hover:bg-blue-700 text-sm transition"
+            >
+                Login
+            </a>
+        </div>
+    </nav>
+
+    <div class="pt-28 pb-5 px-3 min-vh-100">
+        <div class="container-xl text-center">
+            <h1 class="display-4 fw-bold mb-4">Sobre mí</h1>
+            <p class="text-gray-600 fs-5 mx-auto mb-5" style="max-width: 800px;">
+                Me llamo <span class="fw-semibold">Omar Quispe Ore</span>, soy estudiante de 
+                <span class="fw-semibold">Ingeniería de Sistemas</span> en Huancayo, Perú.  
+                Me apasiona la programación, la ciberseguridad y el desarrollo de proyectos tecnológicos 
+                que aporten soluciones reales a mi entorno.
+            </p>
+
+            <div class="row row-cols-1 row-cols-md-3 g-4 mx-auto" style="max-width: 1200px;">
+                
+                <div class="col">
+                    <div class="bg-white p-4 p-md-5 rounded-4 shadow card-hover-effect h-100">
+                        <div class="fs-1 mb-3">🎓</div>
+                        <h3 class="fs-5 fw-bold mb-2">Formación Académica</h3>
+                        <p class="text-gray-600">
+                            Estudiante de Ingeniería de Sistemas en la Universidad Nacional del Centro del Perú.  
+                            Me especializo en análisis de datos, redes y desarrollo web.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="bg-white p-4 p-md-5 rounded-4 shadow card-hover-effect h-100">
+                        <div class="fs-1 mb-3">💻</div>
+                        <h3 class="fs-5 fw-bold mb-2">Habilidades Técnicas</h3>
+                        <p class="text-gray-600">
+                            Manejo de lenguajes como JavaScript, Python y Java.  
+                            Experiencia con React, TailwindCSS, Firebase y control de versiones con Git.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="bg-white p-4 p-md-5 rounded-4 shadow card-hover-effect h-100">
+                        <div class="fs-1 mb-3">🚀</div>
+                        <h3 class="fs-5 fw-bold mb-2">Objetivos Profesionales</h3>
+                        <p class="text-gray-600">
+                            Mi meta es convertirme en un ingeniero de software capaz de liderar proyectos tecnológicos 
+                            que impulsen la innovación y el desarrollo digital en el país.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5 pt-5">
+                <h2 class="fs-3 fw-semibold mb-3">Intereses y Pasatiempos</h2>
+                <p class="text-gray-600 fs-5 mx-auto" style="max-width: 900px;">
+                    Me interesa el mundo de la inteligencia artificial, la ciberseguridad y el diseño web.  
+                    En mi tiempo libre disfruto aprender nuevas tecnologías, jugar videojuegos y compartir ideas 
+                    con otros estudiantes apasionados por la programación.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
