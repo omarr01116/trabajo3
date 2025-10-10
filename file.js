@@ -208,56 +208,48 @@ async function handleUpload(e) {
 }
 
 // =================================================================
-// 🔹 Renombrar archivo (Solo admin) - VERSIÓN FINAL CON DECODIFICACIÓN
+// 🔹 Renombrar archivo (Solo admin) - VERSIÓN FINAL CON DECODIFICACIÓN Y CODIFICACIÓN ÚNICA
 // =================================================================
 async function handleEdit(oldFullPath, oldFileName) {
-    if (role !== "admin") return setEstado("⚠️ Solo el admin puede editar nombres.", true);
+    if (role !== "admin") return setEstado("⚠️ Solo el admin puede editar nombres.", true);
 
-    const newName = prompt(`Renombrando "${oldFileName}".\nIngresa el nuevo nombre del archivo (incluye la extensión):`);
+    const newName = prompt(`Renombrando "${oldFileName}".\nIngresa el nuevo nombre del archivo (incluye la extensión):`);
 
-    if (!newName || newName.trim() === '' || newName.trim() === oldFileName) {
-        return; 
-    }
-    
-    setEstado("⏳ Renombrando...");
-    
-    // 1. Limpiamos las comillas escapadas del onclick
-    const safeOldPath = oldFullPath.replace(/\\'/g, "'"); 
+    if (!newName || newName.trim() === '' || newName.trim() === oldFileName) {
+        return; 
+    }
+    
+    setEstado("⏳ Renombrando...");
+    
+    // 1. Limpieza y Decodificación (eliminar doble codificación)
+    const safeOldPath = oldFullPath.replace(/\\'/g, "'"); 
+    const fullyDecodedPath = decodeURIComponent(safeOldPath); // Ruta antigua LIMPIA (con espacios)
 
-    // CRÍTICO: Decodificamos la ruta para obtener el formato limpio (con espacios),
-    // eliminando cualquier codificación previa de Supabase o JavaScript.
-    const fullyDecodedPath = decodeURIComponent(safeOldPath);
+    // 2. Reconstrucción de la nueva ruta (a partir de la ruta LIMPIA)
+    const pathParts = fullyDecodedPath.split('/');
+    pathParts.pop(); // Elimina el nombre del archivo antiguo
+    pathParts.push(newName.trim()); // Agrega el nuevo nombre
+    const newFullPath = pathParts.join('/'); // Ruta nueva LIMPIA (con espacios)
 
-    // 2. Separamos la ruta decodificada en partes
-    const pathParts = fullyDecodedPath.split('/');
-    
-    // 3. Reconstruimos la nueva ruta completa
-    // El último elemento es el nombre del archivo. Lo reemplazamos por el nuevo nombre.
-    pathParts.pop(); // Elimina el nombre del archivo antiguo
-    pathParts.push(newName.trim()); // Agrega el nuevo nombre del archivo
-    
-    // Reconstruimos la nueva ruta limpia (con espacios)
-    const newFullPath = pathParts.join('/'); 
+    // 3. Codificación Única: Ambas rutas se codifican una sola vez aquí
+    // Ambas son rutas limpias (con espacios), por lo que getPathForStorage las codifica una vez.
+    const encodedOldPath = getPathForStorage(fullyDecodedPath);
+    const encodedNewPath = getPathForStorage(newFullPath);
 
-    // 4. Aplicamos la codificación correcta por SEGMENTOS solo a las rutas LIMPIAS
-    // NOTA: Aquí usamos fullyDecodedPath para oldPath porque es la versión limpia.
-    const encodedOldPath = getPathForStorage(fullyDecodedPath);
-    const encodedNewPath = getPathForStorage(newFullPath);
+    try {
+        const { error } = await supabase.storage
+            .from(BUCKET_NAME)
+            .move(encodedOldPath, encodedNewPath); 
 
-    try {
-        const { error } = await supabase.storage
-            .from(BUCKET_NAME)
-            .move(encodedOldPath, encodedNewPath); 
+        if (error) throw error;
 
-        if (error) throw error;
-
-        setEstado(`✏️ Archivo renombrado a: ${newName.trim()}`);
-        cargarArchivos();
-    } catch (err) {
-        const errorMsg = err.message || "Error desconocido";
-        setEstado(`❌ Error al renombrar archivo: ${errorMsg}`, true);
-        console.error("Error al renombrar archivo:", err);
-    }
+        setEstado(`✏️ Archivo renombrado a: ${newName.trim()}`);
+        cargarArchivos();
+    } catch (err) {
+        const errorMsg = err.message || "Error desconocido";
+        setEstado(`❌ Error al renombrar archivo: ${errorMsg}`, true);
+        console.error("Error al renombrar archivo:", err);
+    }
 }
 // =================================================================
 // 🔹 Borrar archivo (solo admin)
