@@ -185,7 +185,7 @@ async function handleUpload(e) {
 }
 
 // =================================================================
-// 🔹 Renombrar archivo (Solo admin)
+// 🔹 Renombrar archivo (Solo admin) - CÓDIGO CORREGIDO
 // =================================================================
 async function handleEdit(oldFullPath, oldFileName) {
     if (role !== "admin") return setEstado("⚠️ Solo el admin puede editar nombres.", true);
@@ -198,12 +198,18 @@ async function handleEdit(oldFullPath, oldFileName) {
     
     setEstado("⏳ Renombrando...");
     
+    // 1. Crear la nueva ruta completa
     const newFullPath = oldFullPath.replace(oldFileName, newName.trim());
+
+    // 2. ⭐ APLICAR CODIFICACIÓN URI A AMBAS RUTAS ANTES DE MOVER ⭐
+    const encodedOldPath = encodeURIComponent(oldFullPath).replace(/%2F/g, '/');
+    const encodedNewPath = encodeURIComponent(newFullPath).replace(/%2F/g, '/');
 
     try {
         const { error } = await supabase.storage
             .from(BUCKET_NAME)
-            .move(oldFullPath, newFullPath); 
+            // Usamos las rutas codificadas
+            .move(encodedOldPath, encodedNewPath); 
 
         if (error) throw error;
 
