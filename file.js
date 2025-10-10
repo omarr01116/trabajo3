@@ -1,12 +1,20 @@
-// file.js - Lógica principal de la página de gestión de archivos
+// =================================================================
+// 🚨 CONFIGURACIÓN DE SUPABASE (REEMPLAZAR) 🚨
+// =================================================================
+const SUPABASE_URL = 'TU_URL_DE_PROYECTO_SUPABASE'; 
+const SUPABASE_ANON_KEY = 'TU_ANON_KEY_PUBLICA';
+const BUCKET_NAME = 'archivos'; 
+const LOGIN_URL = "./login.html"; 
 
-// NOTA: Las variables SUPABASE_URL, SUPABASE_ANON_KEY y la instancia 'supabase'
-// se asumen definidas en auth.js, que DEBE cargarse antes.
+// Inicializar el cliente Supabase
+const { createClient } = supabase;
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // =================================================================
-// 🔹 Variables de Estado (DOM Elements)
+// 🔹 Variables de Estado (DOM Elements & Globals)
 // =================================================================
 const uploadForm = document.getElementById('upload-form');
+const uploadControls = document.getElementById('upload-controls');
 const cursoSelect = document.getElementById('curso-select');
 const semanaSelect = document.getElementById('semana-select');
 const fileInput = document.getElementById('file-input');
@@ -14,28 +22,102 @@ const fileListBody = document.getElementById('file-list-body');
 const fileStatus = document.getElementById('file-status');
 const roleDisplay = document.getElementById('role-display');
 const logoutBtn = document.getElementById('logout-btn');
+const dynamicTitle = document.getElementById('dynamic-title');
 
 // Modal y elementos de previsualización
 const previewModal = new bootstrap.Modal(document.getElementById('previewModal'), {});
-const previewTitle = document.getElementById('previewModalLabel');
 const previewContent = document.getElementById('preview-content');
 const previewLink = document.getElementById('preview-link');
 const previewFileNameSpan = document.getElementById('preview-filename'); 
 
-// Estado de la sesión (se inicializa con localStorage)
+// Estado de la sesión
 let role = localStorage.getItem('role') || 'usuario';
+let urlCourse = null;
+let urlWeek = null;
 
-// Define la URL de redirección si no hay sesión
-const LOGIN_URL = "./login.html"; 
-
-// Nombre del bucket de Supabase Storage
-const BUCKET_NAME = 'archivos'; 
 
 // =================================================================
-// 🔹 Funciones de Utilidad y UI
+// 🔹 Funciones de Inicialización y Autenticación
 // =================================================================
 
-/** Detecta el tipo de archivo para la previsualización */
+/**
+ * Lee los parámetros de la URL y ajusta la interfaz de usuario.
+ */
+function checkUrlParams() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const course = urlParams.get('course');
+    const week = urlParams.get('week');
+    const headerManagement = document.getElementById('header-management');
+
+    if (course && week) {
+        // MODO NAVEGACIÓN (Viniendo de curso.html)
+        urlCourse = decodeURIComponent(course.replace(/\+/g, ' '));
+        urlWeek = decodeURIComponent(week.replace(/\+/g, ' '));
+        
+        // 1. Ocultar selectores de subida, ya que la carpeta es fija
+        uploadControls.style.display = 'none';
+
+        // 2. Insertar el título dinámico
+        dynamicTitle.textContent = `${urlCourse} - ${urlWeek}`;
+        
+        // 3. Crear y configurar el botón de Volver
+        const backBtn = document.createElement('button');
+        backBtn.textContent = `← Volver a Cursos`;
+        backBtn.className = 'btn btn-primary rounded-pill px-4 py-2 me-3 transition mb-3 mb-md-0';
+        backBtn.addEventListener('click', () => {
+            window.location.href = `curso.html?name=${encodeURIComponent(urlCourse)}`;
+        });
+        
+        // Mover el título a la derecha y añadir el botón a la izquierda
+        headerManagement.classList.remove('justify-content-start');
+        headerManagement.classList.add('justify-content-between');
+        headerManagement.prepend(backBtn);
+        
+    } else {
+        // MODO GESTIÓN GENERAL (Selectores quedan activos)
+        dynamicTitle.textContent = 'Gestión General de Archivos';
+    }
+}
+
+
+/** Verifica la sesión con Supabase, protege la ruta e inicializa listeners. */
+async function checkAuthAndInit() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    // 1. **PROTECCIÓN DE RUTA (LOGIN)**
+    if (!session) {
+        window.location.href = LOGIN_URL;
+        return; 
+    }
+    
+    // 2. **OBTENER ROL**
+    role = localStorage.getItem('role') || 'usuario'; 
+    if (role === 'invitado') {
+        window.location.href = './portafolio.html'; // Redirige a invitados
+        return;
+    }
+    roleDisplay.textContent = role.toUpperCase();
+
+    // 3. **INICIALIZACIÓN DE UI Y DATOS**
+    checkUrlParams(); 
+    await cargarArchivos(); 
+
+    // 4. **ASIGNAR LISTENERS**
+    uploadForm.addEventListener('submit', handleUpload);
+    document.addEventListener('click', handleActionClick); // Listener para Descarga/Eliminación/Ver
+    logoutBtn.addEventListener('click', handleLogout);
+
+    // Solo re-cargar la lista si se cambia el selector en MODO GESTIÓN GENERAL
+    if (!urlCourse && !urlWeek) {
+        cursoSelect.addEventListener('change', cargarArchivos);
+        semanaSelect.addEventListener('change', cargarArchivos);
+    }
+}
+
+// =================================================================
+// 🔹 Funciones de Utilidad
+// =================================================================
+
 function detectType(name) {
     const ext = name.split(".").pop().toLowerCase();
     if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) return "image";
@@ -44,74 +126,45 @@ function detectType(name) {
     return "other";
 }
 
-/** Muestra un mensaje de estado */
 function setEstado(msg, isError = false) {
     fileStatus.textContent = msg;
     fileStatus.classList.remove('d-none');
     fileStatus.classList.toggle('text-pink-700', !isError); 
-    fileStatus.classList.toggle('text-danger', isError);  
+    fileStatus.classList.toggle('text-danger', isError); 
 }
 
-/** Oculta el mensaje de estado */
 function clearEstado() {
     fileStatus.textContent = '';
     fileStatus.classList.add('d-none');
 }
 
-/**
- * Codifica una ruta para Supabase Storage,
- * procesando cada segmento individualmente.
- */
+/** Codifica una ruta para Supabase Storage */
 function getPathForStorage(path) {
     const segments = path.split('/');
+    // Solo codificar las partes del path, no el path entero de una vez
     const encodedSegments = segments.map(segment => encodeURIComponent(segment));
     return encodedSegments.join('/');
 }
 
-// =================================================================
-// 🔹 Funciones de Inicialización y Autenticación
-// =================================================================
-
-/** Verifica la sesión con Supabase y protege la ruta. */
-async function checkAuthAndInit() {
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (!session) {
-        window.location.href = LOGIN_URL;
-        return; 
-    }
-    
-    role = localStorage.getItem('role') || 'usuario';
-    
-    if (role === 'invitado') {
-        window.location.href = './portafolio.html';
-        return;
-    }
-
-    roleDisplay.textContent = role.toUpperCase();
-
-    await cargarArchivos(); // ✅ Hacemos la carga inicial síncrona
-    uploadForm.addEventListener('submit', handleUpload);
-    cursoSelect.addEventListener('change', cargarArchivos);
-    semanaSelect.addEventListener('change', cargarArchivos);
-    logoutBtn.addEventListener('click', handleLogout);
-}
 
 // =================================================================
-// 🔹 Cargar Archivos (Renderizado de tabla)
+// 🔹 Cargar Archivos (SELECT)
 // =================================================================
 async function cargarArchivos() {
     setEstado("⏳ Cargando archivos...");
-    const curso = cursoSelect.value;
-    const semana = semanaSelect.value;
+    
+    // USAR LAS VARIABLES DE URL SI ESTÁN DISPONIBLES
+    const curso = urlCourse || cursoSelect.value;
+    const semana = urlWeek || semanaSelect.value;
+    
     const folderPath = `${curso}/${semana}`;
     
-    fileListBody.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-secondary font-semibold">Cargando...</td></tr>`;
+    fileListBody.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-secondary font-semibold">Cargando ${curso} - ${semana}...</td></tr>`;
 
     try {
-        const { data, error } = await supabase.storage
+        const { data, error } = await supabaseClient.storage
             .from(BUCKET_NAME)
-            .list(folderPath, { limit: 100 });
+            .list(getPathForStorage(folderPath), { limit: 100 }); 
 
         if (error) throw error;
         
@@ -126,31 +179,29 @@ async function cargarArchivos() {
 
                 const nameCell = row.insertCell();
                 nameCell.className = 'py-3 px-4 text-sm text-primary font-medium break-words';
-                const safeFileName = archivo.name.replace(/'/g, "\\'");
-                nameCell.innerHTML = `<button onclick="openPreview('${safeFileName}')" class="btn btn-link p-0 text-decoration-none text-start">${archivo.name}</button>`;
+                // Usamos data-path para que el listener global lo capture
+                nameCell.innerHTML = `<button class="btn btn-link p-0 text-decoration-none text-start btn-action btn-action-view" data-path="${fullPath}">${archivo.name}</button>`;
 
                 const actionsCell = row.insertCell();
                 actionsCell.className = 'py-3 px-4 text-center d-flex justify-content-center align-items-center';
-                const safeFullPath = fullPath.replace(/'/g, "\\'");
 
                 actionsCell.innerHTML = `
-                    <button onclick="openPreview('${safeFileName}')" class="btn btn-sm btn-primary rounded-pill font-medium me-2">Ver</button>
+                    <button class="btn btn-sm btn-primary rounded-pill font-medium me-2 btn-action btn-action-view" data-path="${fullPath}">Ver</button>
                     
                     ${role === 'admin' ? 
-                        `<button onclick="handleEdit('${safeFullPath}', '${safeFileName}')" 
-                            class="btn btn-sm btn-warning rounded-pill font-medium me-2">Editar</button>` 
+                        `<button class="btn btn-sm btn-warning rounded-pill font-medium me-2 btn-action btn-action-edit" data-path="${fullPath}" data-filename="${archivo.name}">Editar</button>` 
                         : ''
                     }
 
-                    ${role === 'admin' ? 
-                        `<button onclick="handleDelete('${safeFullPath}')" class="btn btn-sm btn-danger rounded-pill font-medium">Borrar</button>` 
+                    ${role === 'admin' || role === 'usuario' ? 
+                        `<button class="btn btn-sm btn-danger rounded-pill font-medium btn-action btn-action-delete" data-path="${fullPath}">Borrar</button>` 
                         : ''
                     }
                 `;
             });
             clearEstado();
         } else {
-            setEstado("📭 Sin archivos en esta semana/curso");
+            setEstado(`📭 Sin archivos en ${curso} - ${semana}`);
             fileListBody.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-secondary font-semibold">📭 No hay archivos en este curso/semana</td></tr>`;
         }
     } catch (err) {
@@ -159,26 +210,26 @@ async function cargarArchivos() {
     }
 }
 
+
 // =================================================================
-// 🔹 Subir archivo
+// 🔹 Subir archivo (INSERT)
 // =================================================================
 async function handleUpload(e) {
     e.preventDefault();
     const file = fileInput.files[0];
     if (!file) return setEstado("⚠️ Selecciona un archivo primero", true);
     
-    if (role !== 'admin' && role !== 'usuario') 
-        return setEstado("⚠️ Debes tener un rol válido para subir archivos.", true);
-
     setEstado("⏳ Subiendo...");
-    const curso = cursoSelect.value;
-    const semana = semanaSelect.value;
-    const filePath = `${curso}/${semana}/${file.name.trim()}`; // ✅ Evita espacios al final
+    
+    // USAR LAS VARIABLES DE URL SI ESTÁN EN MODO NAVEGACIÓN
+    const curso = urlCourse || cursoSelect.value;
+    const semana = urlWeek || semanaSelect.value;
+    const filePath = `${curso}/${semana}/${file.name.trim()}`; 
 
     try {
-        const { error } = await supabase.storage
+        const { error } = await supabaseClient.storage
             .from(BUCKET_NAME)
-            .upload(filePath, file, { upsert: true });
+            .upload(getPathForStorage(filePath), file, { upsert: true });
 
         if (error) throw error;
 
@@ -191,28 +242,59 @@ async function handleUpload(e) {
     }
 }
 
+
 // =================================================================
-// 🔹 Renombrar archivo (solo admin)
+// 🔹 Escucha de Acciones (Descarga/Eliminación/Edición/Vista previa)
+// =================================================================
+
+function handleActionClick(e) {
+    const button = e.target.closest('.btn-action');
+    if (!button) return;
+    
+    const fullPath = button.getAttribute('data-path');
+    const fileName = button.getAttribute('data-filename');
+
+    // Descodificamos el path para el uso interno (prompts, confirmaciones)
+    const fullyDecodedPath = decodeURIComponent(fullPath || '');
+
+    if (button.classList.contains('btn-action-view')) {
+        openPreview(fullyDecodedPath.split('/').pop());
+
+    } else if (button.classList.contains('btn-action-edit')) {
+        handleEdit(fullyDecodedPath, fileName);
+
+    } else if (button.classList.contains('btn-action-delete')) {
+        if (confirm(`¿Eliminar ${fullyDecodedPath.split('/').pop()}?`)) {
+            handleDelete(fullyDecodedPath);
+        }
+    }
+}
+
+
+// =================================================================
+// 🔹 Renombrar archivo (MOVE)
 // =================================================================
 async function handleEdit(oldFullPath, oldFileName) {
+    // Aquí puedes añadir una verificación más flexible para el rol si es necesario.
     if (role !== "admin") return setEstado("⚠️ Solo el admin puede editar nombres.", true);
 
     const newName = prompt(`Renombrando "${oldFileName}".\nIngresa el nuevo nombre del archivo (incluye la extensión):`);
     if (!newName || newName.trim() === '' || newName.trim() === oldFileName) return;
-    if (newName.includes('/')) return setEstado("⚠️ El nombre no puede contener '/'", true); // ✅ Previene rutas rotas
+    if (newName.includes('/')) return setEstado("⚠️ El nombre no puede contener '/'", true); 
     
     setEstado("⏳ Renombrando...");
-    const safeOldPath = oldFullPath.replace(/\\'/g, "'"); 
-    const fullyDecodedPath = decodeURIComponent(safeOldPath);
-    const pathParts = fullyDecodedPath.split('/');
-    pathParts.pop();
+    
+    const pathParts = oldFullPath.split('/');
+    pathParts.pop(); 
     pathParts.push(newName.trim());
+    
     const newFullPath = pathParts.join('/');
-    const encodedOldPath = getPathForStorage(fullyDecodedPath);
+    
+    const encodedOldPath = getPathForStorage(oldFullPath);
     const encodedNewPath = getPathForStorage(newFullPath);
 
     try {
-        const { error } = await supabase.storage
+        const { error } = await supabaseClient.storage
             .from(BUCKET_NAME)
             .move(encodedOldPath, encodedNewPath); 
 
@@ -227,28 +309,25 @@ async function handleEdit(oldFullPath, oldFileName) {
 }
 
 // =================================================================
-// 🔹 Borrar archivo
+// 🔹 Borrar archivo (DELETE)
 // =================================================================
 async function handleDelete(fullPath) {
-    if (role !== "admin") return setEstado("⚠️ Solo el admin puede eliminar archivos.", true);
-
-    const safeFullPath = fullPath.replace(/\\'/g, "'"); 
-    const fullyDecodedPath = decodeURIComponent(safeFullPath);
-    const fileName = fullyDecodedPath.split('/').pop();
-    const confirmed = confirm(`¿Eliminar ${fileName}?`);
-    if (!confirmed) return;
+    // Permitir a usuarios y admin eliminar, ya que la política de storage de Supabase
+    // debería proteger para que solo puedan eliminar los que subieron (user_id = auth.uid())
+    if (role !== "admin" && role !== "usuario") return setEstado("⚠️ No tienes permiso para eliminar.", true);
 
     setEstado("⏳ Eliminando...");
-    const encodedPath = getPathForStorage(fullyDecodedPath);
+    
+    const encodedPath = getPathForStorage(fullPath);
 
     try {
-        const { error } = await supabase.storage
+        const { error } = await supabaseClient.storage
             .from(BUCKET_NAME)
             .remove([encodedPath]);
 
         if (error) {
             if (error.message.includes("permission") || error.message.includes("not authorized")) {
-                throw new Error("🚫 No tienes permiso para eliminar (verifica políticas DELETE en Supabase).");
+                throw new Error("🚫 No tienes permiso para eliminar este archivo (solo el que subió o un admin).");
             }
             throw error;
         }
@@ -265,13 +344,15 @@ async function handleDelete(fullPath) {
 // 🔹 Vista previa
 // =================================================================
 function openPreview(fileName) {
-    const curso = cursoSelect.value;
-    const semana = semanaSelect.value;
-    const encodedFileName = encodeURIComponent(fileName);
+    const curso = urlCourse || cursoSelect.value;
+    const semana = urlWeek || semanaSelect.value;
+    
+    const encodedFileName = encodeURIComponent(fileName); 
+    const folderPathEncoded = getPathForStorage(`${curso}/${semana}`);
 
-    const { data: publicData } = supabase.storage
+    const { data: publicData } = supabaseClient.storage
         .from(BUCKET_NAME)
-        .getPublicUrl(`${curso}/${semana}/${encodedFileName}`);
+        .getPublicUrl(`${folderPathEncoded}/${encodedFileName}`);
 
     const publicUrl = publicData?.publicUrl || null;
     const type = detectType(fileName);
@@ -311,10 +392,11 @@ function openPreview(fileName) {
 // 🔹 Logout
 // =================================================================
 async function handleLogout() {
-    await supabase.auth.signOut();
+    await supabaseClient.auth.signOut();
     localStorage.clear();
     window.location.href = LOGIN_URL; 
 }
+
 
 // =================================================================
 // 🔹 Inicialización
@@ -322,8 +404,3 @@ async function handleLogout() {
 document.addEventListener('DOMContentLoaded', () => {
     checkAuthAndInit();
 });
-
-// Exponer funciones al scope global (para los onclick)
-window.openPreview = openPreview;
-window.handleDelete = handleDelete;
-window.handleEdit = handleEdit;
