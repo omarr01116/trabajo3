@@ -227,7 +227,7 @@ async function handleEdit(oldFullPath, oldFileName) {
 }
 
 // =================================================================
-// 🔹 Borrar archivo (solo admin)
+// 🔹 Borrar archivo
 // =================================================================
 async function handleDelete(fullPath) {
     if (role !== "admin") return setEstado("⚠️ Solo el admin puede eliminar archivos.", true);
@@ -244,15 +244,20 @@ async function handleDelete(fullPath) {
     try {
         const { error } = await supabase.storage
             .from(BUCKET_NAME)
-            .remove([encodedPath]); 
+            .remove([encodedPath]);
 
-        if (error) throw error;
+        if (error) {
+            if (error.message.includes("permission") || error.message.includes("not authorized")) {
+                throw new Error("🚫 No tienes permiso para eliminar (verifica políticas DELETE en Supabase).");
+            }
+            throw error;
+        }
 
         setEstado("🗑️ Archivo eliminado correctamente");
         cargarArchivos();
     } catch (err) {
-        setEstado(`❌ Error al eliminar archivo: ${err.message || "Error desconocido"}`, true);
         console.error("Error al eliminar archivo:", err);
+        setEstado(`❌ Error al eliminar archivo: ${err.message}`, true);
     }
 }
 
