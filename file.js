@@ -60,15 +60,18 @@ function clearEstado() {
 }
 
 /**
- * CODIFICACIÓN CRÍTICA: Codifica una ruta para Supabase Storage.
- * Codifica caracteres especiales y espacios, pero deja las barras inclinadas ('/') sin codificar.
- * Esto es NECESARIO para que la API de Storage reconozca las carpetas.
+ * CODIFICACIÓN CRÍTICA: Codifica una ruta para Supabase Storage, 
+ * procesando cada segmento (carpeta/archivo) individualmente.
  */
 function getPathForStorage(path) {
-    // 1. Codifica la ruta completa (espacios a %20, / a %2F)
-    let encodedPath = encodeURIComponent(path);
-    // 2. Deshace la codificación de la barra inclinada ('%2F' a '/')
-    return encodedPath.replace(/%2F/g, '/');
+    // 1. Divide la ruta en segmentos (curso, semana, archivo)
+    const segments = path.split('/');
+    
+    // 2. Codifica cada segmento individualmente (esto maneja los espacios)
+    const encodedSegments = segments.map(segment => encodeURIComponent(segment));
+    
+    // 3. Reúne los segmentos con el separador original '/'
+    return encodedSegments.join('/');
 }
 
 // =================================================================
@@ -115,6 +118,7 @@ async function cargarArchivos() {
     fileListBody.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-secondary font-semibold">Cargando...</td></tr>`;
 
     try {
+        // .list NO NECESITA CODIFICACIÓN de folderPath
         const { data, error } = await supabase.storage
             .from(BUCKET_NAME)
             .list(folderPath, { limit: 100 });
@@ -184,6 +188,7 @@ async function handleUpload(e) {
     setEstado("⏳ Subiendo...");
     const curso = cursoSelect.value;
     const semana = semanaSelect.value;
+    // .upload NO NECESITA CODIFICACIÓN de filePath
     const filePath = `${curso}/${semana}/${file.name}`; 
 
     try {
@@ -223,7 +228,7 @@ async function handleEdit(oldFullPath, oldFileName) {
     // 2. Crear la nueva ruta completa
     const newFullPath = cleanOldFullPath.replace(cleanOldFileName, newName.trim());
 
-    // 3. Aplicamos la codificación robusta a ambas rutas para la API de Supabase
+    // 3. Aplicamos la codificación robusta por SEGMENTOS a ambas rutas
     const encodedOldPath = getPathForStorage(cleanOldFullPath);
     const encodedNewPath = getPathForStorage(newFullPath);
 
@@ -284,7 +289,7 @@ function openPreview(fileName) {
     const curso = cursoSelect.value;
     const semana = semanaSelect.value;
     
-    // CRÍTICO: El nombre del archivo debe codificarse para la URL pública si tiene espacios/caracteres especiales
+    // getPublicUrl es la única que necesita una ruta codificada
     const encodedFileName = encodeURIComponent(fileName);
 
     const { data: publicData } = supabase.storage
