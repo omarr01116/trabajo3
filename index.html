@@ -24,6 +24,51 @@
             border-color: #333;
             color: white; 
         }
+
+        /* =================================================================
+           🌟 AJUSTES DE RESPONSIVIDAD (MOBILE-FIRST) 
+           ================================================================= */
+
+        /* 1. Estilo por defecto para el título principal (Se aplica en móvil/small) */
+        /* Cambiamos a font-size relativo al viewport para mejor escalado */
+        .hero-section h1.display-3 {
+            font-size: 3rem !important; /* Más pequeño para móviles */
+            margin-top: 2rem; /* Separación debajo del nav */
+        }
+        
+        /* 2. Ajuste del padding del Hero en móvil */
+        .hero-section {
+            padding-top: 4rem;
+            padding-bottom: 4rem;
+        }
+        
+        /* 3. Ajuste de padding de las secciones en móvil */
+        #portafolio-section, #contacto-cta {
+            padding-top: 3rem !important;
+            padding-bottom: 3rem !important;
+        }
+
+
+        /* MEDIA QUERY: Escritorio y Tablet (min-width: 768px) */
+        @media (min-width: 768px) {
+            /* Restablece el padding del Hero para pantallas más grandes */
+            .hero-section {
+                padding-top: 6rem;
+                padding-bottom: 6rem;
+            }
+            
+            /* Restablece el padding de las secciones */
+            #portafolio-section, #contacto-cta {
+                padding-top: 5rem !important;
+                padding-bottom: 5rem !important;
+            }
+
+            /* Restablece el tamaño del título Display-3 para escritorio */
+            .hero-section h1.display-3 {
+                font-size: 4rem !important;
+                margin-top: 0;
+            }
+        }
     </style>
 </head>
 <body class="bg-light font-sans">
@@ -64,7 +109,7 @@
         class="hero-section d-flex flex-column align-items-center justify-content-center text-center bg-gray-100 min-vh-100"
     >
         <div class="container py-5 px-4">
-            <h1 class="display-3 fw-bold lh-sm mb-4" style="font-size: 4rem;">
+            <h1 class="display-3 fw-bold lh-sm mb-4"> 
                 Bienvenidos 
                 <br />
             </h1>
