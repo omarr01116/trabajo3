@@ -6,45 +6,126 @@
     <title>Iniciar Sesión - OMAR</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Estilos personalizados para replicar el look and feel de Tailwind/React */
-        .min-vh-100 { min-height: 100vh; }
-        .bg-gray-100 { background-color: #f3f4f6; }
-        .pt-20 { padding-top: 5rem !important; } /* Valor para Desktop */
-        .text-indigo-600 { color: #4f46e5 !important; }
-        .bg-indigo-600 { background-color: #4f46e5 !important; }
-        .hover\:bg-indigo-700:hover { background-color: #4338ca !important; }
-        .focus\:ring-indigo-500:focus {
-            box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
-            border-color: #6366f1;
+        /* =================================================================
+           CONFIGURACIÓN DEL FONDO GLOBAL Y BASE (Copiado de index.html)
+           ================================================================= */
+        body {
+            /* Establece fondoPrincipal.jpg como fondo de toda la página */
+            background-image: url('imagen/fondo principal.jpg');
+            background-size: cover;
+            background-attachment: fixed; /* Mantiene la imagen fija al hacer scroll */
+            background-repeat: no-repeat;
+            background-position: center;
+            font-family: sans-serif;
+            color: #fff; /* Asegura color de texto blanco por defecto en el body */
+        }
+        
+        /* Colores de acento y botones (Copiado de index.html) */
+        .text-blue-600 { color: #ff3399 !important; } /* Magenta vibrante */
+        .btn-black { 
+            background-color: #000; 
+            border-color: #000;
+            color: white; 
+            transition: all 0.3s ease;
+        }
+        .btn-black:hover { 
+            background-color: #333; 
+            border-color: #333;
+            color: white; 
+        }
+        
+        /* ESTILO PARA EL LOGO (Copiado de index.html) */
+        .navbar-brand img {
+            height: 40px; 
+            width: auto;
+        }
+
+        /* =================================================================
+           SECCIÓN DE LOGIN: Overlay y Estilos
+           ================================================================= */
+        
+        #main-login {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: 5rem; /* pt-20 */
+            padding-bottom: 2rem;
+        }
+
+        /* Overlay oscuro y fuerte para el login */
+        #main-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9); /* Opacidad muy fuerte para foco */
+            z-index: 1;
+        }
+
+        #main-login > .w-100 {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Card del formulario: Blanco translúcido para contraste */
+        #main-login .bg-white {
+            background-color: rgba(255, 255, 255, 0.98) !important; 
+        }
+
+        /* Estilos del Botón Principal (Entrar) */
+        .btn-main-login {
+            background-color: #ff3399 !important; /* Magenta vibrante */
+            border-color: #ff3399;
+            color: white; 
+            transition: background-color 0.2s ease;
+        }
+        .btn-main-login:hover {
+            background-color: #cc0077 !important; /* Magenta más oscuro */
+            border-color: #cc0077;
+        }
+        
+        /* Estilos de Focus de Inputs */
+        .form-control:focus {
+            border-color: #ff3399; /* Magenta en el borde */
+            box-shadow: 0 0 0 0.25rem rgba(255, 51, 153, 0.25); /* Sombra Magenta */
+        }
+        
+        /* Estilo para el botón de Google (lo mantenemos neutro, pero mejor integrado) */
+        .btn-outline-secondary {
+            border-color: #ccc;
+            color: #333;
+            transition: all 0.2s ease;
+        }
+        .btn-outline-secondary:hover {
+            background-color: #f0f0f0;
+            border-color: #aaa;
+            color: #333;
         }
 
         /* -----------------------------------------------------------------
-           RESPONSIVIDAD: AJUSTES PARA DISPOSITIVOS MÓVILES (Max-width: 767px)
+           RESPONSIVIDAD
            ----------------------------------------------------------------- */
         @media (max-width: 767.98px) {
-            /* 1. Reducir el padding superior para centrar el formulario mejor en móviles */
-            .pt-20 {
+            #main-login {
                 padding-top: 3rem !important; 
             }
-            
-            /* 2. Reducir el padding de la tarjeta del formulario en móvil */
             .p-md-5 {
                 padding: 1.5rem !important;
-            }
-            
-            /* 3. Asegurar que el contenedor principal use todo el ancho disponible */
-            .w-100 {
-                padding-left: 1rem;
-                padding-right: 1rem;
             }
         }
     </style>
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="font-sans">
 
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
         <div class="container-xl px-4">
-            <a class="navbar-brand fs-4 fw-bold text-dark" href="index.html">OMAR</a>
+            <a class="navbar-brand fs-4 fw-bold text-dark" href="index.html">
+                <img src="imagen/logo.png" alt="Logo de Omar" class="d-inline-block align-text-top">
+            </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -53,41 +134,41 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0 fw-medium">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="index.html">Inicio</a>
+                        <a class="nav-link" href="index.html">Inicio</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="portafolio.html">Portafolio</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="sobremi.html">Sobre mí</a>
+                        <a class="nav-link" href="sobremi.html">Perfil</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="contacto.html">Contacto</a>
                     </li>
                 </ul>
                 
-                <a href="login.html" class="btn btn-primary rounded-pill px-4 py-2 ms-lg-3">
+                <a href="login.html" class="btn btn-black rounded-pill px-4 py-2 ms-lg-3 active" aria-current="page">
                     Login
                 </a>
             </div>
         </div>
     </nav>
 
-    <div class="min-vh-100 d-flex justify-content-center align-items-center pt-20">
+    <div id="main-login" class="d-flex justify-content-center align-items-center">
         <div class="w-100" style="max-width: 440px;">
-            <div class="bg-white p-4 p-md-5 rounded-4 shadow-lg mt-5">
-                <h1 class="fs-3 fw-bold mb-4 text-center text-indigo-600">
+            <div class="bg-white p-4 p-md-5 rounded-4 shadow-lg">
+                <h1 class="fs-3 fw-bold mb-4 text-center text-blue-600">
                     Iniciar Sesión
                 </h1>
 
-                <form id="login-form" class="space-y-4">
+                <form id="login-form">
                     <div class="mb-3">
                         <input
                             id="email"
                             name="email"
                             type="email"
                             placeholder="Correo electrónico"
-                            class="form-control form-control-lg rounded-3 focus\:ring-indigo-500"
+                            class="form-control form-control-lg rounded-3"
                             required
                         />
                     </div>
@@ -97,7 +178,7 @@
                             name="password"
                             type="password"
                             placeholder="Contraseña"
-                            class="form-control form-control-lg rounded-3 focus\:ring-indigo-500"
+                            class="form-control form-control-lg rounded-3"
                             required
                         />
                     </div>
@@ -107,7 +188,7 @@
                     <button
                         id="submit-btn"
                         type="submit"
-                        class="w-100 btn text-white py-2 rounded-lg transition bg-indigo-600 hover:bg-indigo-700 fw-semibold"
+                        class="w-100 btn btn-main-login py-2 rounded-lg fw-semibold"
                     >
                         Entrar
                     </button>
@@ -116,7 +197,7 @@
                 <div class="mt-4 pt-2">
                     <button
                         id="google-login-btn"
-                        class="w-100 btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2 py-2 rounded-lg transition fw-semibold"
+                        class="w-100 btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2 py-2 rounded-lg fw-semibold"
                     >
                         <img
                             src="https://www.svgrepo.com/show/355037/google.svg"
@@ -133,6 +214,5 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
-    <script src="auth.js"></script>
-</body>
+    <script src="login.js"></script> </body>
 </html>
