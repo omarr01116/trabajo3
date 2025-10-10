@@ -1,22 +1,23 @@
-// auth.js
+// /pagina/auth.js (Frontend)
 
 // =================================================================
-// 🚨 CONFIGURACIÓN - ¡REEMPLAZA CON TUS VALORES REALES!
+// 🚨 CONFIGURACIÓN - ¡INSERTA TUS VALORES REALES AQUÍ!
 // =================================================================
-const SUPABASE_URL = 'https://TU_URL_DE_SUPABASE.supabase.co'; // Ejemplo: https://xyzabc.supabase.co
-const SUPABASE_ANON_KEY = 'TU_ANON_KEY'; // Tu clave anon
-const BACKEND_URL = "https://trabajo-backend.onrender.com/api/login"; // URL del backend para obtener el rol
+// 1. URL de Supabase
+const SUPABASE_URL = 'https://bazwwhwjruwgyfomyttp.supabase.co'; 
+// 2. CLAVE PÚBLICA (ANON KEY)
+const SUPABASE_ANON_KEY = 'TU_CLAVE_ANONIMA_REAL_AQUI'; // 🛑 ¡IMPORTANTE: ESTA NO ES LA SERVICE_ROLE KEY!
+// 3. URL del Backend Local
+const BACKEND_URL = "http://localhost:3000/api/login"; 
 
-// URLs para la redirección post-OAuth (Supabase necesita la URL base)
-const LOCAL_REDIRECT = "http://127.0.0.1:5500/pagina/login.html"; // O la que use tu Live Server
-const GITHUB_REDIRECT = "https://omarr01116.github.io/trabajo/login.html"; // Tu URL de GitHub Pages
+// URLs para la redirección post-OAuth
+const LOCAL_REDIRECT = "http://127.0.0.1:5500/pagina/login.html";
+const GITHUB_REDIRECT = "https://omarr01116.github.io/trabajo3/pagina/login.html"; // Ajustado a trabajo3
 
 // =================================================================
 // 🔹 Inicialización de Supabase
 // =================================================================
-// ⭐ ESTA ES LA LÍNEA QUE DEBES CORREGIR ⭐
-// Tienes: const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-// DEBE SER: 
+// ⭐ CORRECCIÓN DE SINTAXIS: Usamos window.supabase.createClient para evitar el error.
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const redirectTo = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? LOCAL_REDIRECT : GITHUB_REDIRECT;
 
