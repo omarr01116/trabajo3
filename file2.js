@@ -137,6 +137,8 @@ async function cargarArchivos() {
     const curso = urlCourse || cursoSelect.value;
     const semana = urlWeek || semanaSelect.value;
     
+    // DEBUG: console.log(`DEBUG: Filtro PocketBase: categoria="${curso}" && subcategoria="${semana}"`);
+
     const filter = `categoria="${curso}" && subcategoria="${semana}"`;
     
     fileListBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-secondary font-semibold">Buscando ${curso} - ${semana}...</td></tr>`;
@@ -147,6 +149,7 @@ async function cargarArchivos() {
             sort: '-created'
         });
 
+        // DEBUG: console.log(`DEBUG: Registros encontrados: ${result.items.length}`);
         fileListBody.innerHTML = ''; 
 
         if (result.items.length === 0) {
@@ -163,6 +166,7 @@ async function cargarArchivos() {
 
     } catch (err) {
         console.error("Error al cargar archivos (PocketBase List):", err);
+        // El mensaje de error se mostrará en el frontend por la función setEstado
         setEstado(`❌ Error al obtener archivos: ${err.message}. Revisa tus API Rules de SELECT.`, true);
     }
 }
@@ -186,6 +190,9 @@ async function handleUpload(e) {
     formData.append('categoria', curso); 
     formData.append('subcategoria', semana);
     formData.append('archivo_digital', file); 
+    
+    // Si creaste el campo nombre_visible, lo inicializamos con el nombre del archivo
+    formData.append('nombre_visible', file.name);
 
     try {
         await pb.collection(FILE_COLLECTION).create(formData);
@@ -229,13 +236,50 @@ function getFileUrl(record) {
     return pb.getFileUrl(record, record.archivo_digital, { /* Opciones */ });
 }
 
+/**
+ * POCKETBASE (RENAME) - Cambia el nombre visible del archivo.
+ */
+async function handleRename(recordId, oldFileName) {
+    const newName = prompt(`Escribe el nuevo nombre para "${oldFileName}":`);
+    
+    // Si el usuario cancela o deja vacío
+    if (!newName || newName.trim() === "") return setEstado("⚠️ Nombre no modificado.", true);
+
+    const newFileName = newName.trim();
+    
+    // Opcional: Si quieres conservar la extensión:
+    // const parts = oldFileName.split('.');
+    // const ext = parts.length > 1 ? '.' + parts.pop() : '';
+    // const newFileName = `${newName.trim()}${ext}`;
+
+
+    try {
+        setEstado(`⏳ Renombrando "${oldFileName}"...`);
+        
+        // 🚨 ACTUALIZACIÓN CLAVE: Usamos el campo nombre_visible para renombrar
+        // PocketBase conservará el archivo binario.
+        await pb.collection(FILE_COLLECTION).update(recordId, { 
+            nombre_visible: newFileName 
+        });
+        
+        setEstado("✅ Archivo renombrado con éxito.");
+        cargarArchivos();
+    } catch (err) {
+        console.error("Error al renombrar (PocketBase):", err);
+        setEstado(`❌ Error al renombrar archivo: ${err.message}. Revisa tus API Rules de UPDATE.`, true);
+    }
+}
+
 
 /**
- * Renderiza la fila del archivo (ADMIN: Ver/Descargar/Eliminar).
+ * Renderiza la fila del archivo (ADMIN: Ver/Descargar/Editar/Eliminar).
  */
 function renderFileRow(record, curso, semana) {
-    const originalFileName = record.archivo_digital; 
-    const fullPath = `${curso} / ${semana} / ${originalFileName}`;
+    // 💡 CAMBIO CLAVE: Usa nombre_visible si existe, si no, usa el nombre del archivo digital
+    const displayFileName = record.nombre_visible || record.archivo_digital; 
+    
+    const originalFileName = record.archivo_digital; // Nombre real para generar la URL y Extensión
+    const fullPath = `${curso} / ${semana} / ${displayFileName}`;
     const fileUrl = getFileUrl(record); 
     const recordId = record.id; 
     
@@ -244,42 +288,24 @@ function renderFileRow(record, curso, semana) {
 
     const nameCell = row.insertCell();
     nameCell.className = 'py-3 px-4 text-sm text-primary font-medium break-words';
-    nameCell.innerHTML = `<button class="btn btn-link p-0 text-decoration-none text-start btn-action btn-action-view" data-filename="${originalFileName}" data-fileurl="${fileUrl}">${fullPath}</button>`;
+    nameCell.innerHTML = `<button class="btn btn-link p-0 text-decoration-none text-start btn-action btn-action-view" data-filename="${displayFileName}" data-fileurl="${fileUrl}">${fullPath}</button>`;
 
     const actionsCell = row.insertCell();
     actionsCell.className = 'py-3 px-4 text-center d-flex justify-content-center align-items-center';
 
-    // ROL ADMIN: VER, DESCARGAR, EDITAR (deshabilitado), BORRAR
+    // ROL ADMIN: VER, DESCARGAR, EDITAR (habilitado), BORRAR
     actionsCell.innerHTML = `
-        <button class="btn btn-sm btn-primary rounded-pill font-medium me-2 btn-action btn-action-view" data-filename="${originalFileName}" data-fileurl="${fileUrl}">Ver</button>
+        <button class="btn btn-sm btn-primary rounded-pill font-medium me-2 btn-action btn-action-view" data-filename="${displayFileName}" data-fileurl="${fileUrl}">Ver</button>
         <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-success rounded-pill font-medium me-2" title="Descargar">Descargar</a>
-        <button class="btn btn-sm btn-warning rounded-pill font-medium me-2" disabled title="Editar: Esta funcionalidad no está implementada.">Editar</button>
-        <button class="btn btn-sm btn-danger rounded-pill font-medium btn-action btn-action-delete" data-record-id="${recordId}" data-filename="${originalFileName}">Borrar</button>
+        
+        <button class="btn btn-sm btn-warning rounded-pill font-medium me-2 btn-action btn-action-edit" data-record-id="${recordId}" data-filename="${displayFileName}">Editar</button>
+        
+        <button class="btn btn-sm btn-danger rounded-pill font-medium btn-action btn-action-delete" data-record-id="${recordId}" data-filename="${displayFileName}">Borrar</button>
     `;
 }
-/**
- * POCKETBASE (RENAME) - Cambia el nombre del archivo.
- */
-async function handleRename(recordId, oldFileName) {
-    const newName = prompt(`Escribe el nuevo nombre para "${oldFileName}" (sin extensión):`);
-    if (!newName) return setEstado("⚠️ Nombre no modificado.", true);
 
-    // Extraer la extensión original
-    const ext = oldFileName.split('.').pop();
-    const newFileName = `${newName}.${ext}`;
-
-    try {
-        setEstado(`⏳ Renombrando "${oldFileName}"...`);
-        await pb.collection(FILE_COLLECTION).update(recordId, { nombre_archivo: newFileName });
-        setEstado("✅ Archivo renombrado con éxito.");
-        cargarArchivos();
-    } catch (err) {
-        console.error("Error al renombrar (PocketBase):", err);
-        setEstado(`❌ Error al renombrar archivo: ${err.message}`, true);
-    }
-}
 // =================================================================
-// 🔹 Escucha de Acciones & Modal (Con Lógica de Eliminación)
+// 🔹 Escucha de Acciones & Modal (Con Lógica de Eliminación/Edición)
 // =================================================================
 
 function handleActionClick(e) {
@@ -288,12 +314,14 @@ function handleActionClick(e) {
     
     const fileName = button.getAttribute('data-filename'); 
     const fileUrl = button.getAttribute('data-fileurl'); 
+    const recordId = button.getAttribute('data-record-id');
     
     if (button.classList.contains('btn-action-view')) {
         openPreview(fileName, fileUrl); 
     } else if (button.classList.contains('btn-action-delete')) {
-        const recordId = button.getAttribute('data-record-id');
         handleDelete(recordId, fileName); 
+    } else if (button.classList.contains('btn-action-edit')) { 
+        handleRename(recordId, fileName); 
     }
 }
 
@@ -330,6 +358,7 @@ function openPreview(fileName, publicUrl) {
     previewContent.innerHTML = contentHTML;
     previewModal.show();
 }
+
 // =================================================================
 // 🔹 Funciones de Inicialización (Modificación)
 // =================================================================
@@ -348,11 +377,9 @@ function checkUrlParams() {
         if (dynamicTitle) dynamicTitle.textContent = `Documentos de ${c} - ${s}`;
     } else {
         // Lógica para cuando abres file1.html directamente
-        // DEBES MOSTRAR LOS CONTROLES para que el usuario pueda seleccionar
+        // Aseguramos que los controles de subida/filtro se muestren
         
-        // ❌ ELIMINA: if (uploadControls) uploadControls.classList.add('d-none');
-        
-        if (uploadControls) uploadControls.classList.remove('d-none'); // ⬅️ CAMBIO CLAVE: Asegura que se muestren
+        if (uploadControls) uploadControls.classList.remove('d-none'); 
         if (dynamicTitle) dynamicTitle.textContent = "Selecciona un curso/semana";
         
         // Y limpia los estilos si existían
