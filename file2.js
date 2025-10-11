@@ -257,8 +257,27 @@ function renderFileRow(record, curso, semana) {
         <button class="btn btn-sm btn-danger rounded-pill font-medium btn-action btn-action-delete" data-record-id="${recordId}" data-filename="${originalFileName}">Borrar</button>
     `;
 }
+/**
+ * POCKETBASE (RENAME) - Cambia el nombre del archivo.
+ */
+async function handleRename(recordId, oldFileName) {
+    const newName = prompt(`Escribe el nuevo nombre para "${oldFileName}" (sin extensión):`);
+    if (!newName) return setEstado("⚠️ Nombre no modificado.", true);
 
+    // Extraer la extensión original
+    const ext = oldFileName.split('.').pop();
+    const newFileName = `${newName}.${ext}`;
 
+    try {
+        setEstado(`⏳ Renombrando "${oldFileName}"...`);
+        await pb.collection(FILE_COLLECTION).update(recordId, { nombre_archivo: newFileName });
+        setEstado("✅ Archivo renombrado con éxito.");
+        cargarArchivos();
+    } catch (err) {
+        console.error("Error al renombrar (PocketBase):", err);
+        setEstado(`❌ Error al renombrar archivo: ${err.message}`, true);
+    }
+}
 // =================================================================
 // 🔹 Escucha de Acciones & Modal (Con Lógica de Eliminación)
 // =================================================================
@@ -311,17 +330,16 @@ function openPreview(fileName, publicUrl) {
     previewContent.innerHTML = contentHTML;
     previewModal.show();
 }
-
-
 // =================================================================
-// 🔹 Funciones de Inicialización
+// 🔹 Funciones de Inicialización (Modificación)
 // =================================================================
 function checkUrlParams() {
     const urlParams = new URLSearchParams(window.location.search);
     const c = urlParams.get('c');
     const s = urlParams.get('s');
 
-    if (c && s) {
+    if (c && s) { 
+        // Lógica para cuando vienen de un enlace externo con parámetros
         urlCourse = c;
         urlWeek = s;
         if (cursoSelect) cursoSelect.style.display = 'none';
@@ -329,11 +347,19 @@ function checkUrlParams() {
         if (uploadControls) uploadControls.classList.remove('d-none');
         if (dynamicTitle) dynamicTitle.textContent = `Documentos de ${c} - ${s}`;
     } else {
-        if (uploadControls) uploadControls.classList.add('d-none');
+        // Lógica para cuando abres file1.html directamente
+        // DEBES MOSTRAR LOS CONTROLES para que el usuario pueda seleccionar
+        
+        // ❌ ELIMINA: if (uploadControls) uploadControls.classList.add('d-none');
+        
+        if (uploadControls) uploadControls.classList.remove('d-none'); // ⬅️ CAMBIO CLAVE: Asegura que se muestren
         if (dynamicTitle) dynamicTitle.textContent = "Selecciona un curso/semana";
+        
+        // Y limpia los estilos si existían
+        if (cursoSelect) cursoSelect.style.display = '';
+        if (semanaSelect) semanaSelect.style.display = '';
     }
 }
-
 document.addEventListener('DOMContentLoaded', () => {
     checkAuthAndInit();
 });
