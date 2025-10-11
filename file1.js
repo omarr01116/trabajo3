@@ -310,31 +310,36 @@ function openPreview(fileName, publicUrl) {
     previewContent.innerHTML = contentHTML;
     previewModal.show();
 }
-
-
 // =================================================================
-// 🔹 Funciones de Inicialización (checkUrlParams es igual)
+// 🔹 Funciones de Inicialización (Modificación)
 // =================================================================
 function checkUrlParams() {
-    // Implementación original de checkUrlParams
     const urlParams = new URLSearchParams(window.location.search);
     const c = urlParams.get('c');
     const s = urlParams.get('s');
 
-    if (c && s) {
+    if (c && s) { 
+        // Lógica para cuando vienen de un enlace externo con parámetros
         urlCourse = c;
         urlWeek = s;
-        // Ocultar selects si los parámetros están presentes
         if (cursoSelect) cursoSelect.style.display = 'none';
         if (semanaSelect) semanaSelect.style.display = 'none';
         if (uploadControls) uploadControls.classList.remove('d-none');
         if (dynamicTitle) dynamicTitle.textContent = `Documentos de ${c} - ${s}`;
     } else {
-        if (uploadControls) uploadControls.classList.add('d-none');
+        // Lógica para cuando abres file1.html directamente
+        // DEBES MOSTRAR LOS CONTROLES para que el usuario pueda seleccionar
+        
+        // ❌ ELIMINA: if (uploadControls) uploadControls.classList.add('d-none');
+        
+        if (uploadControls) uploadControls.classList.remove('d-none'); // ⬅️ CAMBIO CLAVE: Asegura que se muestren
         if (dynamicTitle) dynamicTitle.textContent = "Selecciona un curso/semana";
+        
+        // Y limpia los estilos si existían
+        if (cursoSelect) cursoSelect.style.display = '';
+        if (semanaSelect) semanaSelect.style.display = '';
     }
 }
-
 document.addEventListener('DOMContentLoaded', () => {
     checkAuthAndInit();
 });
