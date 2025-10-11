@@ -1,5 +1,5 @@
 // =======================================================
-// file1.js (ROL USUARIO) - CON PocketBase (Archivos) - CORREGIDO
+// file1.js (ROL USUARIO) - CON PocketBase (Archivos) - FINAL
 // =======================================================
 
 import pb from './backend/pocketbaseClient.js'; 
@@ -129,8 +129,9 @@ async function handleLogout() {
 
 
 // =================================================================
-// 🔹 Funciones de PocketBase (CRUD) - SIN CAMBIOS
+// 🔹 Funciones de PocketBase (CRUD) - IMPLEMENTACIÓN DE DEBUG
 // =================================================================
+
 /**
  * POCKETBASE (READ) - Carga los archivos filtrados por categoría/subcategoría.
  */
@@ -145,7 +146,7 @@ async function cargarArchivos() {
     // 1. Construir la consulta de filtro
     const filter = `categoria="${curso}" && subcategoria="${semana}"`;
     
-    // 💡 NUEVA LÍNEA DE DEBUGGING: Muestra el filtro EXACTO
+    // 💡 LÍNEA DE DEBUGGING: Muestra el filtro EXACTO que se envía
     console.log("DEBUG: Filtro PocketBase:", filter); 
     
     fileListBody.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-secondary font-semibold">Buscando ${curso} - ${semana}...</td></tr>`;
@@ -157,10 +158,32 @@ async function cargarArchivos() {
             sort: '-created' // Ordenar por más reciente primero
         });
 
-        // 💡 NUEVA LÍNEA DE DEBUGGING: Muestra cuántos elementos se encontraron
+        // 💡 LÍNEA DE DEBUGGING: Muestra cuántos elementos se encontraron
         console.log("DEBUG: Registros encontrados:", result.items.length); 
         
         fileListBody.innerHTML = ''; 
+
+        if (result.items.length === 0) {
+            setEstado(`📭 Sin archivos en ${curso} - ${semana}`);
+            fileListBody.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-secondary font-semibold">📭 No hay archivos en este curso/semana</td></tr>`;
+            return;
+        }
+        
+        // 3. Renderizar cada registro
+        result.items.forEach(record => {
+            renderFileRow(record, curso, semana);
+        });
+
+        clearEstado();
+
+    } catch (err) {
+        console.error("Error al cargar archivos (PocketBase List):", err);
+        // El mensaje de error ahora es menos probable que sea 403, si ocurre, es un error real de PB.
+        setEstado(`❌ Error al obtener archivos: ${err.message}. Revisa tus API Rules de SELECT en PocketBase.`, true);
+    }
+}
+
+
 /**
  * POCKETBASE (CREATE) - Sube un archivo.
  */
