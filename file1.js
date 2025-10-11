@@ -131,7 +131,6 @@ async function handleLogout() {
 // =================================================================
 // 🔹 Funciones de PocketBase (CRUD) - SIN CAMBIOS
 // =================================================================
-
 /**
  * POCKETBASE (READ) - Carga los archivos filtrados por categoría/subcategoría.
  */
@@ -146,6 +145,9 @@ async function cargarArchivos() {
     // 1. Construir la consulta de filtro
     const filter = `categoria="${curso}" && subcategoria="${semana}"`;
     
+    // 💡 NUEVA LÍNEA DE DEBUGGING: Muestra el filtro EXACTO
+    console.log("DEBUG: Filtro PocketBase:", filter); 
+    
     fileListBody.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-secondary font-semibold">Buscando ${curso} - ${semana}...</td></tr>`;
 
     try {
@@ -155,28 +157,10 @@ async function cargarArchivos() {
             sort: '-created' // Ordenar por más reciente primero
         });
 
-        fileListBody.innerHTML = ''; 
-
-        if (result.items.length === 0) {
-            setEstado(`📭 Sin archivos en ${curso} - ${semana}`);
-            fileListBody.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-secondary font-semibold">📭 No hay archivos en este curso/semana</td></tr>`;
-            return;
-        }
+        // 💡 NUEVA LÍNEA DE DEBUGGING: Muestra cuántos elementos se encontraron
+        console.log("DEBUG: Registros encontrados:", result.items.length); 
         
-        // 3. Renderizar cada registro
-        result.items.forEach(record => {
-            renderFileRow(record, curso, semana);
-        });
-
-        clearEstado();
-
-    } catch (err) {
-        console.error("Error al cargar archivos (PocketBase List):", err);
-        setEstado(`❌ Error al obtener archivos: ${err.message}. Revisa tus API Rules de SELECT en PocketBase.`, true);
-    }
-}
-
-
+        fileListBody.innerHTML = ''; 
 /**
  * POCKETBASE (CREATE) - Sube un archivo.
  */
