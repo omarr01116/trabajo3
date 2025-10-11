@@ -1,3 +1,5 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
 // =================================================================
 // 🚨 CONFIGURACIÓN DE SUPABASE (TUS VALORES REALES DEBEN IR AQUÍ) 🚨
 // =================================================================
@@ -7,7 +9,6 @@ const BUCKET_NAME = 'archivos';
 const LOGIN_URL = "./login.html"; 
 
 // Inicializar el cliente Supabase
-const { createClient } = supabase;
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 
@@ -61,7 +62,7 @@ function clearEstado() {
     fileStatus.classList.add('d-none');
 }
 
-/** Codifica una ruta para Supabase Storage */
+/** Codifica una ruta para Supabase Storage (asegura que los espacios se manejen). */
 function getPathForStorage(path) {
     const segments = path.split('/');
     const encodedSegments = segments.map(segment => encodeURIComponent(segment));
@@ -70,14 +71,13 @@ function getPathForStorage(path) {
 
 
 // =================================================================
-// 🔹 Funciones de Carga de Archivos (Definidas antes de ser llamadas)
+// 🔹 Funciones de Carga de Archivos
 // =================================================================
 
 /**
  * Carga los archivos del Storage para la ruta seleccionada.
  */
 async function cargarArchivos() {
-    // Verificaciones básicas
     if (!cursoSelect || !semanaSelect || !fileListBody) {
         console.error("❌ Elementos DOM de selección/lista no encontrados.");
         setEstado("❌ Error de inicialización del DOM para los selectores/lista.", true);
@@ -96,15 +96,25 @@ async function cargarArchivos() {
     try {
         const { data, error } = await supabaseClient.storage
             .from(BUCKET_NAME)
-            .list(getPathForStorage(folderPath), { limit: 100 }); 
+            // CORREGIDO: Usamos folderPath sin codificar para .list()
+            .list(folderPath, { limit: 100 }); 
 
         if (error) throw error;
         
         fileListBody.innerHTML = ''; 
 
         if (data && data.length > 0) {
-            data.forEach(archivo => {
-                 const fullPath = `${folderPath}/${archivo.name}`; 
+            // Filtrar para excluir subdirectorios
+            const archivosVisibles = data.filter(item => item.id && item.created_at);
+            
+            if (archivosVisibles.length === 0) {
+                 setEstado(`📭 Sin archivos en ${curso} - ${semana}`);
+                 fileListBody.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-secondary font-semibold">📭 No hay archivos en este curso/semana</td></tr>`;
+                 return;
+            }
+            
+            archivosVisibles.forEach(archivo => {
+                const fullPath = `${folderPath}/${archivo.name}`; // Path sin codificar (ej: 'Curso/Semana/Archivo.pdf')
                 
                 const row = fileListBody.insertRow();
                 row.className = 'border-t hover:bg-light transition';
@@ -124,7 +134,7 @@ async function cargarArchivos() {
                         : ''
                     }
 
-                    ${role === 'admin' || role === 'usuario' ? 
+                    ${role === 'admin' || role === 'usuario' ? // Revertido para permitir eliminar si RLS lo autoriza
                         `<button class="btn btn-sm btn-danger rounded-pill font-medium btn-action btn-action-delete" data-path="${fullPath}">Borrar</button>` 
                         : ''
                     }
@@ -147,12 +157,11 @@ async function cargarArchivos() {
 
 
 // =================================================================
-// 🔹 Funciones de Inicialización y Autenticación (ORDEN CORREGIDO)
+// 🔹 Funciones de Inicialización y Autenticación
 // =================================================================
 
 /**
  * Lee los parámetros de la URL y ajusta la interfaz de usuario.
- * (MOVIDA A ESTA POSICIÓN: DEBE ESTAR ANTES de checkAuthAndInit)
  */
 function checkUrlParams() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -230,7 +239,7 @@ async function checkAuthAndInit() {
         console.log(`✅ Rol detectado: ${role}. Acceso concedido.`);
 
         // 3. INICIALIZACIÓN DE UI Y DATOS
-        checkUrlParams(); // ✅ LLAMADA AHORA FUNCIONA
+        checkUrlParams(); 
         await cargarArchivos(); 
 
         // 4. ASIGNAR LISTENERS
@@ -293,21 +302,26 @@ function handleActionClick(e) {
     const button = e.target.closest('.btn-action');
     if (!button) return;
     
-    const fullPath = button.getAttribute('data-path');
-    const fileName = button.getAttribute('data-filename');
+    // Obtiene el path sin codificar (ej: 'Curso/Semana/Archivo.pdf')
+    const fullPath = button.getAttribute('data-path'); 
+    
+    if (!fullPath) return;
 
-    // Descodificamos el path para el uso interno (prompts, confirmaciones)
-    const fullyDecodedPath = decodeURIComponent(fullPath || '');
-
+    // Obtener solo el nombre del archivo para prompts y funciones
+    const fileNameOnly = fullPath.split('/').pop(); 
+    
     if (button.classList.contains('btn-action-view')) {
-        openPreview(fullyDecodedPath.split('/').pop());
+        // CORREGIDO: Pasamos solo el nombre del archivo.
+        openPreview(fileNameOnly); 
 
     } else if (button.classList.contains('btn-action-edit')) {
-        handleEdit(fullyDecodedPath, fileName);
+        // CORREGIDO: Pasamos el fullPath sin codificar
+        handleEdit(fullPath, fileNameOnly); 
 
     } else if (button.classList.contains('btn-action-delete')) {
-        if (confirm(`¿Eliminar ${fullyDecodedPath.split('/').pop()}?`)) {
-            handleDelete(fullyDecodedPath);
+        if (confirm(`¿Eliminar ${fileNameOnly}?`)) {
+            // CORREGIDO: Pasamos el fullPath sin codificar
+            handleDelete(fullPath); 
         }
     }
 }
@@ -317,7 +331,6 @@ function handleActionClick(e) {
 // 🔹 Renombrar archivo (MOVE)
 // =================================================================
 async function handleEdit(oldFullPath, oldFileName) {
-    // Aquí puedes añadir una verificación más flexible para el rol si es necesario.
     if (role !== "admin") return setEstado("⚠️ Solo el admin puede editar nombres.", true);
 
     const newName = prompt(`Renombrando "${oldFileName}".\nIngresa el nuevo nombre del archivo (incluye la extensión):`);
@@ -332,6 +345,7 @@ async function handleEdit(oldFullPath, oldFileName) {
     
     const newFullPath = pathParts.join('/');
     
+    // Codificación única (necesaria para move)
     const encodedOldPath = getPathForStorage(oldFullPath);
     const encodedNewPath = getPathForStorage(newFullPath);
 
@@ -349,18 +363,21 @@ async function handleEdit(oldFullPath, oldFileName) {
         console.error("Error al renombrar archivo:", err);
     }
 }
-
 // =================================================================
 // 🔹 Borrar archivo (DELETE)
+// CORREGIDO: Usaremos 'window.handleDelete' para garantizar que sea global y accesible
 // =================================================================
-async function handleDelete(fullPath) {
-    // Permitir a usuarios y admin eliminar, ya que la política de storage de Supabase
-    // debería proteger para que solo puedan eliminar los que subieron (user_id = auth.uid())
+window.handleDelete = async (fullPath) => { 
+    // Si el usuario no es admin o usuario, salir.
     if (role !== "admin" && role !== "usuario") return setEstado("⚠️ No tienes permiso para eliminar.", true);
 
     setEstado("⏳ Eliminando...");
     
+    // Codificación única (necesaria para remove)
     const encodedPath = getPathForStorage(fullPath);
+
+    // DEBUGGING: Añadir la línea de depuración
+    console.log("DEBUG DELETE: Ruta de eliminación CODIFICADA ENVIADA:", encodedPath);
 
     try {
         const { error } = await supabaseClient.storage
@@ -368,8 +385,12 @@ async function handleDelete(fullPath) {
             .remove([encodedPath]);
 
         if (error) {
-            if (error.message.includes("permission") || error.message.includes("not authorized")) {
-                throw new Error("🚫 No tienes permiso para eliminar este archivo (solo el que subió o un admin).");
+            // AÑADIR/MODIFICAR ESTE console.log PARA DEBUGGING RLS
+            console.error("DEBUG RLS: Objeto de error completo de la API:", error); 
+            
+            // Ajuste de mensaje de error para dar pistas sobre RLS/Permisos
+            if (error.status === 400 && error.message.includes("permission")) {
+                 throw new Error("🚫 Permiso denegado. Revisa tu política RLS de DELETE.");
             }
             throw error;
         }
@@ -377,11 +398,10 @@ async function handleDelete(fullPath) {
         setEstado("🗑️ Archivo eliminado correctamente");
         cargarArchivos();
     } catch (err) {
-        console.error("Error al eliminar archivo:", err);
+        console.error("DEBUG RLS: Error final capturado:", err);
         setEstado(`❌ Error al eliminar archivo: ${err.message}`, true);
     }
 }
-
 // =================================================================
 // 🔹 Vista previa
 // =================================================================
@@ -389,13 +409,18 @@ function openPreview(fileName) {
     const curso = urlCourse || cursoSelect.value;
     const semana = urlWeek || semanaSelect.value;
     
-    const encodedFileName = encodeURIComponent(fileName); 
-    const folderPathEncoded = getPathForStorage(`${curso}/${semana}`);
+    // 1. Path completo SIN codificar (RUTA LITERAL: 'Arquitectura de Software/Semana 1/archivo.pdf')
+    const fullPath = `${curso}/${semana}/${fileName}`;
 
+    // 2. ¡LÍNEA ELIMINADA! 🚫 ESTO CAUSABA LA DOBLE CODIFICACIÓN
+    // const finalEncodedPath = getPathForStorage(fullPath); 
+    
     const { data: publicData } = supabaseClient.storage
         .from(BUCKET_NAME)
-        .getPublicUrl(`${folderPathEncoded}/${encodedFileName}`);
-
+        // 3. ¡LÍNEA MODIFICADA! 🔄 Ahora usamos la ruta literal (fullPath). 
+        // Supabase aplica la codificación UNA sola vez aquí, resolviendo el 'Invalid Key'.
+        .getPublicUrl(fullPath); // <-- USAMOS fullPath SIN codificar
+        
     const publicUrl = publicData?.publicUrl || null;
     const type = detectType(fileName);
 
@@ -413,6 +438,7 @@ function openPreview(fileName) {
         </div>`;
     } else if (type === "pdf" || type === "document") {
         let iframeSrc = publicUrl;
+        // La URL dentro del gview de Google DEBE estar codificada
         if (type === "document") iframeSrc = `https://docs.google.com/gview?url=${encodeURIComponent(publicUrl)}&embedded=true`;
 
         contentHTML = `
@@ -429,7 +455,6 @@ function openPreview(fileName) {
     previewContent.innerHTML = contentHTML;
     previewModal.show();
 }
-
 // =================================================================
 // 🔹 Logout
 // =================================================================
@@ -438,8 +463,6 @@ async function handleLogout() {
     localStorage.clear();
     window.location.href = LOGIN_URL; 
 }
-
-
 // =================================================================
 // 🔹 Inicialización
 // =================================================================
