@@ -61,61 +61,63 @@ function setLoading(isLoading) {
 }
 
 // =================================================================
-// 🔹 Obtener Rol y Redirigir (Lógica centralizada)
+// 🔹 Obtener Rol y Redirigir (Lógica centralizada) - FINAL
 // =================================================================
 async function getRoleAndRedirect(token) {
-    setLoading(true);
-    try {
-        // Llama al backend (localhost:3000) para obtener el rol
-        const res = await fetch(BACKEND_URL, {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
-        });
+    setLoading(true);
+    try {
+        // Llama al backend (localhost:3000) para obtener el rol
+        const res = await fetch(BACKEND_URL, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
 
-        if (!res.ok) {
-            let errorText = `Error ${res.status} al obtener el rol.`;
-            try {
-                const errorResult = await res.json();
-                errorText = errorResult.error || errorText;
-            } catch (e) { /* ignore */ }
-            throw new Error(errorText);
-        }
+        if (!res.ok) {
+            let errorText = `Error ${res.status} al obtener el rol.`;
+            try {
+                const errorResult = await res.json();
+                errorText = errorResult.error || errorText;
+            } catch (e) { /* ignore */ }
+            throw new Error(errorText);
+        }
 
-        const result = await res.json();
-        const rol = result.role?.trim().toLowerCase() || "usuario";
+        const result = await res.json();
+        // ⭐ La clave: si el backend no devuelve rol, asumimos "usuario"
+        const rol = result.role?.trim().toLowerCase() || "usuario"; 
 
-        localStorage.setItem("role", rol);
-        localStorage.setItem("token", token);
-        
-        const destinos = {
-            admin: "file.html",
-            usuario: "file.html",
-            invitado: "portafolio.html",
-        };
+        localStorage.setItem("role", rol);
+        localStorage.setItem("token", token);
+        
+        const destinos = {
+            admin: "file2.html",       // Destino para 'admin'
+            usuario: "file1.html",     // Destino para 'usuario'
+            invitado: "portafolio.html",
+        };
 
-        const destino = destinos[rol] || "file.html";
-        
-        // ⭐ Lógica de Redirección Final (Evita el bucle al comparar la URL)
-        const currentPage = window.location.pathname.split('/').pop().toLowerCase();
+        // Si el rol es 'usuario' o cualquier otro valor no reconocido (fallbacks), 
+        // redirigirá a 'file1.html'.
+        const destino = destinos[rol] || "file1.html"; 
+        
+        // ⭐ Lógica de Redirección Final (Evita el bucle al comparar la URL)
+        const currentPage = window.location.pathname.split('/').pop().toLowerCase();
 
-        if (currentPage !== destino.toLowerCase()) {
-            console.log(`Redireccionando de ${currentPage} a ${destino}`);
-            window.location.href = destino; 
-        } else {
-            console.log(`Ya estamos en la página de destino (${destino}). Deteniendo redirección.`);
-            setLoading(false);
-        }
-    } catch (err) {
-        console.error("Error al obtener rol/redireccionar:", err);
-        // ⭐ NOTA: Si este error es un 404 (Fallo de Backend), la página se queda en login.html
-        setErrorMsg(err.message || "Error de backend o red. Intenta de nuevo.");
-        setLoading(false);
-    }
+        if (currentPage !== destino.toLowerCase()) {
+            console.log(`Redireccionando de ${currentPage} a ${destino}`);
+            window.location.href = destino; 
+        } else {
+            console.log(`Ya estamos en la página de destino (${destino}). Deteniendo redirección.`);
+            setLoading(false);
+        }
+    } catch (err) {
+        console.error("Error al obtener rol/redireccionar:", err);
+        // ⭐ NOTA: Si este error es un 404 (Fallo de Backend), la página se queda en login.html
+        setErrorMsg(err.message || "Error de backend o red. Intenta de nuevo.");
+        setLoading(false);
+    }
 }
-
 // =================================================================
 // 🔹 Login con Email y Contraseña
 // =================================================================
