@@ -1,16 +1,18 @@
 // =======================================================
-// file2.js (ROL ADMIN) - CON PocketBase (Archivos) - SOLUCIÓN DESCARGA FORZADA
+// file2.js (ROL ADMIN) - MIGRADO A RENDER/APPWRITE (CRUD COMPLETO)
 // =======================================================
 
-import pb from './backend/pocketbaseClient.js'; 
 // 🔑 Importar el cliente de Supabase para la AUTENTICACIÓN
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"; 
 
-const FILE_COLLECTION = 'documentos_del_proyecto';
+// 🛑🛑🛑 CONFIGURACIÓN DEL BACKEND MIGRADO 🛑🛑🛑
+const RENDER_BASE_URL = 'https://trabajo-backend.onrender.com';
+const BACKEND_API_WORKS = `${RENDER_BASE_URL}/api/works`;
 const LOGIN_URL = "./login.html"; 
+const USER_PAGE_URL = 'file1.html';
+// --------------------------------------------------------
 
-// 🚨 CONFIGURACIÓN DE SUPABASE (DEBE SER LA MISMA QUE EN login.js)
-// ⚠️ REEMPLAZA CON TUS VALORES REALES
+// 🚨 CONFIGURACIÓN DE SUPABASE (MISMA QUE EN file1.js)
 const SUPABASE_URL = 'https://bazwwhwjruwgyfomyttp.supabase.co'; 
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhend3aHdqcnV3Z3lmb215dHRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxNjA1NTAsImV4cCI6MjA3MzczNjU1MH0.RzpCKpYV-GqNIhTklsQtRqyiPCGGmV1Us7q_BeBHxUo'; 
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -34,16 +36,18 @@ const previewContent = document.getElementById('preview-content');
 const previewLink = document.getElementById('preview-link');
 const previewFileNameSpan = document.getElementById('preview-filename'); 
 
-let role = localStorage.getItem('role') || 'usuario';
-const USER_PAGE_URL = 'file1.html'; // Redirigir si no es Admin
+// Asumimos que estos inputs existen para la subida
+const tituloInput = document.getElementById('titulo'); 
+const descripcionInput = document.getElementById('descripcion'); 
 
+let role = localStorage.getItem('role') || 'usuario';
 let urlCourse = null;
 let urlWeek = null;
 
-// =================================================================
-// 🔹 Funciones de Utilidad (Idénticas a file1.js)
-// =================================================================
 
+// =================================================================
+// 🔹 Funciones de Utilidad (Mantenidas)
+// =================================================================
 function detectType(name) {
     const ext = name.split(".").pop().toLowerCase();
     if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) return "image";
@@ -64,31 +68,28 @@ function clearEstado() {
     fileStatus.classList.add('d-none');
 }
 
+function getFileUrl(record) {
+    // En Appwrite/Render, la URL viene en el registro
+    return record.fileUrl; 
+}
+
 
 // =================================================================
-// 🔹 Funciones de Autenticación (Supabase Real)
+// 🔹 Funciones de Autenticación (SUPABASE REAL)
 // =================================================================
 
-/**
- * ✅ SUPABASE REAL: Verifica la sesión, rol y realiza la redirección.
- */
 async function checkAuthAndInit() {
-    
-    // 1. Verificar Sesión (REAL usando Supabase)
     const { data: { session }, error: authError } = await supabaseClient.auth.getSession();
     
     if (authError || !session) { 
-        console.log("⚠️ Sesión no encontrada o error. Redirigiendo a login...");
         window.location.href = LOGIN_URL; 
         return; 
     }
     
-    // 2. Obtener Rol (Usamos localStorage como fuente de verdad)
     const userRole = localStorage.getItem('role') || 'usuario';
 
     // 3. Verificar Rol y Redirección (file2.html es solo para ADMIN)
     if (userRole !== 'admin') { 
-        console.log(`⚠️ Rol detectado: ${userRole}. Redirigiendo a página de Usuario.`);
         window.location.href = USER_PAGE_URL; 
         return;
     }
@@ -96,6 +97,7 @@ async function checkAuthAndInit() {
     // 4. Inicialización UI (Solo si el rol es 'admin')
     role = userRole; 
     if (roleDisplay) roleDisplay.textContent = role.toUpperCase();
+    if (uploadControls) uploadControls.classList.remove('d-none'); 
 
     checkUrlParams(); 
     await cargarArchivos(); 
@@ -111,234 +113,242 @@ async function checkAuthAndInit() {
     }
 }
 
-
-/**
- * ✅ SUPABASE REAL: Cerrar sesión.
- */
 async function handleLogout() {
-    await supabaseClient.auth.signOut(); // Llamada real a Supabase
+    await supabaseClient.auth.signOut(); 
     localStorage.clear();
     window.location.href = LOGIN_URL; 
 }
 
 
 // =================================================================
-// 🔹 Funciones de PocketBase (CRUD COMPLETO)
+// 🔹 RENDER/APPWRITE (CRUD: READ & FILTER) 🔹
 // =================================================================
 
 /**
- * POCKETBASE (READ) - Carga los archivos filtrados por categoría/subcategoría.
+ * 💥 MIGRADO: Lee todos y filtra en el Frontend (mismo método que file1.js).
  */
 async function cargarArchivos() {
     if (!fileListBody) return;
     
-    setEstado("⏳ Cargando archivos...");
+    setEstado("⏳ Cargando y filtrando archivos...");
     
-    const curso = urlCourse || cursoSelect.value;
-    const semana = urlWeek || semanaSelect.value;
+    const curso = urlCourse || (cursoSelect ? cursoSelect.value : '');
+    const semana = urlWeek || (semanaSelect ? semanaSelect.value : '');
     
-    // DEBUG: console.log(`DEBUG: Filtro PocketBase: categoria="${curso}" && subcategoria="${semana}"`);
+    const shouldFilter = !!curso && !!semana && curso !== 'default' && semana !== 'default';
 
-    const filter = `categoria="${curso}" && subcategoria="${semana}"`;
-    
-    fileListBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-secondary font-semibold">Buscando ${curso} - ${semana}...</td></tr>`;
+    fileListBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-secondary font-semibold">Buscando documentos...</td></tr>`;
 
     try {
-        const result = await pb.collection(FILE_COLLECTION).getList(1, 50, { 
-            filter: filter,
-            sort: '-created'
-        });
+        const response = await fetch(BACKEND_API_WORKS, { method: 'GET' });
 
-        // DEBUG: console.log(`DEBUG: Registros encontrados: ${result.items.length}`);
+        if (!response.ok) {
+             throw new Error(`Fallo la carga: ${response.statusText}`);
+        }
+        
+        const records = await response.json(); 
+        let filteredRecords = records;
+
+        // 2. Filtrado en el Frontend 
+        if (shouldFilter) {
+            const cursoTerm = `[${curso.toLowerCase()}]`;
+            const semanaTerm = `[${semana.toLowerCase()}]`;
+            
+            filteredRecords = records.filter(record => {
+                const tituloLower = record.titulo ? record.titulo.toLowerCase() : '';
+                return tituloLower.includes(cursoTerm) && tituloLower.includes(semanaTerm);
+            });
+        }
+        
         fileListBody.innerHTML = ''; 
 
-        if (result.items.length === 0) {
-            setEstado(`📭 Sin archivos en ${curso} - ${semana}`);
-            fileListBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-secondary font-semibold">📭 No hay archivos en este curso/semana</td></tr>`;
+        if (filteredRecords.length === 0) {
+            setEstado(`📭 Sin archivos disponibles para ${curso} - ${semana}`);
+            fileListBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-secondary font-semibold">📭 No hay archivos en este filtro.</td></tr>`;
             return;
         }
         
-        result.items.forEach(record => {
-            renderFileRow(record, curso, semana);
+        // 3. Renderizar
+        filteredRecords.forEach(record => {
+            renderFileRow(record, curso, semana); 
         });
 
         clearEstado();
 
     } catch (err) {
-        console.error("Error al cargar archivos (PocketBase List):", err);
-        // El mensaje de error se mostrará en el frontend por la función setEstado
-        setEstado(`❌ Error al obtener archivos: ${err.message}. Revisa tus API Rules de SELECT.`, true);
+        console.error("Error al cargar archivos (Render/Appwrite):", err);
+        setEstado(`❌ Error al obtener archivos: ${err.message}.`, true);
     }
 }
 
+
+// =================================================================
+// 🔹 RENDER/APPWRITE (CREATE) - SUBIR ARCHIVO 🔹
+// =================================================================
+
 /**
- * POCKETBASE (CREATE) - Sube un archivo. (Idéntica a file1.js)
+ * 💥 MIGRADO: Usa la misma lógica de subida que file1.js.
  */
 async function handleUpload(e) {
     e.preventDefault();
+
     const file = fileInput.files[0];
-    if (!file) return setEstado("⚠️ Selecciona un archivo primero", true);
-    
-    setEstado("⏳ Subiendo...");
+    const titulo = tituloInput ? tituloInput.value : '';
+    const descripcion = descripcionInput ? descripcionInput.value : '';
+    const token = localStorage.getItem('token'); 
+
+    if (!token) return setEstado("⚠️ Sesión no válida. Inicia sesión.", true);
+    if (!file || !titulo) return setEstado("⚠️ Título y Archivo son requeridos.", true);
     
     const curso = urlCourse || (cursoSelect ? cursoSelect.value : '');
     const semana = urlWeek || (semanaSelect ? semanaSelect.value : '');
 
-    if (!curso || !semana) return setEstado("⚠️ Selecciona un curso y una semana válidos.", true);
-
-    const formData = new FormData();
-    formData.append('categoria', curso); 
-    formData.append('subcategoria', semana);
-    formData.append('archivo_digital', file); 
+    if (!curso || !semana || curso === 'default' || semana === 'default') {
+         return setEstado("⚠️ Selecciona un curso y una semana válidos para subir el archivo.", true);
+    }
     
-    // Inicializamos nombre_visible con el nombre original del archivo.
-    formData.append('nombre_visible', file.name);
+    setEstado("⏳ Subiendo a Appwrite...");
+    
+    const formData = new FormData();
+    formData.append('documento', file); 
+    // 🔑 Título: Incluimos Curso/Semana para el filtrado en READ
+    formData.append('titulo', `[${curso}] - [${semana}] - ${titulo}`);
+    formData.append('descripcion', descripcion);
 
     try {
-        await pb.collection(FILE_COLLECTION).create(formData);
-        
-        setEstado("✅ Archivo subido con éxito");
-        if (fileInput) fileInput.value = ''; 
-        cargarArchivos();
-    } catch (err) {
-        console.error("Error al subir archivo (PocketBase Create):", err);
-        setEstado("❌ Error al subir archivo: " + (err.message || "Error desconocido"), true);
+        const response = await fetch(BACKEND_API_WORKS, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }, 
+            body: formData,
+        });
+
+        if (response.ok) {
+            setEstado("✅ Archivo subido con éxito");
+            if (fileInput) fileInput.value = ''; 
+            if (tituloInput) tituloInput.value = '';
+            if (descripcionInput) descripcionInput.value = '';
+            cargarArchivos(); 
+        } else {
+            const errorData = await response.json().catch(() => ({error: 'Fallo desconocido'}));
+            setEstado(`❌ Error al subir: ${errorData.error || response.statusText}`, true);
+        }
+    } catch (error) {
+        setEstado('❌ Error de red. Verifica que Render esté activo.', true);
     }
 }
 
 
+// =================================================================
+// 🔹 RENDER/APPWRITE (DELETE) - ELIMINAR ARCHIVO 🔹
+// =================================================================
+
 /**
- * POCKETBASE (DELETE) - Elimina un registro de la colección (y el archivo asociado).
+ * 💥 MIGRADO: Elimina el archivo y el registro usando un DELETE con ID.
  */
 async function handleDelete(recordId, fileName) { 
     if (!confirm(`¿Estás seguro de que quieres ELIMINAR el archivo "${fileName}"? Esta acción es irreversible.`)) {
         return;
     }
+    
+    const token = localStorage.getItem('token'); 
+    if (!token) return setEstado("⚠️ Sesión no válida. Inicia sesión.", true);
 
     setEstado("⏳ Eliminando...");
     
     try {
-        await pb.collection(FILE_COLLECTION).delete(recordId);
+        const response = await fetch(`${BACKEND_API_WORKS}/${recordId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }, 
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({error: 'Fallo desconocido'}));
+            throw new Error(errorData.error || response.statusText);
+        }
 
         setEstado("🗑️ Archivo eliminado correctamente");
         cargarArchivos(); // Recargar la lista
     } catch (err) {
-        console.error("Error al eliminar (PocketBase Delete):", err);
-        setEstado(`❌ Error al eliminar archivo: ${err.message}. Revisa tus API Rules de DELETE.`, true);
+        console.error("Error al eliminar (Render/Appwrite):", err);
+        setEstado(`❌ Error al eliminar archivo: ${err.message}`, true);
     }
 }
 
 
-/**
- * POCKETBASE (FILE URL) - Genera la URL para ver/descargar el archivo.
- */
-function getFileUrl(record) {
-    return pb.getFileUrl(record, record.archivo_digital, { /* Opciones */ });
-}
+// =================================================================
+// 🔹 RENDER/APPWRITE (UPDATE) - RENOMBRAR ARCHIVO 🔹
+// =================================================================
 
 /**
- * POCKETBASE (RENAME) - Cambia el nombre visible del archivo.
+ * 💥 MIGRADO: Actualiza el campo 'titulo' usando un PUT con ID.
  */
-async function handleRename(recordId, oldFileNameWithExt) {
-    const parts = oldFileNameWithExt.split('.');
-    const ext = parts.length > 1 && parts[parts.length - 1].length > 0 ? '.' + parts.pop() : ''; 
-    const baseName = parts.join('.'); // Nombre base sin la extensión
-
-    const newBaseName = prompt(`Escribe el nuevo nombre para "${oldFileNameWithExt}" (sin la extensión):`, baseName);
+async function handleRename(recordId, oldFileTitle) {
     
-    // Si el usuario cancela o deja vacío
+    // 1. Extraer el prefijo [Curso] - [Semana] - del título actual
+    const titleRegex = /(\[.+?\]\s-\s\[.+?\]\s-\s)(.*)/;
+    const match = oldFileTitle.match(titleRegex);
+    
+    // Si no tiene el formato esperado, tomamos todo el título como base
+    const prefix = match ? match[1] : '';
+    const baseName = match ? match[2] : oldFileTitle;
+    
+    const newBaseName = prompt(`Escribe el nuevo NOMBRE BASE del archivo:`, baseName.trim());
+    
     if (!newBaseName || newBaseName.trim() === "") {
         setEstado("⚠️ Nombre no modificado.", true);
         return;
     }
-
-    const newNameTrimmed = newBaseName.trim();
-    // ✅ CLAVE: Reconstruir el nuevo nombre visible con la extensión
-    const newFileNameWithExt = `${newNameTrimmed}${ext}`; 
-
+    
+    // 2. Reconstruir el nuevo título completo (con el prefijo)
+    const newTitle = `${prefix}${newBaseName.trim()}`;
+    const token = localStorage.getItem('token'); 
+    if (!token) return setEstado("⚠️ Sesión no válida. Inicia sesión.", true);
+    
     try {
-        setEstado(`⏳ Renombrando "${oldFileNameWithExt}" a "${newFileNameWithExt}"...`);
+        setEstado(`⏳ Renombrando "${oldFileTitle}" a "${newTitle}"...`);
         
-        // 🚨 DIAGNÓSTICO DE ROL: Añadir log para asegurar qué rol se está usando en la actualización
-        const currentRole = localStorage.getItem('role') || 'desconocido';
-        console.log(`[POCKETBASE RENAME] Intentando UPDATE con rol: ${currentRole} para record ID: ${recordId}`);
-        
-        // ACTUALIZACIÓN CLAVE: Usamos el campo nombre_visible para renombrar
-        await pb.collection(FILE_COLLECTION).update(recordId, { 
-            nombre_visible: newFileNameWithExt
+        const response = await fetch(`${BACKEND_API_WORKS}/${recordId}`, {
+            method: 'PUT',
+            headers: { 
+                'Authorization': `Bearer ${token}`, 
+                'Content-Type': 'application/json' // Necesario para enviar JSON
+            }, 
+            body: JSON.stringify({ 
+                titulo: newTitle // Actualizamos el título
+            }),
         });
-        
-        // ✅ LOG DE ÉXITO: Confirmación en consola del cambio de nombre
-        console.log(`✅ Nombre actualizado: "${oldFileNameWithExt}" -> "${newFileNameWithExt}"`);
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({error: 'Fallo desconocido'}));
+            throw new Error(errorData.error || response.statusText);
+        }
         
         setEstado("✅ Archivo renombrado con éxito.");
-        cargarArchivos(); // Recargar la lista es CRUCIAL para que el botón de descarga se actualice
+        cargarArchivos(); 
     } catch (err) {
-        console.error("❌ Error al renombrar (PocketBase):", err);
-        setEstado(`❌ Error al renombrar archivo: ${err.message}. Revisa tus API Rules de UPDATE.`, true);
+        console.error("❌ Error al renombrar (Render/Appwrite):", err);
+        setEstado(`❌ Error al renombrar archivo: ${err.message}`, true);
     }
 }
 
-// =================================================================
-// 🔹 LÓGICA DE DESCARGA FORZADA (FETCH/BLOB) 🔹
-// =================================================================
-/**
- * 💡 SOLUCIÓN DEFINITIVA: Usa Fetch y Blob para forzar la descarga con el nombre editado.
- */
-async function handleDownload(fileName, fileUrl) {
-    setEstado(`⏳ Preparando descarga de ${fileName}...`);
-
-    try {
-        // PocketBase puede requerir autenticación para acceder al archivo. 
-        // El cliente pb ya debe manejar los headers de auth.
-        const response = await fetch(fileUrl); 
-        
-        if (!response.ok) throw new Error(`Error HTTP: ${response.status}. Revisa tus reglas de lectura/permisos en PocketBase.`);
-        
-        const blob = await response.blob();
-        
-        // 1. Crear un URL temporal para el Blob
-        const url = window.URL.createObjectURL(blob);
-        
-        // 2. Crear un enlace oculto y simular un clic
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName; // ¡Aquí forzamos el nombre!
-        document.body.appendChild(a);
-        a.click();
-        
-        // 3. Limpiar
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-
-        clearEstado(); // Limpia el estado después de una descarga exitosa.
-        
-    } catch (error) {
-        console.error("Error en la descarga por Blob:", error);
-        setEstado(`❌ Error al descargar: ${error.message}`, true);
-    }
-}
 
 // =======================================================
 // file2.js (ROL ADMIN) - FUNCIÓN RENDER MODIFICADA
 // =======================================================
 function renderFileRow(record, curso, semana) {
-    // 💡 CLAVE: Usa nombre_visible (si existe) o el nombre del archivo digital (para archivos antiguos).
-    const displayFileName = record.nombre_visible || record.archivo_digital; 
-    
-    const fullPath = `${curso} / ${semana} / ${displayFileName}`;
-    const fileUrl = getFileUrl(record); 
+    // 🔑 CLAVE: Usamos 'titulo' como nombre visible y 'id' como recordId
     const recordId = record.id; 
+    const displayTitle = record.titulo; 
+    const displayFileName = record.fileName; // Usamos este para la descarga y previsualización
+    const fileUrl = getFileUrl(record); 
     
     const row = fileListBody.insertRow();
     row.className = 'border-t hover:bg-light transition';
 
     const nameCell = row.insertCell();
-    // ✅ CAMBIO 1 (UI): Asegura que la celda de nombre se centre
+    // Usamos el título completo para la visualización en la tabla
     nameCell.className = 'py-3 px-4 text-sm text-primary font-medium break-words text-center';
-    
-    // ✅ CAMBIO 2 (UI): El botón/enlace debe ocupar todo el ancho para centrar el texto correctamente
-    nameCell.innerHTML = `<button class="btn btn-link p-0 text-decoration-none w-100 text-center btn-action btn-action-view" data-filename="${displayFileName}" data-fileurl="${fileUrl}">${fullPath}</button>`;
+    nameCell.innerHTML = `<button class="btn btn-link p-0 text-decoration-none w-100 text-center btn-action btn-action-view" data-filename="${displayFileName}" data-fileurl="${fileUrl}">${displayTitle}</button>`;
 
     const actionsCell = row.insertCell();
     actionsCell.className = 'py-3 px-4 text-center align-middle'; 
@@ -357,23 +367,44 @@ function renderFileRow(record, curso, semana) {
             
             <button class="btn btn-sm btn-warning w-100 btn-action btn-action-edit" 
                 data-record-id="${recordId}" 
-                data-filename="${displayFileName}">Editar</button>
+                data-filename="${displayTitle}">Editar</button>
             
             <button class="btn btn-sm btn-dark w-100 btn-action btn-action-delete" 
                 data-record-id="${recordId}" 
-                data-filename="${displayFileName}">Borrar</button>
+                data-filename="${displayTitle}">Borrar</button>
         </div>
     `;
 }
+
+
 // =================================================================
-// 🔹 Escucha de Acciones & Modal - MODIFICADO PARA DESCARGA
+// 🔹 Escucha de Acciones & Modal (Mantenidas, adaptadas a nuevos handlers)
 // =================================================================
 
+async function handleDownload(fileName, fileUrl) {
+    setEstado(`⏳ Preparando descarga de ${fileName}...`);
+    try {
+        const response = await fetch(fileUrl); 
+        if (!response.ok) throw new Error(`Error HTTP: ${response.status}.`);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName; 
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        clearEstado();
+    } catch (error) {
+        setEstado(`❌ Error al descargar: ${error.message}`, true);
+    }
+}
+
 function handleActionClick(e) {
-    // 1. Manejar botones de acción genéricos (View, Edit, Delete)
     const button = e.target.closest('.btn-action');
     if (button) {
-        const fileName = button.getAttribute('data-filename'); 
+        const fileName = button.getAttribute('data-filename'); // Es el 'titulo' para editar/borrar
         const fileUrl = button.getAttribute('data-fileurl'); 
         const recordId = button.getAttribute('data-record-id');
         
@@ -386,10 +417,9 @@ function handleActionClick(e) {
         }
     }
     
-    // 2. Manejar el botón de Descarga (NUEVO)
     const downloadButton = e.target.closest('.btn-action-download');
     if (downloadButton) {
-        const fileNameDownload = downloadButton.getAttribute('data-filename-download'); 
+        const fileNameDownload = downloadButton.getAttribute('data-filename-download'); // Es el 'fileName' para la descarga
         const fileUrlDownload = downloadButton.getAttribute('data-fileurl'); 
         handleDownload(fileNameDownload, fileUrlDownload);
     }
@@ -397,40 +427,31 @@ function handleActionClick(e) {
 
 function openPreview(fileName, publicUrl) {
     const type = detectType(fileName);
-
     if (!publicUrl) return setEstado("⚠️ No se pudo obtener la URL del archivo", true);
-
     previewContent.innerHTML = ''; 
     if (previewFileNameSpan) previewFileNameSpan.textContent = fileName;
     previewLink.href = publicUrl;
     
     let contentHTML;
-    
     if (type === "image") {
-        contentHTML = `<div class="w-100 h-100 d-flex justify-content-center align-items-center">
-            <img src="${publicUrl}" alt="${fileName}" class="img-fluid" style="max-height: 100%; max-width: 100%; object-fit: contain;">
-        </div>`;
+        contentHTML = `<div class="w-100 h-100 d-flex justify-content-center align-items-center"><img src="${publicUrl}" alt="${fileName}" class="img-fluid" style="max-height: 100%; max-width: 100%; object-fit: contain;"></div>`;
     } else if (type === "pdf" || type === "document") {
         let iframeSrc = publicUrl;
         if (type === "document") iframeSrc = `https://docs.google.com/gview?url=${encodeURIComponent(publicUrl)}&embedded=true`;
-
         contentHTML = `
             <div class="w-100 h-100 d-flex flex-column">
                 <iframe src="${iframeSrc}" title="Vista previa ${type}" class="w-100 border-0" style="flex-grow: 1; height: 100%;"></iframe>
-                <div class="text-center p-2 bg-light w-100 flex-shrink-0 border-top">
-                    <small class="text-muted">Si la previsualización falla, use el botón "Abrir en nueva pestaña".</small>
-                </div>
+                <div class="text-center p-2 bg-light w-100 flex-shrink-0 border-top"><small class="text-muted">Si la previsualización falla, use el botón "Abrir en nueva pestaña".</small></div>
             </div>`;
     } else {
         contentHTML = `<p class="text-center text-muted p-5">No se puede previsualizar este tipo de archivo.</p>`;
     }
-    
     previewContent.innerHTML = contentHTML;
     previewModal.show();
 }
 
 // =================================================================
-// 🔹 Funciones de Inicialización (Modificación)
+// 🔹 Funciones de Inicialización (Mantenidas)
 // =================================================================
 function checkUrlParams() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -438,7 +459,6 @@ function checkUrlParams() {
     const s = urlParams.get('s');
 
     if (c && s) { 
-        // Lógica para cuando vienen de un enlace externo con parámetros
         urlCourse = c;
         urlWeek = s;
         if (cursoSelect) cursoSelect.style.display = 'none';
@@ -446,13 +466,8 @@ function checkUrlParams() {
         if (uploadControls) uploadControls.classList.remove('d-none');
         if (dynamicTitle) dynamicTitle.textContent = `Documentos de ${c} - ${s}`;
     } else {
-        // Lógica para cuando abres file1.html directamente
-        // Aseguramos que los controles de subida/filtro se muestren
-        
         if (uploadControls) uploadControls.classList.remove('d-none'); 
         if (dynamicTitle) dynamicTitle.textContent = "Selecciona un curso/semana";
-        
-        // Y limpia los estilos si existían
         if (cursoSelect) cursoSelect.style.display = '';
         if (semanaSelect) semanaSelect.style.display = '';
     }
