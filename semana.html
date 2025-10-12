@@ -6,154 +6,18 @@
     <title>Archivos de Semana - OMAR</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     
-    <style>
-        /* =================================================================
-           CONFIGURACIÓN DEL FONDO GLOBAL Y BASE (Diseño Oscuro)
-           ================================================================= */
-        body {
-            /* Fondo fijo con overlay oscuro */
-            background-image: url('imagen/fondo principal.jpg');
-            background-size: cover;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
-            background-position: center;
-            font-family: sans-serif;
-            color: #fff; 
-        }
-
-        /* Variables de Color de Marca */
-        :root {
-            --color-magenta: #ff3399; /* Magenta vibrante */
-            --color-magenta-dark: #cc0077;
-            --color-green: #00b300; /* Verde para éxito/descarga */
-            --color-dark-overlay: rgba(0, 0, 0, 0.85);
-        }
-        
-        /* Navbar y Botones (Consistente) */
-        .navbar-brand img { height: 40px; width: auto; }
-        .navbar-light .navbar-nav .nav-link { color: rgba(0,0,0,.55); }
-        .navbar-light .navbar-nav .nav-link:hover { color: var(--color-magenta); font-weight: 600; }
-        .btn-black { background-color: #000; border-color: #000; color: white; transition: all 0.3s ease; }
-        .btn-black:hover { background-color: #333; border-color: #333; color: white; }
-
-        /* =================================================================
-           SECCIÓN PRINCIPAL: OVERLAY Y BASE DE CONTENIDO
-           ================================================================= */
-        
-        #main-content {
-            position: relative;
-            padding-top: 7rem !important; /* pt-28 */
-            padding-bottom: 5rem !important; 
-            min-height: 100vh;
-        }
-        
-        /* Overlay Oscuro */
-        #main-content::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--color-dark-overlay); 
-            z-index: 1;
-        }
-        
-        #main-content > .container {
-            position: relative;
-            z-index: 2;
-        }
-
-        /* Título Principal */
-        .page-title {
-            color: var(--color-magenta); 
-            text-shadow: 0 0 10px rgba(255, 51, 153, 0.3); /* Efecto glow sutil */
-        }
-
-        /* Botón de Volver a Curso */
-        .btn-back-course {
-            background-color: transparent;
-            border: 2px solid var(--color-magenta);
-            color: var(--color-magenta);
-            transition: all 0.3s ease;
-            font-weight: 600;
-        }
-        .btn-back-course:hover {
-            background-color: var(--color-magenta);
-            color: white;
-            transform: translateX(-5px);
-        }
-
-        /* =================================================================
-           LISTADO DE ARCHIVOS (Similar a file.html, pero más grande)
-           ================================================================= */
-        .files-card {
-            background-color: rgba(255, 255, 255, 0.95) !important; 
-            border-radius: 1rem !important; 
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-            padding: 1.5rem !important;
-            color: #333; /* Texto oscuro */
-        }
-        .table {
-            color: #333; 
-        }
-        .table thead th {
-            border-top: none;
-            border-bottom: 2px solid #e5e7eb; 
-            background-color: #f8f9fa;
-            color: #6c757d;
-        }
-        .table-hover tbody tr:hover {
-            color: #333;
-            background-color: rgba(255, 51, 153, 0.05) !important; 
-        }
-        .text-green-700 { color: var(--color-green) !important; }
-
-        /* Estilos para los botones de acción en la tabla */
-        .btn-action-download { color: var(--color-green); }
-        .btn-action-delete { color: var(--color-magenta-dark); }
-        .btn-action-download:hover { color: #008000; }
-        .btn-action-delete:hover { color: #880055; }
-        .btn-action {
-             font-size: 0.9rem;
-             font-weight: 500;
-             padding: 0.25rem 0.5rem;
-             width: 100px; /* Ancho fijo para consistencia */
-        }
-
-
-        /* =================================================================
-           RESPONSIVIDAD
-           ================================================================= */
-        @media (max-width: 991.98px) { 
-             #main-content { padding-top: 5rem !important; }
-        }
-    </style>
+    <link rel="stylesheet" href="semana.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 <body class="font-sans">
 
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
         <div class="container-xl px-4">
             <a class="navbar-brand fs-4 fw-bold text-dark" href="index.html">
-                <img src="imagen/logo.png" alt="Logo de Omar" class="d-inline-block align-text-top">
+                <img src="imagen/logo.png" alt="Logo de Omar" style="height: 40px;">
             </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 fw-medium">
-                    <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
-                    <li class="nav-item"><a class="nav-link" href="portafolio.html">Portafolio</a></li>
-                    <li class="nav-item"><a class="nav-link" href="sobremi.html">Perfil</a></li>
-                    <li class="nav-item"><a class="nav-link" href="contacto.html">Contacto</a></li>
-                </ul>
-                
-                <a href="login.html" class="btn btn-black rounded-pill px-4 py-2 ms-lg-3">
-                    Login
-                </a>
-            </div>
+            <a href="login.html" class="btn btn-black rounded-pill px-4 py-2 ms-lg-3">Login</a>
         </div>
     </nav>
 
@@ -174,36 +38,39 @@
                 
             </div>
 
-            <div class="files-card">
-                <h4 class="fs-5 fw-bold text-center text-green-700 mb-4">
-                    📂 Archivos de la <span id="week-title-short">Semana</span>
-                </h4>
+            <h4 class="fs-5 fw-bold text-center text-white-50 mb-4">
+                📂 Archivos de la <span id="week-title-short">Semana</span>
+            </h4>
+            
+            <div id="file-status" class="alert d-none fw-bold mt-3" role="alert"></div>
 
-                <div class="table-responsive">
-                    <table class="table table-hover rounded-3 overflow-hidden">
-                        <thead class="text-secondary text-sm text-uppercase">
-                            <tr>
-                                <th scope="col" class="py-3 px-4 text-start">Archivo</th>
-                                <th scope="col" class="py-3 px-4 text-center">Subido Por</th>
-                                <th scope="col" class="py-3 px-4 text-center">Fecha</th>
-                                <th scope="col" class="py-3 px-4 text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="file-list-body">
-                            <tr>
-                                <td colspan="4" class="text-center py-4 text-secondary font-semibold">
-                                    Cargando archivos para esta semana...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div id="files-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-4">
                 </div>
-            </div>
             
         </div>
     </div>
 
+    <div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered" style="min-height: 90vh;">
+            <div class="modal-content bg-dark text-white" style="height: 90vh;">
+                <div class="modal-header border-bottom border-secondary">
+                    <h5 class="modal-title" id="previewModalLabel">Vista Previa: <span id="preview-filename"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0 d-flex flex-column" id="preview-content-container" style="flex-grow: 1;">
+                    <div id="preview-content" style="flex-grow: 1; height: 100%;">
+                        </div>
+                </div>
+                <div class="modal-footer border-top border-secondary">
+                    <a id="preview-link" href="#" target="_blank" class="btn btn-magenta">Abrir en nueva pestaña</a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="semana.js"></script> 
+    <script type="module" src="./backend/pocketbaseClient.js"></script> 
+    <script type="module" src="./semana.js"></script> 
 </body>
 </html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administración de Roles - OMAR</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"> 
+    
+    <link rel="stylesheet" href="semana.css"> 
+    
+    <style>
+        /* Estilos específicos para la sección de control (del CSS original) */
+        .admin-controls {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .user-list-card {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.75rem;
+            padding: 20px;
+        }
+        .user-row {
+            transition: background-color 0.3s ease;
+        }
+        .user-row:hover {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+        }
+        .input-dark, .select-dark {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .input-dark::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        /* Ajuste para el contenido principal debido al fixed-top navbar */
+        #main-content {
+            padding-top: 6rem !important; 
+        }
+    </style>
+</head>
+<body class="font-sans">
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+        <div class="container-xl px-4">
+            <a class="navbar-brand fs-4 fw-bold text-dark" href="index.html">
+                <img src="imagen/logo.png" alt="Logo de Omar" style="height: 40px;">
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 fw-medium">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="portafolio.html">Portafolio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="sobremi.html">Perfil</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contacto.html">Contacto</a></li>
+                </ul>
+                
+                <div class="d-flex align-items-center ms-lg-3">
+                    <span class="badge bg-danger me-3 py-2 px-3 fw-normal rounded-pill">
+                        Rol: <span id="logged-user-role-nav" class="fw-bold">...</span>
+                    </span> 
+                    <button
+                        id="logout-btn"
+                        class="btn btn-danger rounded-pill px-4 py-2 fw-medium transition"
+                    >
+                        <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div id="main-content" class="py-5 px-3 min-vh-100">
+        <div class="container">
+            <h1 class="page-title display-5 fw-bold mb-5 text-center">
+                <i class="fas fa-users-cog me-2"></i> Administración de Roles de Usuario
+            </h1>
+
+            <div class="admin-controls mb-5">
+                <h4 class="text-white mb-3">Tu Estado de Sesión</h4>
+                <div id="auth-status-box" class="p-3 border rounded">
+                    <p class="mb-1">
+                        <strong>Correo:</strong> <span id="logged-user-email" class="text-warning">No logueado</span>
+                    </p>
+                    <p class="mb-0">
+                        <strong>Rol:</strong> <span id="logged-user-role" class="text-info">N/A</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="admin-controls mb-4">
+                <h4 class="text-white mb-3">Filtros</h4>
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <input type="text" id="search-input" class="form-control input-dark" placeholder="Buscar por Correo">
+                    </div>
+                    <div class="col-md-4">
+                        <select id="role-filter" class="form-select select-dark">
+                            <option value="">Filtrar por Rol (Todos)</option>
+                            <option value="admin">Admin</option>
+                            <option value="usuario">Usuario</option>
+                        </select>
+                    </div>
+                    </div>
+                </div>
+
+            <div class="user-list-card">
+                <h4 class="text-white mb-4"><i class="fas fa-users me-2"></i> Lista de Usuarios Registrados</h4>
+                <p id="user-status" class="text-center text-secondary">Cargando usuarios...</p>
+                <div id="user-list-container" class="list-group">
+                    </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> 
+    <script type="module" src="asignar_roles.js"></script> 
+</body>
+</html>

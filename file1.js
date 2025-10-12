@@ -1,5 +1,5 @@
 // =======================================================
-// file1.js (ROL USUARIO) - CON PocketBase (Archivos) - FINAL
+// file1.js (ROL USUARIO) - CON PocketBase (Archivos) - SOLUCIÓN DESCARGA FORZADA
 // =======================================================
 
 import pb from './backend/pocketbaseClient.js'; 
@@ -12,7 +12,7 @@ const LOGIN_URL = "./login.html";
 // 🚨 CONFIGURACIÓN DE SUPABASE (PARA AUTH) 🚨
 // ⚠️ REEMPLAZA CON TUS VALORES REALES
 const SUPABASE_URL = 'https://bazwwhwjruwgyfomyttp.supabase.co'; 
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhend3aHdqcnV3Z3lmb215dHRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxNjA1NTAsImV4cCI6MjA3MzczNjU1MH0.RzpCKpYV-GqNIhTklsQtRqyiPCGGmVlUs7q_BeBHxUo'; 
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhend3aHdqcnV3Z3lmb215dHRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxNjA1NTAsImV4cCI6MjA3MzczNjU1MH0.RzpCKpYV-GqNIhTklsQtRqyiPCGGmV1Us7q_BeBHxUo'; 
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 
@@ -129,7 +129,7 @@ async function handleLogout() {
 
 
 // =================================================================
-// 🔹 Funciones de PocketBase (CRUD) - IMPLEMENTACIÓN DE DEBUG
+// 🔹 Funciones de PocketBase (CRUD)
 // =================================================================
 
 /**
@@ -228,53 +228,102 @@ function getFileUrl(record) {
     return pb.getFileUrl(record, record.archivo_digital, { /* Opciones */ });
 }
 
-
+// =================================================================
+// 🔹 LÓGICA DE DESCARGA FORZADA (FETCH/BLOB) 🔹
+// =================================================================
 /**
- * Renderiza la fila del archivo (solo ver/descargar).
+ * 💡 SOLUCIÓN DEFINITIVA: Usa Fetch y Blob para forzar la descarga con el nombre editado.
  */
-function renderFileRow(record, curso, semana) {
-    // La columna 'archivo_digital' contiene el nombre del archivo guardado en el servidor
-    const fileNameOnServer = record.archivo_digital; 
-    
-    const originalFileName = fileNameOnServer; 
+async function handleDownload(fileName, fileUrl) {
+    setEstado(`⏳ Preparando descarga de ${fileName}...`);
 
-    // Ruta a mostrar: "Curso / Semana / Nombre.pdf"
-    const fullPath = `${curso} / ${semana} / ${originalFileName}`;
-    const fileUrl = getFileUrl(record); // Obtener la URL pública/temporal
+    try {
+        // PocketBase puede requerir autenticación para acceder al archivo. 
+        // El cliente pb ya debe manejar los headers de auth.
+        const response = await fetch(fileUrl); 
+        
+        if (!response.ok) throw new Error(`Error HTTP: ${response.status}. Revisa tus reglas de lectura/permisos en PocketBase.`);
+        
+        const blob = await response.blob();
+        
+        // 1. Crear un URL temporal para el Blob
+        const url = window.URL.createObjectURL(blob);
+        
+        // 2. Crear un enlace oculto y simular un clic
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName; // ¡Aquí forzamos el nombre!
+        document.body.appendChild(a);
+        a.click();
+        
+        // 3. Limpiar
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        clearEstado(); // Limpia el estado después de una descarga exitosa.
+        
+    } catch (error) {
+        console.error("Error en la descarga por Blob:", error);
+        setEstado(`❌ Error al descargar: ${error.message}`, true);
+    }
+}
+
+// =======================================================
+// file1.js (ROL USUARIO) - FUNCIÓN RENDER MODIFICADA
+// =======================================================
+function renderFileRow(record, curso, semana) {
+    // 🔑 CORRECCIÓN CLAVE: Usar nombre_visible si existe, sino, usar archivo_digital (el original).
+    const displayFileName = record.nombre_visible || record.archivo_digital;
+    
+    const fileUrl = getFileUrl(record); 
+    
+    // 💡 USAR displayFileName en la ruta y en los data-atributos
+    const fullPath = `${curso} / ${semana} / ${displayFileName}`; 
 
     const row = fileListBody.insertRow();
     row.className = 'border-t hover:bg-light transition';
 
     const nameCell = row.insertCell();
-    nameCell.className = 'py-3 px-4 text-sm text-primary font-medium break-words';
-    nameCell.innerHTML = `<button class="btn btn-link p-0 text-decoration-none text-start btn-action btn-action-view" data-filename="${originalFileName}" data-fileurl="${fileUrl}">${fullPath}</button>`;
+    nameCell.className = 'py-3 px-4 text-sm text-primary font-medium break-words'; 
+    
+    // Usar displayFileName para el botón de vista previa
+    nameCell.innerHTML = `<button class="btn btn-link p-0 text-decoration-none text-start btn-action btn-action-view" data-filename="${displayFileName}" data-fileurl="${fileUrl}">${fullPath}</button>`;
 
     const actionsCell = row.insertCell();
-    actionsCell.className = 'py-3 px-4 text-center d-flex justify-content-center align-items-center';
-
-    // ROL USUARIO: SOLO VER y DESCARGAR
+    actionsCell.className = 'py-3 px-4 align-middle'; 
+    
     actionsCell.innerHTML = `
-        <button class="btn btn-sm btn-primary rounded-pill font-medium me-2 btn-action btn-action-view" data-filename="${originalFileName}" data-fileurl="${fileUrl}">Ver</button>
-        <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-success rounded-pill font-medium" title="Descargar">Descargar</a>
+        <div class="d-inline-flex justify-content-center btn-group-actions">
+            <button class="btn btn-sm btn-primary rounded-pill font-medium btn-action btn-action-view" 
+                data-filename="${displayFileName}" data-fileurl="${fileUrl}">Ver</button>
+            
+            <button class="btn btn-sm btn-success rounded-pill font-medium btn-action-download" 
+                data-filename-download="${displayFileName}" 
+                data-fileurl="${fileUrl}" 
+                title="Descargar">Descargar</button>
+        </div>
     `;
 }
-
-
 // =================================================================
-// 🔹 Escucha de Acciones & Modal - SIN CAMBIOS
+// 🔹 Escucha de Acciones & Modal - MODIFICADO PARA DESCARGA
 // =================================================================
 
 function handleActionClick(e) {
-    const button = e.target.closest('.btn-action');
-    if (!button) return;
-    
-    const fileName = button.getAttribute('data-filename'); 
-    const fileUrl = button.getAttribute('data-fileurl'); 
-    
-    if (button.classList.contains('btn-action-view')) {
+    // 1. Manejar el botón de Vista Previa
+    const viewButton = e.target.closest('.btn-action-view');
+    if (viewButton) {
+        const fileName = viewButton.getAttribute('data-filename'); 
+        const fileUrl = viewButton.getAttribute('data-fileurl'); 
         openPreview(fileName, fileUrl); 
     } 
-    // Los botones de DELETE y EDITAR no existen en este archivo (file1.js)
+    
+    // 2. Manejar el botón de Descarga (NUEVO)
+    const downloadButton = e.target.closest('.btn-action-download');
+    if (downloadButton) {
+        const fileNameDownload = downloadButton.getAttribute('data-filename-download'); 
+        const fileUrlDownload = downloadButton.getAttribute('data-fileurl'); 
+        handleDownload(fileNameDownload, fileUrlDownload);
+    }
 }
 
 function openPreview(fileName, publicUrl) {
@@ -328,11 +377,8 @@ function checkUrlParams() {
         if (dynamicTitle) dynamicTitle.textContent = `Documentos de ${c} - ${s}`;
     } else {
         // Lógica para cuando abres file1.html directamente
-        // DEBES MOSTRAR LOS CONTROLES para que el usuario pueda seleccionar
         
-        // ❌ ELIMINA: if (uploadControls) uploadControls.classList.add('d-none');
-        
-        if (uploadControls) uploadControls.classList.remove('d-none'); // ⬅️ CAMBIO CLAVE: Asegura que se muestren
+        if (uploadControls) uploadControls.classList.remove('d-none'); // ⬅️ Asegura que los controles se muestren
         if (dynamicTitle) dynamicTitle.textContent = "Selecciona un curso/semana";
         
         // Y limpia los estilos si existían

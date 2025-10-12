@@ -1,8 +1,8 @@
-/* styles.css */
+/* styles.css - VERSIÓN FINAL CORREGIDA Y OPTIMIZADA CON BOTONES APILADOS (75/25) */
 
 /* =================================================================
-   CONFIGURACIÓN DEL FONDO GLOBAL Y BASE (Diseño Oscuro)
-   ================================================================= */
+    CONFIGURACIÓN DEL FONDO GLOBAL Y BASE (Diseño Oscuro)
+    ================================================================= */
 body {
     background-image: url('imagen/fondo principal.jpg');
     background-size: cover;
@@ -18,12 +18,15 @@ body {
     --color-magenta: #ff3399; /* Magenta vibrante */
     --color-magenta-dark: #cc0077; 
     --color-green: #00b300; /* Verde para éxito/descarga */
-    --color-dark-overlay: rgba(0, 0, 0, 0.85);
+    --color-dark-overlay: rgba(0, 0, 0, 0.9); /* Overlay oscuro */
+    --color-text-light: #f8f9fa; /* Gris muy claro */
+    --color-card-bg: rgba(255, 255, 255, 0.1); /* Fondo de tarjeta semitransparente */
+    --color-card-border: rgba(255, 255, 255, 0.2); /* Borde de tarjeta */
 }
 
 /* =================================================================
-   NAVBAR Y BOTONES DE ACCESO
-   ================================================================= */
+    NAVBAR Y BOTONES DE ACCESO
+    ================================================================= */
 
 /* Estilo para el logo */
 .navbar-brand img {
@@ -33,7 +36,7 @@ body {
 
 /* Enlaces de navegación */
 .navbar-light .navbar-nav .nav-link {
-    color: rgba(0,0,0,.55);
+    color: rgba(0,0,0,.7); 
 }
 .navbar-light .navbar-nav .nav-link:hover,
 .navbar-light .navbar-nav .nav-link.active {
@@ -41,27 +44,27 @@ body {
     font-weight: 600;
 }
 
-/* Badge de Rol (Color de acento Magenta) */
+/* Badge de Rol */
 .badge.bg-primary {
     background-color: var(--color-magenta) !important; 
     color: white;
 }
 
-/* Botón de Cerrar Sesión (Estilo Black/Dark) */
+/* Botón de Cerrar Sesión */
 .btn-danger {
-    background-color: #000 !important;
-    border-color: #000 !important;
+    background-color: #333 !important;
+    border-color: #333 !important;
     transition: all 0.3s ease;
     color: white;
 }
 .btn-danger:hover {
-    background-color: #333 !important;
-    border-color: #333 !important;
+    background-color: var(--color-magenta) !important; 
+    border-color: var(--color-magenta) !important;
 }
 
 /* =================================================================
-   SECCIÓN PRINCIPAL: OVERLAY Y BASE DE CONTENIDO
-   ================================================================= */
+    SECCIÓN PRINCIPAL: OVERLAY Y BASE DE CONTENIDO
+    ================================================================= */
 
 .pt-28 { 
     padding-top: 7rem !important; 
@@ -97,41 +100,51 @@ body {
 }
 
 /* =================================================================
-   CONTENEDORES (CARDS) MODERNOS DE GESTIÓN (.management-card)
-   ================================================================= */
+    CONTENEDORES (CARDS) MODERNOS DE GESTIÓN
+    ================================================================= */
 
 .management-card {
-    background-color: rgba(255, 255, 255, 0.95) !important; /* Fondo casi blanco */
-    border: 1px solid #e5e7eb; 
+    background-color: var(--color-card-bg) !important; 
+    border: 1px solid var(--color-card-border); 
     border-radius: 1rem !important; 
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
     padding: 1.5rem !important;
     height: 100%;
-    color: #333; /* Texto oscuro */
+    color: var(--color-text-light); 
     transition: box-shadow 0.3s ease;
 }
 .management-card:hover {
-    /* Sombra más marcada al pasar el mouse */
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
 }
 
 /* =================================================================
-   FORMULARIO DE SUBIDA (Acento Magenta)
-   ================================================================= */
+    FORMULARIO DE SUBIDA
+    ================================================================= */
 
 /* Título del formulario */
 .text-pink-600 { 
     color: var(--color-magenta) !important; 
 }
 
-/* Enfocamos los inputs y selects con Magenta */
+/* Estilo base de inputs y selects */
+.form-select,
+.form-control {
+    background-color: rgba(255, 255, 255, 0.2) !important; 
+    border-color: rgba(255, 255, 255, 0.3) !important; 
+    color: white !important; 
+}
+.form-select option {
+    color: #333; 
+}
+
+/* Foco en inputs */
 .form-select:focus,
 .form-control:focus {
     border-color: var(--color-magenta) !important; 
-    box-shadow: 0 0 0 0.2rem rgba(255, 51, 153, 0.25) !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 51, 153, 0.4) !important;
 }
 
-/* Botón de Subir (Gradient en tonos Magenta) */
+/* Botón de Subir */
 .btn-gradient-upload {
     background: linear-gradient(to right, var(--color-magenta), var(--color-magenta-dark)); 
     border: none;
@@ -141,107 +154,140 @@ body {
 }
 .btn-gradient-upload:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(255, 51, 153, 0.4);
+    box-shadow: 0 4px 10px rgba(255, 51, 153, 0.6);
     background: linear-gradient(to left, var(--color-magenta), var(--color-magenta-dark)); 
     color: white;
 }
 
-/* Mensajes de Estado (Magenta Oscuro) */
+/* Mensajes de Estado */
 .text-pink-700 { color: var(--color-magenta-dark) !important; }
 
 /* =================================================================
-   LISTADO DE ARCHIVOS (TABLA)
-   ================================================================= */
+    LISTADO DE ARCHIVOS (TABLA) - SOLUCIÓN 75/25 DE ANCHOS
+    ================================================================= */
 
-/* Título del listado (Verde para diferenciación) */
+/* Título del listado */
 .text-green-700 { color: var(--color-green) !important; }
 
 .table {
-    color: #333; 
+    color: var(--color-text-light); 
     margin-bottom: 0;
+    background-color: transparent !important; 
 }
-/* Separador sutil en el encabezado de la tabla */
+
+/* 💡 CLAVE 1: Define el layout fijo para respetar los anchos de columna */
+.table {
+    table-layout: fixed; 
+    width: 100%;
+}
+
+/* 💡 CLAVE 2: Define el ancho y alineación de la columna "Archivo" (primera columna) */
+.table thead th:nth-child(1),
+.table tbody td:nth-child(1) {
+    /* ✅ CAMBIO: Archivo al 75% */
+    width: 75%; 
+    /* ✅ AÑADIDO: Centrar el contenido de la celda */
+    text-align: center; 
+}
+
+/* 💡 CLAVE 3: Define el ancho de la columna "Acciones" (segunda columna) */
+.table thead th:nth-child(2),
+.table tbody td:nth-child(2) {
+    /* ✅ CAMBIO: Acciones al 25% */
+    width: 25%; 
+    text-align: center; /* Centra el contenido (botones) */
+}
+
+/* Encabezado de la tabla */
 .table thead th {
     border-top: none;
-    border-bottom: 2px solid #e5e7eb; 
-    background-color: #f8f9fa;
-    color: #6c757d;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3); 
+    background-color: rgba(255, 255, 255, 0.1); 
+    color: var(--color-text-light);
 }
-/* Aumentamos el padding en las celdas */
+/* Celdas de la tabla */
 .table > :not(caption) > * > * {
     padding: 0.85rem 1rem; 
+    border-color: rgba(255, 255, 255, 0.15); 
 }
-/* Resaltado de fila al pasar el mouse con acento Magenta */
+/* Resaltado de fila */
 .table-hover tbody tr:hover {
-    color: #333;
-    background-color: rgba(255, 51, 153, 0.05) !important; 
+    color: white;
+    background-color: rgba(255, 51, 153, 0.15) !important; 
+}
+.table-hover tbody tr {
+    transition: background-color 0.2s ease;
 }
 
-/* Estilos para los botones de acción en la tabla */
-.d-flex.justify-content-center .btn {
-    width: 90px; 
-    padding: 0.35rem 0.75rem !important; 
-    white-space: nowrap; 
-    text-align: center;
-    font-size: 0.8rem; 
-    transition: all 0.2s ease-in-out; 
+/* =======================================================
+    AJUSTES DE BOTONES APILADOS (W-100)
+    ======================================================= */
+
+/* 1. Ajuste de redondeo y tamaño para los botones de acción */
+.btn-sm.btn-action,
+.btn-sm.btn-success,
+.btn-sm.btn-warning,
+.btn-sm.btn-dark {
+    /* Forzar un redondeo ligero, ya que eliminamos rounded-pill del JS */
+    border-radius: 0.5rem !important; 
+    /* Ajuste de tamaño para botones apilados */
+    padding: 0.4rem 0.75rem !important; 
+    font-size: 0.85rem !important;
 }
 
-.d-flex.justify-content-center > .btn {
-    margin-right: 0.5rem !important; 
+/* 2. Colores personalizados para los botones de acción (solo si necesitas sobreescribir Bootstrap) */
+.btn-primary { 
+    background-color: var(--color-magenta) !important; 
+    border-color: var(--color-magenta) !important;
 }
-.d-flex.justify-content-center > .btn:last-child {
-    margin-right: 0 !important;
+.btn-primary:hover {
+    background-color: var(--color-magenta-dark) !important;
+    border-color: var(--color-magenta-dark) !important;
+}
+.btn-dark {
+    background-color: #555 !important; 
+    border-color: #555 !important;
+}
+.btn-dark:hover {
+    background-color: #333 !important;
+    border-color: #333 !important;
 }
 
-/* Botón Descargar (Verde) */
-.btn-action-download {
-    color: var(--color-green);
-}
-.btn-action-download:hover {
-    color: #008000;
-}
-
-/* Botón Eliminar (Rojo/Error) */
-.btn-action-delete {
-    color: #dc3545;
-}
-.btn-action-delete:hover {
-    color: #a71d2a;
-}
 
 /* =================================================================
-   MODAL DE VISTA PREVIA
-   ================================================================= */
+    MODAL DE VISTA PREVIA
+    ================================================================= */
 
+.modal-content {
+    background-color: rgba(0, 0, 0, 0.95); 
+    color: white;
+}
+.modal-header {
+    background-color: rgba(0, 0, 0, 0.8) !important; 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+.modal-header .modal-title {
+    color: var(--color-text-light);
+}
 .modal-body-content { 
-    /* Calcula el 90% del alto de la ventana menos el header del modal */
     height: calc(90vh - 58px); 
     overflow-y: auto; 
-    background-color: #f9fafb !important;
+    background-color: #222 !important; 
+}
+.modal-header .btn-close {
+    filter: invert(1); 
 }
 
-#preview-content,
-#preview-content > div {
-    height: 100%;
-    width: 100%;
-}
-
-#preview-content iframe {
-    width: 100%;
-    height: 100%; 
-    border: none;
-}
 
 /* =================================================================
-   RESPONSIVIDAD
-   ================================================================= */
+    RESPONSIVIDAD (Manteniendo tus reglas)
+    ================================================================= */
 
 @media (max-width: 991.98px) { 
-     #main-files {
+    #main-files {
         padding-top: 5rem !important; 
     }
-     .management-card {
+    .management-card {
         padding: 1.5rem;
     }
     .navbar-collapse .d-flex {
@@ -251,8 +297,5 @@ body {
     }
     .navbar-collapse .d-flex .badge {
         margin-bottom: 0.5rem;
-    }
-    .navbar-collapse .d-flex .btn-danger {
-         margin-left: 0 !important;
     }
 }

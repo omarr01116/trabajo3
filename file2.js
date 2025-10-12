@@ -1,5 +1,5 @@
 // =======================================================
-// file2.js (ROL ADMIN) - CON PocketBase (Archivos) - CORREGIDO
+// file2.js (ROL ADMIN) - CON PocketBase (Archivos) - SOLUCIÓN DESCARGA FORZADA
 // =======================================================
 
 import pb from './backend/pocketbaseClient.js'; 
@@ -12,7 +12,7 @@ const LOGIN_URL = "./login.html";
 // 🚨 CONFIGURACIÓN DE SUPABASE (DEBE SER LA MISMA QUE EN login.js)
 // ⚠️ REEMPLAZA CON TUS VALORES REALES
 const SUPABASE_URL = 'https://bazwwhwjruwgyfomyttp.supabase.co'; 
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhend3aHdqcnV3Z3lmb215dHRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxNjA1NTAsImV4cCI6MjA3MzczNjU1MH0.RzpCKpYV-GqNIhTklsQtRqyiPCGGmVlUs7q_BeBHxUo'; 
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhend3aHdqcnV3Z3lmb215dHRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxNjA1NTAsImV4cCI6MjA3MzczNjU1MH0.RzpCKpYV-GqNIhTklsQtRqyiPCGGmV1Us7q_BeBHxUo'; 
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 
@@ -191,7 +191,7 @@ async function handleUpload(e) {
     formData.append('subcategoria', semana);
     formData.append('archivo_digital', file); 
     
-    // Si creaste el campo nombre_visible, lo inicializamos con el nombre del archivo
+    // Inicializamos nombre_visible con el nombre original del archivo.
     formData.append('nombre_visible', file.name);
 
     try {
@@ -239,46 +239,93 @@ function getFileUrl(record) {
 /**
  * POCKETBASE (RENAME) - Cambia el nombre visible del archivo.
  */
-async function handleRename(recordId, oldFileName) {
-    const newName = prompt(`Escribe el nuevo nombre para "${oldFileName}":`);
+async function handleRename(recordId, oldFileNameWithExt) {
+    const parts = oldFileNameWithExt.split('.');
+    const ext = parts.length > 1 && parts[parts.length - 1].length > 0 ? '.' + parts.pop() : ''; 
+    const baseName = parts.join('.'); // Nombre base sin la extensión
+
+    const newBaseName = prompt(`Escribe el nuevo nombre para "${oldFileNameWithExt}" (sin la extensión):`, baseName);
     
     // Si el usuario cancela o deja vacío
-    if (!newName || newName.trim() === "") return setEstado("⚠️ Nombre no modificado.", true);
+    if (!newBaseName || newBaseName.trim() === "") {
+        setEstado("⚠️ Nombre no modificado.", true);
+        return;
+    }
 
-    const newFileName = newName.trim();
-    
-    // Opcional: Si quieres conservar la extensión:
-    // const parts = oldFileName.split('.');
-    // const ext = parts.length > 1 ? '.' + parts.pop() : '';
-    // const newFileName = `${newName.trim()}${ext}`;
-
+    const newNameTrimmed = newBaseName.trim();
+    // ✅ CLAVE: Reconstruir el nuevo nombre visible con la extensión
+    const newFileNameWithExt = `${newNameTrimmed}${ext}`; 
 
     try {
-        setEstado(`⏳ Renombrando "${oldFileName}"...`);
+        setEstado(`⏳ Renombrando "${oldFileNameWithExt}" a "${newFileNameWithExt}"...`);
         
-        // 🚨 ACTUALIZACIÓN CLAVE: Usamos el campo nombre_visible para renombrar
-        // PocketBase conservará el archivo binario.
+        // 🚨 DIAGNÓSTICO DE ROL: Añadir log para asegurar qué rol se está usando en la actualización
+        const currentRole = localStorage.getItem('role') || 'desconocido';
+        console.log(`[POCKETBASE RENAME] Intentando UPDATE con rol: ${currentRole} para record ID: ${recordId}`);
+        
+        // ACTUALIZACIÓN CLAVE: Usamos el campo nombre_visible para renombrar
         await pb.collection(FILE_COLLECTION).update(recordId, { 
-            nombre_visible: newFileName 
+            nombre_visible: newFileNameWithExt
         });
         
+        // ✅ LOG DE ÉXITO: Confirmación en consola del cambio de nombre
+        console.log(`✅ Nombre actualizado: "${oldFileNameWithExt}" -> "${newFileNameWithExt}"`);
+        
         setEstado("✅ Archivo renombrado con éxito.");
-        cargarArchivos();
+        cargarArchivos(); // Recargar la lista es CRUCIAL para que el botón de descarga se actualice
     } catch (err) {
-        console.error("Error al renombrar (PocketBase):", err);
+        console.error("❌ Error al renombrar (PocketBase):", err);
         setEstado(`❌ Error al renombrar archivo: ${err.message}. Revisa tus API Rules de UPDATE.`, true);
     }
 }
 
-
+// =================================================================
+// 🔹 LÓGICA DE DESCARGA FORZADA (FETCH/BLOB) 🔹
+// =================================================================
 /**
- * Renderiza la fila del archivo (ADMIN: Ver/Descargar/Editar/Eliminar).
+ * 💡 SOLUCIÓN DEFINITIVA: Usa Fetch y Blob para forzar la descarga con el nombre editado.
  */
+async function handleDownload(fileName, fileUrl) {
+    setEstado(`⏳ Preparando descarga de ${fileName}...`);
+
+    try {
+        // PocketBase puede requerir autenticación para acceder al archivo. 
+        // El cliente pb ya debe manejar los headers de auth.
+        const response = await fetch(fileUrl); 
+        
+        if (!response.ok) throw new Error(`Error HTTP: ${response.status}. Revisa tus reglas de lectura/permisos en PocketBase.`);
+        
+        const blob = await response.blob();
+        
+        // 1. Crear un URL temporal para el Blob
+        const url = window.URL.createObjectURL(blob);
+        
+        // 2. Crear un enlace oculto y simular un clic
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName; // ¡Aquí forzamos el nombre!
+        document.body.appendChild(a);
+        a.click();
+        
+        // 3. Limpiar
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        clearEstado(); // Limpia el estado después de una descarga exitosa.
+        
+    } catch (error) {
+        console.error("Error en la descarga por Blob:", error);
+        setEstado(`❌ Error al descargar: ${error.message}`, true);
+    }
+}
+
+// =======================================================
+// file2.js (ROL ADMIN) - FUNCIÓN RENDER MODIFICADA
+// =======================================================
 function renderFileRow(record, curso, semana) {
-    // 💡 CAMBIO CLAVE: Usa nombre_visible si existe, si no, usa el nombre del archivo digital
+    // 💡 CLAVE: Usa nombre_visible (si existe) o el nombre del archivo digital (para archivos antiguos).
     const displayFileName = record.nombre_visible || record.archivo_digital; 
     
-    const originalFileName = record.archivo_digital; // Nombre real para generar la URL y Extensión
     const fullPath = `${curso} / ${semana} / ${displayFileName}`;
     const fileUrl = getFileUrl(record); 
     const recordId = record.id; 
@@ -287,41 +334,64 @@ function renderFileRow(record, curso, semana) {
     row.className = 'border-t hover:bg-light transition';
 
     const nameCell = row.insertCell();
-    nameCell.className = 'py-3 px-4 text-sm text-primary font-medium break-words';
-    nameCell.innerHTML = `<button class="btn btn-link p-0 text-decoration-none text-start btn-action btn-action-view" data-filename="${displayFileName}" data-fileurl="${fileUrl}">${fullPath}</button>`;
+    // ✅ CAMBIO 1 (UI): Asegura que la celda de nombre se centre
+    nameCell.className = 'py-3 px-4 text-sm text-primary font-medium break-words text-center';
+    
+    // ✅ CAMBIO 2 (UI): El botón/enlace debe ocupar todo el ancho para centrar el texto correctamente
+    nameCell.innerHTML = `<button class="btn btn-link p-0 text-decoration-none w-100 text-center btn-action btn-action-view" data-filename="${displayFileName}" data-fileurl="${fileUrl}">${fullPath}</button>`;
 
     const actionsCell = row.insertCell();
-    actionsCell.className = 'py-3 px-4 text-center d-flex justify-content-center align-items-center';
+    actionsCell.className = 'py-3 px-4 text-center align-middle'; 
 
-    // ROL ADMIN: VER, DESCARGAR, EDITAR (habilitado), BORRAR
     actionsCell.innerHTML = `
-        <button class="btn btn-sm btn-primary rounded-pill font-medium me-2 btn-action btn-action-view" data-filename="${displayFileName}" data-fileurl="${fileUrl}">Ver</button>
-        <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-success rounded-pill font-medium me-2" title="Descargar">Descargar</a>
-        
-        <button class="btn btn-sm btn-warning rounded-pill font-medium me-2 btn-action btn-action-edit" data-record-id="${recordId}" data-filename="${displayFileName}">Editar</button>
-        
-        <button class="btn btn-sm btn-danger rounded-pill font-medium btn-action btn-action-delete" data-record-id="${recordId}" data-filename="${displayFileName}">Borrar</button>
+        <div class="d-grid gap-2">
+            
+            <button class="btn btn-sm btn-primary w-100 btn-action btn-action-view" 
+                data-filename="${displayFileName}" 
+                data-fileurl="${fileUrl}">Ver</button>
+            
+            <button class="btn btn-sm btn-success w-100 btn-action-download" 
+                data-filename-download="${displayFileName}" 
+                data-fileurl="${fileUrl}" 
+                title="Descargar">Descargar</button>
+            
+            <button class="btn btn-sm btn-warning w-100 btn-action btn-action-edit" 
+                data-record-id="${recordId}" 
+                data-filename="${displayFileName}">Editar</button>
+            
+            <button class="btn btn-sm btn-dark w-100 btn-action btn-action-delete" 
+                data-record-id="${recordId}" 
+                data-filename="${displayFileName}">Borrar</button>
+        </div>
     `;
 }
-
 // =================================================================
-// 🔹 Escucha de Acciones & Modal (Con Lógica de Eliminación/Edición)
+// 🔹 Escucha de Acciones & Modal - MODIFICADO PARA DESCARGA
 // =================================================================
 
 function handleActionClick(e) {
+    // 1. Manejar botones de acción genéricos (View, Edit, Delete)
     const button = e.target.closest('.btn-action');
-    if (!button) return;
+    if (button) {
+        const fileName = button.getAttribute('data-filename'); 
+        const fileUrl = button.getAttribute('data-fileurl'); 
+        const recordId = button.getAttribute('data-record-id');
+        
+        if (button.classList.contains('btn-action-view')) {
+            openPreview(fileName, fileUrl); 
+        } else if (button.classList.contains('btn-action-delete')) {
+            handleDelete(recordId, fileName); 
+        } else if (button.classList.contains('btn-action-edit')) { 
+            handleRename(recordId, fileName); 
+        }
+    }
     
-    const fileName = button.getAttribute('data-filename'); 
-    const fileUrl = button.getAttribute('data-fileurl'); 
-    const recordId = button.getAttribute('data-record-id');
-    
-    if (button.classList.contains('btn-action-view')) {
-        openPreview(fileName, fileUrl); 
-    } else if (button.classList.contains('btn-action-delete')) {
-        handleDelete(recordId, fileName); 
-    } else if (button.classList.contains('btn-action-edit')) { 
-        handleRename(recordId, fileName); 
+    // 2. Manejar el botón de Descarga (NUEVO)
+    const downloadButton = e.target.closest('.btn-action-download');
+    if (downloadButton) {
+        const fileNameDownload = downloadButton.getAttribute('data-filename-download'); 
+        const fileUrlDownload = downloadButton.getAttribute('data-fileurl'); 
+        handleDownload(fileNameDownload, fileUrlDownload);
     }
 }
 

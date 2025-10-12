@@ -1,0 +1,156 @@
+/* =================================================================
+   VARIABLES DE COLOR Y FUENTE
+   ================================================================= */
+:root {
+    --color-magenta: #ff3399; /* Magenta vibrante */
+    --color-magenta-dark: #cc0077;
+    --color-dark-overlay: rgba(0, 0, 0, 0.85);
+    --color-card-bg: rgba(255, 255, 255, 0.05); /* Fondo de Card */
+    --color-card-border: rgba(255, 255, 255, 0.15); /* Borde de Card */
+}
+
+/* =================================================================
+   ESTILOS BASE Y FONDO
+   ================================================================= */
+body {
+    /* Fondo fijo con overlay oscuro */
+    background-image: url('imagen/fondo principal.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-position: center;
+    font-family: sans-serif;
+    color: #fff; 
+}
+
+/* Navbar y Botones (Consistente con tu diseño) */
+.navbar-brand img { height: 40px; width: auto; }
+.navbar-light .navbar-nav .nav-link { color: rgba(0,0,0,.55); }
+.navbar-light .navbar-nav .nav-link:hover { color: var(--color-magenta); font-weight: 600; }
+.btn-black { 
+    background-color: #000; 
+    border-color: #000; 
+    color: white; 
+    transition: all 0.3s ease; 
+}
+.btn-black:hover { 
+    background-color: #333; 
+    border-color: #333; 
+    color: white; 
+}
+
+/* =================================================================
+   SECCIÓN PRINCIPAL: OVERLAY Y CONTENIDO
+   ================================================================= */
+
+#main-content {
+    position: relative;
+    padding-top: 7rem !important; 
+    padding-bottom: 5rem !important; 
+    min-height: 100vh;
+}
+
+/* Overlay Oscuro */
+#main-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--color-dark-overlay); 
+    z-index: 1;
+}
+
+#main-content > .container {
+    position: relative;
+    z-index: 2;
+}
+
+/* Título Principal */
+.page-title {
+    color: var(--color-magenta); 
+    text-shadow: 0 0 10px rgba(255, 51, 153, 0.3); 
+}
+
+/* Botón de Volver a Curso */
+.btn-back-course {
+    background-color: transparent;
+    border: 2px solid var(--color-magenta);
+    color: var(--color-magenta);
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+.btn-back-course:hover {
+    background-color: var(--color-magenta);
+    color: white;
+    transform: translateX(-5px);
+}
+
+/* =================================================================
+   ESTILOS PARA LAS CARDS DE ARCHIVO
+   ================================================================= */
+.file-card {
+    background-color: var(--color-card-bg); 
+    border: 1px solid var(--color-card-border);
+    border-radius: 0.75rem; 
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.file-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--color-magenta);
+    box-shadow: 0 8px 20px rgba(255, 51, 153, 0.3);
+}
+
+.card-preview {
+    height: 150px; /* Altura fija para la imagen de referencia */
+    background-color: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3rem;
+    color: #ccc;
+}
+
+.card-preview img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+/* Ícono de overlay (cuando no hay imagen) */
+.icon-overlay {
+    font-size: 4rem;
+    color: var(--color-magenta);
+}
+
+/* Botones dentro de la Card */
+.btn-magenta {
+    background-color: var(--color-magenta);
+    border-color: var(--color-magenta);
+    color: white;
+    transition: all 0.3s;
+    font-weight: 500;
+}
+.btn-magenta:hover {
+    background-color: var(--color-magenta-dark);
+    border-color: var(--color-magenta-dark);
+    color: white;
+}
+.btn-outline-light {
+    font-weight: 500;
+}
+
+
+/* =================================================================
+   RESPONSIVIDAD
+   ================================================================= */
+@media (max-width: 991.98px) { 
+    #main-content { padding-top: 5rem !important; }
+}
