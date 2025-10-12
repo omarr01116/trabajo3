@@ -141,12 +141,15 @@ async function handleUpload(e) {
         return setEstado("⚠️ Selecciona curso y semana válidos.", true);
     }
 
-    const filePath = `${curso}/${semana}/${file.name}`;
     setEstado("⏳ Subiendo archivo...");
 
+    // ✅ Campos correctos según el backend
     const formData = new FormData();
+    formData.append('curso', curso);
+    formData.append('semana', semana);
     formData.append('documento', file);
-    formData.append('ruta', filePath); // ← ruta completa para Appwrite
+
+    console.log("📦 Enviando FormData:", [...formData.entries()]);
 
     try {
         const response = await fetch(BACKEND_API_WORKS, {
@@ -164,6 +167,7 @@ async function handleUpload(e) {
             setEstado(`❌ Error al subir: ${errorData.error || response.statusText}`, true);
         }
     } catch (error) {
+        console.error("❌ Error de red:", error);
         setEstado('❌ Error de red. Verifica Render.', true);
     }
 }
