@@ -1,5 +1,5 @@
 // ======================================================================
-// /backend/routes/works.js (VERSIÓN FINAL AJUSTADA A CURSO/SEMANA)
+// /backend/routes/works.js (VERSIÓN FINAL FUNCIONAL CON CURSO Y SEMANA)
 // ======================================================================
 
 import express from "express";
@@ -7,15 +7,16 @@ import { verificarToken, soloAdmin } from "../middleware/auth.js";
 import multer from "multer";
 import fs from "fs/promises";
 import fsSync from "fs";
+import path from "path";
 import { storage, databases } from "../appwriteClient.js";
 import { ID } from "node-appwrite";
 
 const router = express.Router();
 
 // 🧭 CONFIGURACIÓN DE APPWRITE
-const DATABASE_ID = process.env.APPWRITE_DATABASE_ID || "68ebd97b002ffc08ca90";
-const COLLECTION_ID = process.env.APPWRITE_COLLECTION_ID || "trabajodocs";
-const BUCKET_ID = process.env.APPWRITE_BUCKET_ID || "68ebd7b1000a707b10f2";
+const DATABASE_ID = "68ebd97b002ffc08ca90";
+const COLLECTION_ID = "trabajodocs";
+const BUCKET_ID = "68ebd7b1000a707b10f2";
 
 // 🗂 CONFIGURACIÓN DE MULTER (Render solo permite /tmp)
 const upload = multer({ dest: "/tmp" });
@@ -35,6 +36,7 @@ router.get("/works", async (req, res) => {
 
 // ======================================================================
 // 📌 POST /api/works → subir archivo (solo admin)
+// Guardará el archivo como: curso/semana/nombreArchivo.pdf
 // ======================================================================
 router.post(
   "/works",
@@ -46,15 +48,17 @@ router.post(
       const { curso, semana } = req.body;
       const fileToUpload = req.file;
 
+      // 🧩 Validación
       if (!curso || !semana || !fileToUpload) {
         return res.status(400).json({
-          error: "Curso, semana y archivo (documento) son requeridos",
+          error: "Curso, Semana y el archivo (documento) son requeridos.",
         });
       }
 
-      // Construir ruta lógica
-      const customFileName = `${curso}/${semana}/${fileToUpload.originalname}`;
-      console.log("📂 Subiendo a ruta lógica:", customFileName);
+      // ✅ Nombre limpio del archivo
+      const fileName = fileToUpload.originalname;
+      const customFilePath = `${curso}/${semana}/${fileName}`;
+      console.log("📂 Subiendo archivo en ruta lógica:", customFilePath);
 
       // --- 1️⃣ Subir archivo a Appwrite Storage ---
       const uploadedFile = await storage.createFile(
@@ -74,7 +78,7 @@ router.post(
         curso,
         semana,
         fileId: uploadedFile.$id,
-        fileName: fileToUpload.originalname,
+        fileName,
         fileUrl,
       };
 
