@@ -1,5 +1,5 @@
 // ======================================================================
-// /backend/routes/works.js (VERSIÓN FINAL FUNCIONAL - APPWRITE ORGANIZADO)
+// /backend/routes/works.js (VERSIÓN FINAL CORREGIDA Y FUNCIONAL)
 // ======================================================================
 
 import express from "express";
@@ -9,7 +9,7 @@ import fs from "fs/promises";
 import fsSync from "fs";
 import path from "path";
 import { storage, databases } from "../appwriteClient.js";
-import { ID } from "node-appwrite"; // importante: usa el de node-appwrite
+import { ID } from "node-appwrite";
 
 const router = express.Router();
 
@@ -45,21 +45,23 @@ router.post(
   upload.single("documento"),
   async (req, res) => {
     try {
-      const { curso, semana } = req.body;
+      const { ruta } = req.body;
       const fileToUpload = req.file;
 
-      if (!curso || !semana || !fileToUpload) {
+      if (!ruta || !fileToUpload) {
         return res.status(400).json({
-          error: "Curso, Semana y Archivo (documento) son requeridos",
+          error: "Ruta y Archivo (documento) son requeridos",
         });
       }
 
-      // ✅ Construye el nombre jerárquico: Curso/Semana/Archivo
-      const safeCurso = curso.replace(/\s+/g, "_"); // evita espacios
-      const safeSemana = semana.replace(/\s+/g, "_");
+      // ✅ Extrae curso y semana desde la ruta: curso/semana/nombreArchivo
+      const parts = ruta.split("/");
+      const curso = parts[0] || "SinCurso";
+      const semana = parts[1] || "SinSemana";
       const fileName = fileToUpload.originalname;
-      const customFileName = `${safeCurso}/${safeSemana}/${fileName}`;
 
+      // ✅ Construye la ruta limpia
+      const customFileName = `${curso}/${semana}/${fileName}`;
       console.log("📂 Subiendo a ruta lógica:", customFileName);
 
       // --- 1️⃣ Subir archivo a Appwrite Storage ---
@@ -79,10 +81,9 @@ router.post(
       const nuevoTrabajoData = {
         curso,
         semana,
-        filePath: customFileName,
         fileId: uploadedFile.$id,
-        fileName: fileName,
-        fileUrl: fileUrl,
+        fileName,
+        fileUrl,
       };
 
       const trabajoGuardado = await databases.createDocument(
