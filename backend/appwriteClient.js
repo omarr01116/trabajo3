@@ -1,15 +1,12 @@
 // =================================================================
-// backend/appwriteClient.js (Corregido para Entorno de Servidor/Node.js)
+// backend/appwriteClient.js (Versión Final para Render/Node.js)
 // =================================================================
 
-// ⚠️ NOTA CRÍTICA: Para el entorno de Node.js, debes instalar y usar 'node-appwrite'
-// Si tu package.json no lo tiene, ejecútalo: npm install node-appwrite
-
-// Importamos los módulos de 'node-appwrite'
+// ⚠️ Usamos 'node-appwrite' para entornos de servidor. Asegúrate de que esté instalado.
 import { Client, Storage, Databases } from 'node-appwrite'; 
 
-// 🛑🛑🛑 IMPORTANTE: LEER VARIABLES DE ENTORNO EN RENDER 🛑🛑🛑
-// Estas variables deben estar definidas en la configuración de Render
+// 🛑🛑🛑 LECTURA DE VARIABLES DE ENTORNO EN RENDER 🛑🛑🛑
+// Las claves secretas se leen del entorno para seguridad.
 const APPWRITE_ENDPOINT = process.env.APPWRITE_ENDPOINT || 'https://nyc.cloud.appwrite.io/v1'; 
 const APPWRITE_PROJECT_ID = process.env.APPWRITE_PROJECT_ID; 
 const APPWRITE_API_KEY = process.env.APPWRITE_API_KEY; 
@@ -18,17 +15,16 @@ const APPWRITE_API_KEY = process.env.APPWRITE_API_KEY;
 // 1. Inicializa el cliente
 const client = new Client();
 
-// 2. Configuración de la conexión (Métodos separados, sin encadenar setKey)
-// Si alguna variable de entorno falta, esto puede fallar.
-
+// 2. Lógica de Configuración y Verificación
 if (!APPWRITE_PROJECT_ID || !APPWRITE_API_KEY) {
-    console.error('❌ ERROR: Faltan APPWRITE_PROJECT_ID o APPWRITE_API_KEY en las variables de entorno de Render.');
+    // Si falta información crítica, solo logueamos el error y el cliente no funcionará.
+    console.error('❌ ERROR CRÍTICO: Faltan APPWRITE_PROJECT_ID o APPWRITE_API_KEY en las variables de entorno de Render. El servicio de Appwrite estará deshabilitado.');
 } else {
+    // 3. Configuración del cliente (llamadas directas para evitar el TypeError)
     client.setEndpoint(APPWRITE_ENDPOINT);
     client.setProject(APPWRITE_PROJECT_ID);
     
-    // 💥 CORRECCIÓN CRÍTICA: setKey o setSecret debe llamarse directamente en el cliente.
-    // Usamos setKey, que es el método correcto para las API Keys de Servidor.
+    // CORRECCIÓN: setKey se llama directamente, no encadenado después de setProject.
     client.setKey(APPWRITE_API_KEY); 
     
     // 🚀 Mensaje de CONEXIÓN EXITOSA
@@ -40,7 +36,7 @@ if (!APPWRITE_PROJECT_ID || !APPWRITE_API_KEY) {
 }
 
 
-// Exporta los módulos de Appwrite que usarás en tus rutas
+// Exporta los módulos de Appwrite inicializados con el cliente.
 export const storage = new Storage(client);
 export const databases = new Databases(client);
 
