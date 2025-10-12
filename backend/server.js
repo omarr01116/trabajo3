@@ -1,5 +1,4 @@
-// /backend/server.js (SOLUCIÓN DEFINITIVA Y LIMPIA)
-
+// /backend/server.js (VERSIÓN LIMPIA Y OPTIMIZADA)
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -24,16 +23,16 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Permite solicitudes sin 'origin' (como Postman)
+    origin: (origin, callback) => {
+      // Permite solicitudes sin 'origin' (Postman, fetch desde backend)
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
         console.warn(`❌ CORS bloqueado para origen: ${origin}`);
-        callback(new Error("No permitido por CORS"));
+        callback(null, false); // No rompe el servidor
       }
     },
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
@@ -51,10 +50,14 @@ app.get("/", (req, res) => {
   });
 });
 
+// 🌐 Manejo de rutas no encontradas
+app.use((req, res) => {
+  res.status(404).json({ error: "Ruta no encontrada" });
+});
+
 // 🚀 Inicializar servidor
 const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, () => {
-  console.log(`✅ Servidor ejecutándose correctamente en el puerto ${PORT}`);
+  console.log(`✅ Servidor ejecutándose en el puerto ${PORT}`);
   console.log(`🌐 Permitido acceso desde: ${allowedOrigins.join(", ")}`);
 });
