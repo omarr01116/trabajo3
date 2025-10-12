@@ -1,14 +1,11 @@
 {
   "name": "backend",
   "version": "1.0.0",
+  "type": "module",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@supabase/supabase-js": "^2.58.0",
     "appwrite": "^21.2.1",
@@ -21,5 +18,5 @@
     "node-appwrite": "^20.2.1",
     "zod": "^4.1.11"
   },
-  "description": ""
+  "description": "Backend Node + Express con Appwrite y Supabase"
 }
