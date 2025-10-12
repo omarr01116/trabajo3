@@ -10,13 +10,11 @@ const RENDER_BASE_URL = 'https://trabajo-backend.onrender.com';
 const BACKEND_API_WORKS = `${RENDER_BASE_URL}/api/works`;
 const LOGIN_URL = "./login.html"; 
 const USER_PAGE_URL = 'file1.html';
-// --------------------------------------------------------
 
 // 🚨 CONFIGURACIÓN DE SUPABASE (MISMA QUE EN file1.js)
 const SUPABASE_URL = 'https://bazwwhwjruwgyfomyttp.supabase.co'; 
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhend3aHdqcnV3Z3lmb215dHRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxNjA1NTAsImV4cCI6MjA3MzczNjU1MH0.RzpCKpYV-GqNIhTklsQtRqyiPCGGmV1Us7q_BeBHxUo'; 
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
-
 
 // =================================================================
 // 🔹 Variables de Estado (DOM Elements & Globals)
@@ -36,17 +34,12 @@ const previewContent = document.getElementById('preview-content');
 const previewLink = document.getElementById('preview-link');
 const previewFileNameSpan = document.getElementById('preview-filename'); 
 
-// Asumimos que estos inputs existen para la subida
-const tituloInput = document.getElementById('titulo'); 
-const descripcionInput = document.getElementById('descripcion'); 
-
 let role = localStorage.getItem('role') || 'usuario';
 let urlCourse = null;
 let urlWeek = null;
 
-
 // =================================================================
-// 🔹 Funciones de Utilidad (Mantenidas)
+// 🔹 Funciones de Utilidad
 // =================================================================
 function detectType(name) {
     const ext = name.split(".").pop().toLowerCase();
@@ -69,15 +62,12 @@ function clearEstado() {
 }
 
 function getFileUrl(record) {
-    // En Appwrite/Render, la URL viene en el registro
     return record.fileUrl; 
 }
-
 
 // =================================================================
 // 🔹 Funciones de Autenticación (SUPABASE REAL)
 // =================================================================
-
 async function checkAuthAndInit() {
     const { data: { session }, error: authError } = await supabaseClient.auth.getSession();
     
@@ -85,16 +75,14 @@ async function checkAuthAndInit() {
         window.location.href = LOGIN_URL; 
         return; 
     }
-    
+
     const userRole = localStorage.getItem('role') || 'usuario';
 
-    // 3. Verificar Rol y Redirección (file2.html es solo para ADMIN)
     if (userRole !== 'admin') { 
         window.location.href = USER_PAGE_URL; 
         return;
     }
-    
-    // 4. Inicialización UI (Solo si el rol es 'admin')
+
     role = userRole; 
     if (roleDisplay) roleDisplay.textContent = role.toUpperCase();
     if (uploadControls) uploadControls.classList.remove('d-none'); 
@@ -102,7 +90,6 @@ async function checkAuthAndInit() {
     checkUrlParams(); 
     await cargarArchivos(); 
 
-    // 5. Asignar Listeners
     if (uploadForm) uploadForm.addEventListener('submit', handleUpload);
     document.addEventListener('click', handleActionClick); 
     if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
@@ -119,37 +106,27 @@ async function handleLogout() {
     window.location.href = LOGIN_URL; 
 }
 
-
 // =================================================================
-// 🔹 RENDER/APPWRITE (CRUD: READ & FILTER) 🔹
+// 🔹 RENDER/APPWRITE (READ & FILTER)
 // =================================================================
-
-/**
- * 💥 MIGRADO: Lee todos y filtra en el Frontend (mismo método que file1.js).
- */
 async function cargarArchivos() {
     if (!fileListBody) return;
     
     setEstado("⏳ Cargando y filtrando archivos...");
-    
+
     const curso = urlCourse || (cursoSelect ? cursoSelect.value : '');
     const semana = urlWeek || (semanaSelect ? semanaSelect.value : '');
-    
     const shouldFilter = !!curso && !!semana && curso !== 'default' && semana !== 'default';
 
     fileListBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-secondary font-semibold">Buscando documentos...</td></tr>`;
 
     try {
         const response = await fetch(BACKEND_API_WORKS, { method: 'GET' });
-
-        if (!response.ok) {
-             throw new Error(`Fallo la carga: ${response.statusText}`);
-        }
+        if (!response.ok) throw new Error(`Fallo la carga: ${response.statusText}`);
         
-        const records = await response.json(); 
+        const records = await response.json().catch(() => []); // ✅ Mejora de estabilidad
         let filteredRecords = records;
 
-        // 2. Filtrado en el Frontend 
         if (shouldFilter) {
             const cursoTerm = `[${curso.toLowerCase()}]`;
             const semanaTerm = `[${semana.toLowerCase()}]`;
@@ -159,7 +136,7 @@ async function cargarArchivos() {
                 return tituloLower.includes(cursoTerm) && tituloLower.includes(semanaTerm);
             });
         }
-        
+
         fileListBody.innerHTML = ''; 
 
         if (filteredRecords.length === 0) {
@@ -168,11 +145,7 @@ async function cargarArchivos() {
             return;
         }
         
-        // 3. Renderizar
-        filteredRecords.forEach(record => {
-            renderFileRow(record, curso, semana); 
-        });
-
+        filteredRecords.forEach(record => renderFileRow(record, curso, semana));
         clearEstado();
 
     } catch (err) {
@@ -181,52 +154,43 @@ async function cargarArchivos() {
     }
 }
 
-
 // =================================================================
-// 🔹 RENDER/APPWRITE (CREATE) - SUBIR ARCHIVO 🔹
+// 🔹 RENDER/APPWRITE (CREATE)
 // =================================================================
-
-/**
- * 💥 MIGRADO: Usa la misma lógica de subida que file1.js.
- */
 async function handleUpload(e) {
     e.preventDefault();
 
     const file = fileInput.files[0];
-    const titulo = tituloInput ? tituloInput.value : '';
-    const descripcion = descripcionInput ? descripcionInput.value : '';
+    if (!file) return setEstado("⚠️ Archivo es requerido.", true); // ✅ Validación adelantada
+
+    const baseTitulo = file.name;
     const token = localStorage.getItem('token'); 
 
     if (!token) return setEstado("⚠️ Sesión no válida. Inicia sesión.", true);
-    if (!file || !titulo) return setEstado("⚠️ Título y Archivo son requeridos.", true);
-    
+
     const curso = urlCourse || (cursoSelect ? cursoSelect.value : '');
     const semana = urlWeek || (semanaSelect ? semanaSelect.value : '');
 
     if (!curso || !semana || curso === 'default' || semana === 'default') {
-         return setEstado("⚠️ Selecciona un curso y una semana válidos para subir el archivo.", true);
+        return setEstado("⚠️ Selecciona un curso y una semana válidos para subir el archivo.", true);
     }
     
     setEstado("⏳ Subiendo a Appwrite...");
-    
+
     const formData = new FormData();
     formData.append('documento', file); 
-    // 🔑 Título: Incluimos Curso/Semana para el filtrado en READ
-    formData.append('titulo', `[${curso}] - [${semana}] - ${titulo}`);
-    formData.append('descripcion', descripcion);
+    formData.append('titulo', `[${curso}] - [${semana}] - ${baseTitulo}`);
 
     try {
         const response = await fetch(BACKEND_API_WORKS, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }, 
+            headers: { 'Authorization': `Bearer ${token}` },
             body: formData,
         });
 
         if (response.ok) {
             setEstado("✅ Archivo subido con éxito");
-            if (fileInput) fileInput.value = ''; 
-            if (tituloInput) tituloInput.value = '';
-            if (descripcionInput) descripcionInput.value = '';
+            fileInput.value = ''; 
             cargarArchivos(); 
         } else {
             const errorData = await response.json().catch(() => ({error: 'Fallo desconocido'}));
@@ -237,18 +201,11 @@ async function handleUpload(e) {
     }
 }
 
-
 // =================================================================
-// 🔹 RENDER/APPWRITE (DELETE) - ELIMINAR ARCHIVO 🔹
+// 🔹 RENDER/APPWRITE (DELETE)
 // =================================================================
-
-/**
- * 💥 MIGRADO: Elimina el archivo y el registro usando un DELETE con ID.
- */
 async function handleDelete(recordId, fileName) { 
-    if (!confirm(`¿Estás seguro de que quieres ELIMINAR el archivo "${fileName}"? Esta acción es irreversible.`)) {
-        return;
-    }
+    if (!confirm(`¿Estás seguro de que quieres ELIMINAR el archivo "${fileName}"? Esta acción es irreversible.`)) return;
     
     const token = localStorage.getItem('token'); 
     if (!token) return setEstado("⚠️ Sesión no válida. Inicia sesión.", true);
@@ -267,39 +224,29 @@ async function handleDelete(recordId, fileName) {
         }
 
         setEstado("🗑️ Archivo eliminado correctamente");
-        cargarArchivos(); // Recargar la lista
+        cargarArchivos();
     } catch (err) {
         console.error("Error al eliminar (Render/Appwrite):", err);
         setEstado(`❌ Error al eliminar archivo: ${err.message}`, true);
     }
 }
 
-
 // =================================================================
-// 🔹 RENDER/APPWRITE (UPDATE) - RENOMBRAR ARCHIVO 🔹
+// 🔹 RENDER/APPWRITE (UPDATE)
 // =================================================================
-
-/**
- * 💥 MIGRADO: Actualiza el campo 'titulo' usando un PUT con ID.
- */
 async function handleRename(recordId, oldFileTitle) {
-    
-    // 1. Extraer el prefijo [Curso] - [Semana] - del título actual
     const titleRegex = /(\[.+?\]\s-\s\[.+?\]\s-\s)(.*)/;
     const match = oldFileTitle.match(titleRegex);
     
-    // Si no tiene el formato esperado, tomamos todo el título como base
     const prefix = match ? match[1] : '';
     const baseName = match ? match[2] : oldFileTitle;
     
     const newBaseName = prompt(`Escribe el nuevo NOMBRE BASE del archivo:`, baseName.trim());
-    
     if (!newBaseName || newBaseName.trim() === "") {
         setEstado("⚠️ Nombre no modificado.", true);
         return;
     }
     
-    // 2. Reconstruir el nuevo título completo (con el prefijo)
     const newTitle = `${prefix}${newBaseName.trim()}`;
     const token = localStorage.getItem('token'); 
     if (!token) return setEstado("⚠️ Sesión no válida. Inicia sesión.", true);
@@ -311,11 +258,9 @@ async function handleRename(recordId, oldFileTitle) {
             method: 'PUT',
             headers: { 
                 'Authorization': `Bearer ${token}`, 
-                'Content-Type': 'application/json' // Necesario para enviar JSON
+                'Content-Type': 'application/json'
             }, 
-            body: JSON.stringify({ 
-                titulo: newTitle // Actualizamos el título
-            }),
+            body: JSON.stringify({ titulo: newTitle }),
         });
 
         if (!response.ok) {
@@ -331,22 +276,19 @@ async function handleRename(recordId, oldFileTitle) {
     }
 }
 
-
-// =======================================================
-// file2.js (ROL ADMIN) - FUNCIÓN RENDER MODIFICADA
-// =======================================================
+// =================================================================
+// 🔹 Render de Archivos en Tabla
+// =================================================================
 function renderFileRow(record, curso, semana) {
-    // 🔑 CLAVE: Usamos 'titulo' como nombre visible y 'id' como recordId
     const recordId = record.id; 
     const displayTitle = record.titulo; 
-    const displayFileName = record.fileName; // Usamos este para la descarga y previsualización
+    const displayFileName = record.fileName || record.titulo; // ✅ Fallback
     const fileUrl = getFileUrl(record); 
     
     const row = fileListBody.insertRow();
     row.className = 'border-t hover:bg-light transition';
 
     const nameCell = row.insertCell();
-    // Usamos el título completo para la visualización en la tabla
     nameCell.className = 'py-3 px-4 text-sm text-primary font-medium break-words text-center';
     nameCell.innerHTML = `<button class="btn btn-link p-0 text-decoration-none w-100 text-center btn-action btn-action-view" data-filename="${displayFileName}" data-fileurl="${fileUrl}">${displayTitle}</button>`;
 
@@ -355,15 +297,13 @@ function renderFileRow(record, curso, semana) {
 
     actionsCell.innerHTML = `
         <div class="d-grid gap-2">
-            
             <button class="btn btn-sm btn-primary w-100 btn-action btn-action-view" 
                 data-filename="${displayFileName}" 
                 data-fileurl="${fileUrl}">Ver</button>
             
             <button class="btn btn-sm btn-success w-100 btn-action-download" 
                 data-filename-download="${displayFileName}" 
-                data-fileurl="${fileUrl}" 
-                title="Descargar">Descargar</button>
+                data-fileurl="${fileUrl}">Descargar</button>
             
             <button class="btn btn-sm btn-warning w-100 btn-action btn-action-edit" 
                 data-record-id="${recordId}" 
@@ -376,11 +316,9 @@ function renderFileRow(record, curso, semana) {
     `;
 }
 
-
 // =================================================================
-// 🔹 Escucha de Acciones & Modal (Mantenidas, adaptadas a nuevos handlers)
+// 🔹 Eventos y Previsualización
 // =================================================================
-
 async function handleDownload(fileName, fileUrl) {
     setEstado(`⏳ Preparando descarga de ${fileName}...`);
     try {
@@ -404,8 +342,8 @@ async function handleDownload(fileName, fileUrl) {
 function handleActionClick(e) {
     const button = e.target.closest('.btn-action');
     if (button) {
-        const fileName = button.getAttribute('data-filename'); // Es el 'titulo' para editar/borrar
-        const fileUrl = button.getAttribute('data-fileurl'); 
+        const fileName = button.getAttribute('data-filename');
+        const fileUrl = button.getAttribute('data-fileurl');
         const recordId = button.getAttribute('data-record-id');
         
         if (button.classList.contains('btn-action-view')) {
@@ -416,10 +354,10 @@ function handleActionClick(e) {
             handleRename(recordId, fileName); 
         }
     }
-    
+
     const downloadButton = e.target.closest('.btn-action-download');
     if (downloadButton) {
-        const fileNameDownload = downloadButton.getAttribute('data-filename-download'); // Es el 'fileName' para la descarga
+        const fileNameDownload = downloadButton.getAttribute('data-filename-download');
         const fileUrlDownload = downloadButton.getAttribute('data-fileurl'); 
         handleDownload(fileNameDownload, fileUrlDownload);
     }
@@ -451,7 +389,7 @@ function openPreview(fileName, publicUrl) {
 }
 
 // =================================================================
-// 🔹 Funciones de Inicialización (Mantenidas)
+// 🔹 Inicialización
 // =================================================================
 function checkUrlParams() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -472,6 +410,7 @@ function checkUrlParams() {
         if (semanaSelect) semanaSelect.style.display = '';
     }
 }
+
 document.addEventListener('DOMContentLoaded', () => {
     checkAuthAndInit();
 });
