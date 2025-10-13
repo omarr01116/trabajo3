@@ -1,118 +1,46 @@
-// ======================================================================
-// /backend/routes/works.js (VERSIÓN FINAL FUNCIONAL CON CURSO Y SEMANA)
-// ======================================================================
+// backend/server.js
 
 import express from "express";
-import { verificarToken, soloAdmin } from "../middleware/auth.js";
-import multer from "multer";
-import fs from "fs/promises";
-import fsSync from "fs";
-import path from "path";
-import { storage, databases } from "../appwriteClient.js";
-import { ID } from "node-appwrite";
+import cors from "cors";
+import dotenv from "dotenv";
+import worksRouter from "./routes/works.js"; // Importa tu router de trabajos
+import authRouter from "./routes/auth.js";   // Importa tu router de autenticación
 
-const router = express.Router();
+// Cargar variables de entorno del archivo .env
+dotenv.config();
 
-// 🧭 CONFIGURACIÓN DE APPWRITE
-const DATABASE_ID = "68ebd97b002ffc08ca90";
-const COLLECTION_ID = "trabajodocs";
-const BUCKET_ID = "68ebd7b1000a707b10f2";
+const app = express();
+const PORT = process.env.PORT || 3001;
 
-// 🗂 CONFIGURACIÓN DE MULTER (Render solo permite /tmp)
-const upload = multer({ dest: "/tmp" });
+// =======================================================
+// 🔹 Middlewares Esenciales
+// =======================================================
 
-// ======================================================================
-// 📌 GET /api/works → lista pública de trabajos
-// ======================================================================
-router.get("/works", async (req, res) => {
-  try {
-    const response = await databases.listDocuments(DATABASE_ID, COLLECTION_ID);
-    res.json(response.documents);
-  } catch (error) {
-    console.error("Error al obtener trabajos:", error);
-    res.status(500).json({ error: "No se pudo obtener la lista de trabajos." });
-  }
+// 1. Habilitar CORS para permitir peticiones desde tu frontend.
+app.use(cors());
+
+// 2. Middlewares para analizar cuerpos de solicitud.
+//    Estos deben ir ANTES de las rutas.
+app.use(express.json()); // Para analizar cuerpos JSON
+app.use(express.urlencoded({ extended: true })); // Para analizar cuerpos URL-encoded
+
+// =======================================================
+// 🔹 Montaje de Rutas
+// =======================================================
+
+// 3. Montar los routers. Todas las rutas definidas en
+//    works.js y auth.js comenzarán con /api.
+app.use("/api", worksRouter);
+app.use("/api", authRouter);
+
+// Ruta de bienvenida para verificar que el servidor está funcionando
+app.get("/", (req, res) => {
+  res.send("🚀 El servidor del backend está operativo.");
 });
 
-// ======================================================================
-// 📌 POST /api/works → subir archivo (solo admin)
-// Guardará el archivo como: curso/semana/nombreArchivo.pdf
-// ======================================================================
-router.post(
-  "/works",
-  verificarToken,
-  soloAdmin,
-  upload.single("documento"),
-  async (req, res) => {
-    try {
-      const { curso, semana } = req.body;
-      const fileToUpload = req.file;
-
-      // 🧩 Validación
-      if (!curso || !semana || !fileToUpload) {
-        return res.status(400).json({
-          error: "Curso, Semana y el archivo (documento) son requeridos.",
-        });
-      }
-
-      // ✅ Nombre limpio del archivo
-      const fileName = fileToUpload.originalname;
-      const customFilePath = `${curso}/${semana}/${fileName}`;
-      console.log("📂 Subiendo archivo en ruta lógica:", customFilePath);
-
-      // --- 1️⃣ Subir archivo a Appwrite Storage ---
-      const uploadedFile = await storage.createFile(
-        BUCKET_ID,
-        ID.unique(),
-        fsSync.createReadStream(fileToUpload.path)
-      );
-
-      // --- 2️⃣ Eliminar archivo temporal ---
-      await fs.unlink(fileToUpload.path);
-
-      // --- 3️⃣ Crear URL pública para vista directa ---
-      const fileUrl = `${storage.client.config.endpoint}/storage/buckets/${BUCKET_ID}/files/${uploadedFile.$id}/view?project=${storage.client.config.project}`;
-
-      // --- 4️⃣ Guardar referencia en base de datos ---
-      const nuevoTrabajoData = {
-        curso,
-        semana,
-        fileId: uploadedFile.$id,
-        fileName,
-        fileUrl,
-      };
-
-      const trabajoGuardado = await databases.createDocument(
-        DATABASE_ID,
-        COLLECTION_ID,
-        ID.unique(),
-        nuevoTrabajoData
-      );
-
-      res.status(201).json({
-        mensaje: "✅ Archivo subido y guardado correctamente",
-        trabajo: trabajoGuardado,
-      });
-    } catch (error) {
-      if (req.file) {
-        try {
-          await fs.unlink(req.file.path);
-        } catch (e) {}
-      }
-      console.error("❌ Error al subir trabajo a Appwrite:", error);
-      res.status(500).json({ error: "Fallo la subida del archivo." });
-    }
-  }
-);
-
-// ======================================================================
-// 📌 GET /api/works/admin → solo admins
-// ======================================================================
-router.get("/works/admin", verificarToken, soloAdmin, (req, res) => {
-  res.json({
-    mensaje: "Zona exclusiva de administradores 🚀",
-    user: req.user,
-  });
+// =======================================================
+// 🔹 Iniciar el Servidor
+// =======================================================
+app.listen(PORT, () => {
+  console.log(`✅ Servidor escuchando en el puerto ${PORT}`);
 });
-
-export default router;

@@ -1,5 +1,5 @@
 // ======================================================================
-// /backend/routes/works.js (VERSIÓN FINAL CORREGIDA Y FUNCIONAL)
+// /backend/routes/works.js (VERSIÓN FINAL FUNCIONAL CON CURSO Y SEMANA)
 // ======================================================================
 
 import express from "express";
@@ -45,24 +45,20 @@ router.post(
   upload.single("documento"),
   async (req, res) => {
     try {
-      const { ruta } = req.body;
+      const { curso, semana } = req.body;
       const fileToUpload = req.file;
 
-      if (!ruta || !fileToUpload) {
+      // 🧩 Validación
+      if (!curso || !semana || !fileToUpload) {
         return res.status(400).json({
-          error: "Ruta y Archivo (documento) son requeridos",
+          error: "Curso, Semana y el archivo (documento) son requeridos.",
         });
       }
 
-      // ✅ Extrae curso y semana desde la ruta: curso/semana/nombreArchivo
-      const parts = ruta.split("/");
-      const curso = parts[0] || "SinCurso";
-      const semana = parts[1] || "SinSemana";
+      // ✅ Nombre limpio del archivo
       const fileName = fileToUpload.originalname;
-
-      // ✅ Construye la ruta limpia
-      const customFileName = `${curso}/${semana}/${fileName}`;
-      console.log("📂 Subiendo a ruta lógica:", customFileName);
+      const customFilePath = `${curso}/${semana}/${fileName}`;
+      console.log("📂 Subiendo archivo en ruta lógica:", customFilePath);
 
       // --- 1️⃣ Subir archivo a Appwrite Storage ---
       const uploadedFile = await storage.createFile(
