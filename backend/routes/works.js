@@ -81,13 +81,24 @@ router.post(
 
       console.log("📂 Subiendo archivo con nombre:", fileName);
 
-      // ✅ Leer el archivo completo como Buffer (compatible con Render y Appwrite)
+      // ✅ Leer el archivo completo como Buffer
       const fileBuffer = await fsp.readFile(filePath);
 
+      // ✅ Crear InputFile compatible con Appwrite moderno
+      const InputFile =
+        Appwrite.InputFile || Appwrite.default?.InputFile || null;
+
+      if (!InputFile) {
+        throw new Error("InputFile no está disponible en node-appwrite.");
+      }
+
+      const inputFile = InputFile.fromBuffer(fileBuffer, fileName);
+
+      // ✅ Subir archivo a Appwrite
       const uploadedFile = await storage.createFile(
         BUCKET_ID,
         ID.unique(),
-        fileBuffer
+        inputFile
       );
 
       console.log("✅ Archivo subido correctamente a Appwrite:", uploadedFile.$id);
@@ -96,7 +107,7 @@ router.post(
       await fsp.unlink(filePath);
       console.log(`🧹 Archivo temporal ${filePath} eliminado tras subida.`);
 
-      // ✅ Generar URL pública del archivo
+      // ✅ Generar URL pública
       const endpoint = process.env.APPWRITE_ENDPOINT.replace(/\/v1$/, "");
       const fileUrl = `${endpoint}/storage/buckets/${BUCKET_ID}/files/${uploadedFile.$id}/view?project=${process.env.APPWRITE_PROJECT_ID}`;
 
