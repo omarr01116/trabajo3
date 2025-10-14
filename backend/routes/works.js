@@ -15,8 +15,6 @@ import { verificarToken, soloAdmin } from "../middleware/auth.js";
 // ======================================================================
 const require = createRequire(import.meta.url);
 const Appwrite = require("node-appwrite");
-
-// ⚙️ Extracción segura de clases necesarias
 const { ID } = Appwrite;
 
 // ======================================================================
@@ -60,14 +58,10 @@ router.get("/works", async (req, res) => {
     });
   }
 });
+
 // ======================================================================
 // 📌 POST /api/works → subir archivo (solo admin)
 // ======================================================================
-import fetch from "node-fetch";
-import FormData from "form-data";
-import fs from "fs";
-import fsp from "fs/promises";
-
 router.post(
   "/works",
   verificarToken,
@@ -78,6 +72,7 @@ router.post(
 
     try {
       const { curso, semana } = req.body;
+
       if (!fileToUpload) {
         return res.status(400).json({ error: "No se recibió ningún archivo." });
       }
@@ -87,40 +82,25 @@ router.post(
 
       console.log("📂 Subiendo archivo con nombre:", fileName);
 
-      // ✅ Subida al bucket usando la API REST de Appwrite (sin InputFile)
-      const formData = new FormData();
-      formData.append("fileId", "unique()");
-      formData.append("file", fs.createReadStream(filePath), fileName);
-
-      const responseUpload = await fetch(
-        `${process.env.APPWRITE_ENDPOINT}/storage/buckets/${BUCKET_ID}/files`,
-        {
-          method: "POST",
-          headers: {
-            "X-Appwrite-Project": process.env.APPWRITE_PROJECT_ID,
-            "X-Appwrite-Key": process.env.APPWRITE_API_KEY,
-          },
-          body: formData,
-        }
+      // ✅ Subida al bucket usando fs.createReadStream
+      const fileStream = fs.createReadStream(filePath);
+      const uploadedFile = await storage.createFile(
+        BUCKET_ID,
+        ID.unique(),
+        fileStream
       );
 
-      if (!responseUpload.ok) {
-        const errText = await responseUpload.text();
-        throw new Error(`Error HTTP ${responseUpload.status}: ${errText}`);
-      }
-
-      const uploadedFile = await responseUpload.json();
       console.log("✅ Archivo subido correctamente a Appwrite:", uploadedFile.$id);
 
-      // 🧹 Limpieza del archivo temporal
+      // 🧹 Eliminar archivo temporal
       await fsp.unlink(filePath);
       console.log(`🧹 Archivo temporal ${filePath} eliminado tras subida.`);
 
-      // ✅ URL pública del archivo
+      // ✅ Generar URL pública del archivo
       const endpoint = process.env.APPWRITE_ENDPOINT.replace(/\/v1$/, "");
       const fileUrl = `${endpoint}/storage/buckets/${BUCKET_ID}/files/${uploadedFile.$id}/view?project=${process.env.APPWRITE_PROJECT_ID}`;
 
-      // Guardar metadatos del archivo en la base de datos
+      // 📄 Guardar metadatos del archivo
       const nuevoTrabajoData = {
         curso,
         semana,
@@ -141,7 +121,7 @@ router.post(
         trabajo: trabajoGuardado,
       });
     } catch (error) {
-      // Limpieza si algo falla
+      // 🧹 Limpieza si algo falla
       if (fileToUpload && fileToUpload.path) {
         try {
           await fsp.unlink(fileToUpload.path);
