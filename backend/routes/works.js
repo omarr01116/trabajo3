@@ -6,12 +6,23 @@ import express from "express";
 import multer from "multer";
 import fs from "fs/promises";
 import { storage, databases } from "../appwriteClient.js";
+import { createRequire } from "module";
 import { verificarToken, soloAdmin } from "../middleware/auth.js";
-import { ID, InputFile } from "node-appwrite"; // ✅ Compatible con ESM y versiones modernas
 
-// Crear router
+// ======================================================================
+// ⚙️ Compatibilidad ESM + CommonJS con node-appwrite
+// ======================================================================
+const require = createRequire(import.meta.url);
+const Appwrite = require("node-appwrite");
+
+// ⚙️ Extracción segura de clases necesarias
+const { ID } = Appwrite;
+const InputFile = Appwrite.InputFile || Appwrite.default?.InputFile;
+
+// ======================================================================
+// 📁 Router
+// ======================================================================
 const router = express.Router();
-
 // ======================================================================
 // ⚙️ Configuración de variables de entorno
 // ======================================================================
