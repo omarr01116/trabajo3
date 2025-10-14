@@ -60,10 +60,14 @@ router.get("/works", async (req, res) => {
     });
   }
 });
-
 // ======================================================================
 // 📌 POST /api/works → subir archivo (solo admin)
 // ======================================================================
+import fetch from "node-fetch";
+import FormData from "form-data";
+import fs from "fs";
+import fsp from "fs/promises";
+
 router.post(
   "/works",
   verificarToken,
@@ -83,10 +87,29 @@ router.post(
 
       console.log("📂 Subiendo archivo con nombre:", fileName);
 
-      // ✅ Subida al bucket usando fs.createReadStream (sin InputFile)
-      const fileStream = fs.createReadStream(filePath);
-      const uploadedFile = await storage.createFile(BUCKET_ID, ID.unique(), fileStream);
+      // ✅ Subida al bucket usando la API REST de Appwrite (sin InputFile)
+      const formData = new FormData();
+      formData.append("fileId", "unique()");
+      formData.append("file", fs.createReadStream(filePath), fileName);
 
+      const responseUpload = await fetch(
+        `${process.env.APPWRITE_ENDPOINT}/storage/buckets/${BUCKET_ID}/files`,
+        {
+          method: "POST",
+          headers: {
+            "X-Appwrite-Project": process.env.APPWRITE_PROJECT_ID,
+            "X-Appwrite-Key": process.env.APPWRITE_API_KEY,
+          },
+          body: formData,
+        }
+      );
+
+      if (!responseUpload.ok) {
+        const errText = await responseUpload.text();
+        throw new Error(`Error HTTP ${responseUpload.status}: ${errText}`);
+      }
+
+      const uploadedFile = await responseUpload.json();
       console.log("✅ Archivo subido correctamente a Appwrite:", uploadedFile.$id);
 
       // 🧹 Limpieza del archivo temporal
