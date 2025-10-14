@@ -6,18 +6,8 @@ import express from "express";
 import multer from "multer";
 import fs from "fs/promises";
 import { storage, databases } from "../appwriteClient.js";
-import { createRequire } from "module";
-
-// ⚠️ CORRECCIÓN: carpeta real es 'middleware', no 'middlewares'
 import { verificarToken, soloAdmin } from "../middleware/auth.js";
-
-// Carga dinámica (compatibilidad ESM + CommonJS)
-const require = createRequire(import.meta.url);
-const Appwrite = require("node-appwrite");
-
-// 🧠 Compatibilidad universal para evitar "InputFile is not a constructor"
-const { ID } = Appwrite;
-const InputFile = Appwrite.InputFile || Appwrite.default?.InputFile;
+import { ID, InputFile } from "node-appwrite"; // ✅ Compatible con ESM y versiones modernas
 
 // Crear router
 const router = express.Router();
@@ -81,26 +71,21 @@ router.post(
 
       console.log("📂 Subiendo archivo con nombre:", fileName);
 
-      // ✅ CORRECCIÓN DEFINITIVA — SDK moderno usa método estático, no constructor
+      // ✅ Subida correcta al bucket con Appwrite moderno
       const inputFile = InputFile.fromPath(filePath, fileName);
-
-      // Subida al bucket de Appwrite
-      const uploadedFile = await storage.createFile(
-        BUCKET_ID,
-        ID.unique(),
-        inputFile
-      );
+      const uploadedFile = await storage.createFile(BUCKET_ID, ID.unique(), inputFile);
 
       console.log("✅ Archivo subido correctamente a Appwrite:", uploadedFile.$id);
 
-      // Limpieza del archivo temporal
+      // 🧹 Limpieza del archivo temporal
       await fs.unlink(filePath);
       console.log(`🧹 Archivo temporal ${filePath} eliminado tras subida.`);
 
-      // Crear URL pública de visualización
-      const fileUrl = `${storage.client.config.endpoint}/storage/buckets/${BUCKET_ID}/files/${uploadedFile.$id}/view?project=${storage.client.config.project}`;
+      // ✅ URL pública del archivo (sin usar propiedades internas del cliente)
+      const endpoint = process.env.APPWRITE_ENDPOINT.replace(/\/v1$/, "");
+      const fileUrl = `${endpoint}/storage/buckets/${BUCKET_ID}/files/${uploadedFile.$id}/view?project=${process.env.APPWRITE_PROJECT_ID}`;
 
-      // Guardar referencia en la base de datos
+      // Guardar metadatos del archivo en la base de datos
       const nuevoTrabajoData = {
         curso,
         semana,
@@ -121,7 +106,7 @@ router.post(
         trabajo: trabajoGuardado,
       });
     } catch (error) {
-      // Limpieza si falla algo
+      // Limpieza si algo falla
       if (fileToUpload && fileToUpload.path) {
         try {
           await fs.unlink(fileToUpload.path);
@@ -133,7 +118,7 @@ router.post(
 
       console.error("❌ Error al subir trabajo a Appwrite:", error);
       res.status(500).json({
-        error: `Fallo la subida del archivo. Detalle: ${error.message}`,
+        error: `Falló la subida del archivo. Detalle: ${error.message}`,
       });
     }
   }
@@ -142,76 +127,64 @@ router.post(
 // ======================================================================
 // 📌 PUT /api/works/:recordId → Renombrar (solo admin)
 // ======================================================================
-router.put(
-  "/works/:recordId",
-  verificarToken,
-  soloAdmin,
-  async (req, res) => {
-    const { recordId } = req.params;
-    const { nuevoNombre } = req.body;
+router.put("/works/:recordId", verificarToken, soloAdmin, async (req, res) => {
+  const { recordId } = req.params;
+  const { nuevoNombre } = req.body;
 
-    if (!nuevoNombre) {
-      return res.status(400).json({ error: "El nuevo nombre es requerido." });
-    }
-
-    try {
-      const updatedTrabajo = await databases.updateDocument(
-        DATABASE_ID,
-        COLLECTION_ID,
-        recordId,
-        { fileName: nuevoNombre }
-      );
-
-      res.status(200).json({
-        mensaje: "Nombre de archivo actualizado correctamente",
-        trabajo: updatedTrabajo,
-      });
-    } catch (error) {
-      console.error("❌ Error al renombrar documento:", error);
-      res.status(500).json({
-        error: "Fallo al renombrar el documento.",
-        detail: error.message,
-      });
-    }
+  if (!nuevoNombre) {
+    return res.status(400).json({ error: "El nuevo nombre es requerido." });
   }
-);
+
+  try {
+    const updatedTrabajo = await databases.updateDocument(
+      DATABASE_ID,
+      COLLECTION_ID,
+      recordId,
+      { fileName: nuevoNombre }
+    );
+
+    res.status(200).json({
+      mensaje: "✅ Nombre de archivo actualizado correctamente",
+      trabajo: updatedTrabajo,
+    });
+  } catch (error) {
+    console.error("❌ Error al renombrar documento:", error);
+    res.status(500).json({
+      error: "Fallo al renombrar el documento.",
+      detail: error.message,
+    });
+  }
+});
 
 // ======================================================================
 // 📌 DELETE /api/works/:recordId → Eliminar registro y archivo (solo admin)
 // ======================================================================
-router.delete(
-  "/works/:recordId",
-  verificarToken,
-  soloAdmin,
-  async (req, res) => {
-    const { recordId } = req.params;
-    const { fileId } = req.query;
+router.delete("/works/:recordId", verificarToken, soloAdmin, async (req, res) => {
+  const { recordId } = req.params;
+  const { fileId } = req.query;
 
-    if (!recordId || !fileId) {
-      return res
-        .status(400)
-        .json({ error: "Faltan ID de registro o ID de archivo." });
-    }
-
-    try {
-      await storage.deleteFile(BUCKET_ID, fileId);
-      console.log(`✅ Archivo ${fileId} eliminado de Storage.`);
-
-      await databases.deleteDocument(DATABASE_ID, COLLECTION_ID, recordId);
-      console.log(`✅ Documento ${recordId} eliminado de la base de datos.`);
-
-      res.status(200).json({
-        mensaje: "Registro y archivo eliminados correctamente.",
-      });
-    } catch (error) {
-      console.error("❌ Error al eliminar el trabajo:", error);
-      res.status(500).json({
-        error: "Fallo al eliminar el trabajo.",
-        detail: error.message,
-      });
-    }
+  if (!recordId || !fileId) {
+    return res.status(400).json({ error: "Faltan ID de registro o ID de archivo." });
   }
-);
+
+  try {
+    await storage.deleteFile(BUCKET_ID, fileId);
+    console.log(`✅ Archivo ${fileId} eliminado de Storage.`);
+
+    await databases.deleteDocument(DATABASE_ID, COLLECTION_ID, recordId);
+    console.log(`✅ Documento ${recordId} eliminado de la base de datos.`);
+
+    res.status(200).json({
+      mensaje: "Registro y archivo eliminados correctamente.",
+    });
+  } catch (error) {
+    console.error("❌ Error al eliminar el trabajo:", error);
+    res.status(500).json({
+      error: "Fallo al eliminar el trabajo.",
+      detail: error.message,
+    });
+  }
+});
 
 // ======================================================================
 // 📌 GET /api/works/admin → solo admins
