@@ -4,7 +4,8 @@
 // ======================================================================
 import express from "express";
 import multer from "multer";
-import fs from "fs/promises";
+import fs from "fs";
+import fsp from "fs/promises";
 import { storage, databases } from "../appwriteClient.js";
 import { createRequire } from "module";
 import { verificarToken, soloAdmin } from "../middleware/auth.js";
@@ -17,12 +18,12 @@ const Appwrite = require("node-appwrite");
 
 // ⚙️ Extracción segura de clases necesarias
 const { ID } = Appwrite;
-const InputFile = Appwrite.InputFile || Appwrite.default?.InputFile;
 
 // ======================================================================
 // 📁 Router
 // ======================================================================
 const router = express.Router();
+
 // ======================================================================
 // ⚙️ Configuración de variables de entorno
 // ======================================================================
@@ -82,17 +83,17 @@ router.post(
 
       console.log("📂 Subiendo archivo con nombre:", fileName);
 
-      // ✅ Subida correcta al bucket con Appwrite moderno
-      const inputFile = InputFile.fromPath(filePath, fileName);
-      const uploadedFile = await storage.createFile(BUCKET_ID, ID.unique(), inputFile);
+      // ✅ Subida al bucket usando fs.createReadStream (sin InputFile)
+      const fileStream = fs.createReadStream(filePath);
+      const uploadedFile = await storage.createFile(BUCKET_ID, ID.unique(), fileStream);
 
       console.log("✅ Archivo subido correctamente a Appwrite:", uploadedFile.$id);
 
       // 🧹 Limpieza del archivo temporal
-      await fs.unlink(filePath);
+      await fsp.unlink(filePath);
       console.log(`🧹 Archivo temporal ${filePath} eliminado tras subida.`);
 
-      // ✅ URL pública del archivo (sin usar propiedades internas del cliente)
+      // ✅ URL pública del archivo
       const endpoint = process.env.APPWRITE_ENDPOINT.replace(/\/v1$/, "");
       const fileUrl = `${endpoint}/storage/buckets/${BUCKET_ID}/files/${uploadedFile.$id}/view?project=${process.env.APPWRITE_PROJECT_ID}`;
 
@@ -120,7 +121,7 @@ router.post(
       // Limpieza si algo falla
       if (fileToUpload && fileToUpload.path) {
         try {
-          await fs.unlink(fileToUpload.path);
+          await fsp.unlink(fileToUpload.path);
           console.log(`🧹 Archivo temporal ${fileToUpload.path} eliminado tras error.`);
         } catch (e) {
           console.error("Error al eliminar el archivo temporal:", e);
