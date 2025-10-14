@@ -58,7 +58,6 @@ router.get("/works", async (req, res) => {
     });
   }
 });
-
 // ======================================================================
 // 📌 POST /api/works → subir archivo (solo admin)
 // ======================================================================
@@ -82,12 +81,13 @@ router.post(
 
       console.log("📂 Subiendo archivo con nombre:", fileName);
 
-      // ✅ Subida al bucket usando fs.createReadStream
-      const fileStream = fs.createReadStream(filePath);
+      // ✅ Leer el archivo completo como Buffer (compatible con Render y Appwrite)
+      const fileBuffer = await fsp.readFile(filePath);
+
       const uploadedFile = await storage.createFile(
         BUCKET_ID,
         ID.unique(),
-        fileStream
+        fileBuffer
       );
 
       console.log("✅ Archivo subido correctamente a Appwrite:", uploadedFile.$id);
