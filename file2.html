@@ -44,130 +44,141 @@
             Cerrar sesión
           </button>
         </div>
+        
       </div>
     </div>
   </nav>
 
   <main id="main-files" class="pt-5 mt-5 pb-5 px-3 min-vh-100">
-    <div class="container-xl">
-      <div id="header-management" class="d-flex flex-column flex-md-row justify-content-start align-items-center mb-4">
-        <h1 class="display-6 fw-bold text-center mx-auto" id="dynamic-title">Gestión de Archivos</h1>
-      </div>
+      <div class="container-xl">
+        <div id="header-management" class="d-flex flex-column flex-md-row justify-content-start align-items-center mb-4">
+          <h1 class="display-6 fw-bold text-center mx-auto" id="dynamic-title">Gestión de Archivos</h1>
+        </div>
 
-      <div class="row g-4">
-                <div class="col-md-4">
-          
+        <div class="row g-4">
+                                    <div class="col-md-4">
+                      <div class="card shadow-lg p-4 bg-light">
+                <h4 class="fs-5 fw-bold text-center mb-4"><i class="bi bi-funnel-fill"></i> Filtrar Trabajos</h4>
+
+                                                            <div class="mb-3">
+                    <label for="filter-curso-select" class="form-label fw-semibold mb-1">Curso</label>
+                    <select id="filter-curso-select" class="form-select rounded-3">
+                        <option value="">Todos los Cursos</option> 
+                        <option>Arquitectura de Software</option>
+                        <option>Machine Learning</option>
+                        <option>Inglés</option>
+                    </select>
+                </div>
+
+                                                            <div class="mb-5"> 
+                    <label for="filter-semana-select" class="form-label fw-semibold mb-1">Semana</label>
+                    <select id="filter-semana-select" class="form-select rounded-3">
+                        <option value="">Todas las Semanas</option> 
+                        <option>Semana 1</option>
+                        <option>Semana 2</option>
+                        <option>Semana 3</option>
+                        <option>Semana 4</option>
+                        <option>Semana 5</option>
+                        <option>Semana 6</option>
+                        <option>Semana 7</option>
+                        <option>Semana 8</option>
+                    </select>
+                </div>
+                <p id="filter-status" class="mt-3 text-center small fw-bold text-info d-none"></p>
+
+                              <hr class="my-4">
+                
+                                <form id="upload-form">
+                    <h4 class="fs-5 fw-bold text-center mb-4"><i class="bi bi-cloud-upload-fill"></i> Subir Archivo</h4>
+
+                    <p class="text-muted small text-center mb-3">
+                        El archivo se subirá al Curso y Semana <strong class="text-primary">seleccionados arriba</strong>.
+                    </p>
                     
-                    <div class="card shadow-lg p-4 bg-light rounded-bottom-0 mb-0">
-              <h4 class="fs-5 fw-bold text-center mb-4"><i class="bi bi-funnel-fill"></i> Filtrar Trabajos</h4>
+                    <div class="mb-4">
+                        <label for="file-input" class="form-label fw-semibold mb-1">Archivo a Subir</label>
+                        <input
+                            type="file"
+                            id="file-input"
+                            name="documento"
+                            class="form-control rounded-3"
+                            required
+                        />
+                    </div>
 
-              <div class="mb-3">
-                  <label for="filter-curso-select" class="form-label fw-semibold mb-1">Curso</label>
-                  <select id="filter-curso-select" class="form-select rounded-3">
-                      <option value="">Todos los Cursos</option> 
-                      <option>Arquitectura de Software</option>
-                      <option>Machine Learning</option>
-                      <option>Inglés</option>
-                  </select>
-              </div>
+                    <button type="submit" id="upload-btn" class="btn btn-primary w-100 py-2 rounded-pill fw-semibold fs-5">
+                        Subir
+                    </button>
 
-              <div class="mb-4">
-                  <label for="filter-semana-select" class="form-label fw-semibold mb-1">Semana</label>
-                  <select id="filter-semana-select" class="form-select rounded-3">
-                      <option value="">Todas las Semanas</option> 
-                      <option>Semana 1</option>
-                      <option>Semana 2</option>
-                      <option>Semana 3</option>
-                      <option>Semana 4</option>
-                      <option>Semana 5</option>
-                      <option>Semana 6</option>
-                      <option>Semana 7</option>
-                      <option>Semana 8</option>
-                  </select>
-              </div>
-              
-              <p id="filter-status" class="mt-3 text-center small fw-bold text-info d-none"></p>
-          </div>
-          
-                    <form id="upload-form" class="card shadow-lg p-4 bg-white rounded-top-0">
-              <h4 class="fs-5 fw-bold text-center mb-4"><i class="bi bi-cloud-upload-fill"></i> Subir Archivo</h4>
-
-              <p class="text-muted small text-center mb-3">
-                  El archivo se subirá al Curso y Semana seleccionados arriba.
-              </p>
-              
-              <div class="mb-3">
-                  <label for="upload-curso-display" class="form-label fw-semibold mb-1">Curso</label>
-                  <input type="text" id="upload-curso-display" name="curso" class="form-control rounded-3" readonly value="Selecciona en filtro">
-              </div>
-
-              <div class="mb-4">
-                  <label for="upload-semana-display" class="form-label fw-semibold mb-1">Semana</label>
-                  <input type="text" id="upload-semana-display" name="semana" class="form-control rounded-3" readonly value="Selecciona en filtro">
-              </div>
-              
-              <div class="mb-4">
-                  <label for="file-input" class="form-label fw-semibold mb-1">Archivo a Subir</label>
-                  <input
-                      type="file"
-                      id="file-input"
-                      name="documento"
-                      class="form-control rounded-3"
-                      required
-                  />
-              </div>
-
-              <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-semibold fs-5">
-                  Subir
-              </button>
-
-              <p id="file-status" class="mt-3 text-center small fw-bold text-primary d-none"></p>
-          </form>
-          
-                  </div>
-
-                <div class="col-md-8">
-          <div class="management-card shadow-lg p-4">
-            <h4 class="fs-5 fw-bold text-center mb-4">📑 Listado de Archivos</h4>
-
-            <div class="table-responsive">
-              <table class="table table-hover rounded-3 overflow-hidden" id="file-list">
-                <thead class="text-muted text-uppercase small">
-                  <tr>
-                    <th scope="col" class="py-3 px-4 text-start w-75">Archivo</th>
-                    <th scope="col" class="py-3 px-4 text-center w-25">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody id="file-list-body">
-                  <tr>
-                    <td colspan="2" class="text-center py-4 text-muted">Cargando archivos...</td>
-                  </tr>
-                </tbody>
-              </table>
+                    <p id="file-status" class="mt-3 text-center small fw-bold text-primary d-none"></p>
+                </form>
             </div>
           </div>
+          
+                                    <div class="col-md-8">
+              <div class="card shadow-lg p-4 bg-white min-height-400">
+                  <h4 class="fs-5 fw-bold text-center mb-4"><i class="bi bi-files"></i> Listado de Archivos</h4>
+                  <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="text-muted text-uppercase small">Archivo</th>
+                                <th scope="col" class="text-center text-muted text-uppercase small" style="width: 25%;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="file-list-body">
+                            <tr><td colspan="4" class="text-center py-4 text-secondary">Cargando archivos...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                  </div>
+              </div>
         </div>
       </div>
-    </div>
-  </main>
+      
+          <div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel">
+      <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow-lg" style="height: 90vh;">
+          <div class="modal-header bg-light border-bottom d-flex justify-content-between align-items-center">
+            <h5 class="modal-title" id="previewModalLabel">Vista Previa - <span id="preview-filename" class="fw-normal"></span></h5>
+            <div class="d-flex align-items-center">
+              <a id="preview-link" href="#" target="_blank" rel="noopener noreferrer" class="small text-decoration-underline me-3">Abrir en nueva pestaña</a>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          </div>
 
-    <div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-      <div class="modal-content rounded-4 shadow-lg" style="height: 90vh;">
-        <div class="modal-header bg-light border-bottom d-flex justify-content-between align-items-center">
-          <h5 class="modal-title" id="previewModalLabel">Vista Previa - <span id="preview-filename" class="fw-normal"></span></h5>
-          <div class="d-flex align-items-center">
-            <a id="preview-link" href="#" target="_blank" rel="noopener noreferrer" class="small text-decoration-underline me-3">Abrir en nueva pestaña</a>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <div class="modal-body p-0 d-flex justify-content-center align-items-center modal-body-content">
+            <div id="preview-content" class="w-100 h-100"></div>
           </div>
         </div>
-
-        <div class="modal-body p-0 d-flex justify-content-center align-items-center modal-body-content">
-          <div id="preview-content" class="w-100 h-100"></div>
-        </div>
       </div>
     </div>
-  </div>
+    
+        <div class="modal fade" id="renameModal" tabindex="-1" aria-labelledby="renameModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="renameModalLabel">Renombrar Archivo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <form id="rename-form">
+                    <div class="modal-body">
+                        <input type="hidden" id="rename-record-id">
+                        <div class="mb-3">
+                            <label for="new-filename" class="form-label">Nuevo Nombre de Archivo</label>
+                            <input type="text" class="form-control" id="new-filename" required>
+                        </div>
+                        <div id="rename-status" class="alert d-none mt-3" role="alert"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+          </div>
+      </div>
+  </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
