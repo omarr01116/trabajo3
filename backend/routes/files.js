@@ -1,3 +1,4 @@
+// backend/routes/files.js
 import express from "express";
 import { storage } from "../appwriteClient.js";
 
@@ -8,18 +9,26 @@ router.get("/:fileId", async (req, res) => {
     const { fileId } = req.params;
 
     // Obtén el archivo de Appwrite
-    const fileStream = await storage.getFileDownload({
+    const file = await storage.getFileDownload({
       bucketId: process.env.BUCKET_ID,
       fileId,
     });
 
-    // Devuelve el archivo al frontend
-    res.setHeader("Content-Disposition", `inline; filename="${fileId}"`);
-    res.setHeader("Content-Type", fileStream.headers.get("content-type"));
-    fileStream.body.pipe(res);
+    // Convertir a buffer para Node.js
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Obtener el nombre original y tipo MIME
+    const fileName = file.name || fileId;
+    const contentType = file.type || "application/octet-stream";
+
+    // Enviar archivo al frontend
+    res.setHeader("Content-Disposition", `inline; filename="${fileName}"`);
+    res.setHeader("Content-Type", contentType);
+    res.send(buffer);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "No se pudo obtener el archivo" });
+    console.error("Error al obtener archivo:", err);
+    res.status(404).json({ error: "Archivo no encontrado" });
   }
 });
 

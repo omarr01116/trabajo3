@@ -68,11 +68,11 @@ function openPreview(fileName, fileId) {
     const type = detectType(fileName);
     previewContent.innerHTML = '';
     previewFileNameSpan.textContent = fileName;
-    const url = `${FILES_API}/${fileId}?preview=1`; // Usar endpoint backend para preview
+    const url = `${FILES_API}/${fileId}`; // Preview usando backend
     previewLink.href = url;
 
     if (type === "image") {
-        previewContent.innerHTML = `<img src="${url}" class="img-fluid d-block mx-auto" style="max-height: 80vh;">`;
+        previewContent.innerHTML = `<img src="${url}" class="img-fluid mx-auto d-block" style="max-height: 80vh;">`;
     } else if (type === "pdf") {
         previewContent.innerHTML = `<iframe src="${url}" width="100%" height="600px" class="border-0"></iframe>`;
     } else {
@@ -204,7 +204,7 @@ async function cargarArchivos() {
     
     setEstado("⏳ Conectando y buscando documentos...");
 
-    fileListBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-secondary font-semibold">Buscando documentos...</td></tr>`;
+    fileListBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-secondary">Buscando documentos...</td></tr>`;
 
     try {
         const response = await fetch(BACKEND_API_WORKS);
@@ -242,9 +242,7 @@ async function handleUpload(e) {
 
     const curso = urlCourse || (cursoSelect ? cursoSelect.value : '');
     const semana = urlWeek || (semanaSelect ? semanaSelect.value : '');
-    if (!curso || !semana || curso === 'default' || semana === 'default') {
-        return setEstado("⚠️ Selecciona curso y semana válidos.", true);
-    }
+    if (!curso || !semana) return setEstado("⚠️ Selecciona curso y semana válidos.", true);
 
     setEstado("⏳ Subiendo archivo...");
 
@@ -283,7 +281,7 @@ function renderFileRow(record) {
     const fileName = record.fileName || "Archivo";
 
     const row = fileListBody.insertRow();
-    row.className = 'border-t hover:bg-light';
+    row.className = ''; // Solo Bootstrap, sin Tailwind
 
     const nameCell = row.insertCell();
     nameCell.className = 'py-3 px-4'; 

@@ -5,9 +5,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import worksRouter from "./routes/works.js"; // Importa tu router de trabajos
 import authRouter from "./routes/auth.js";   // Importa tu router de autenticación
-
 import filesRouter from "./routes/files.js";
-app.use("/api/files", filesRouter);
 
 // Cargar variables de entorno del archivo .env
 dotenv.config();
@@ -35,7 +33,7 @@ app.use(express.urlencoded({ extended: true })); // Para analizar cuerpos URL-en
 //    works.js y auth.js comenzarán con /api.
 app.use("/api", worksRouter);
 app.use("/api", authRouter);
-
+app.use("/api/files", filesRouter);
 // Ruta de bienvenida para verificar que el servidor está funcionando
 app.get("/", (req, res) => {
   res.send("🚀 El servidor del backend está operativo.");
