@@ -21,7 +21,7 @@ body {
     background-repeat: no-repeat;
     background-position: center;
     font-family: sans-serif;
-    color: #fff;
+    color: #6d8365;
     min-height: 100vh;
     scroll-behavior: smooth;
 }
@@ -120,7 +120,7 @@ body {
 .table {
     --bs-table-bg: transparent;
     --bs-table-color: white;
-    border-color: rgba(255,255,255,0.1);
+    border-color: rgba(203, 196, 196, 0.855);
 }
 
 .table-striped > tbody > tr > * {
@@ -170,7 +170,7 @@ body {
     font-size: 0.75rem !important;
     line-height: 1;
     text-align: center;
-    color: white !important;
+    color: rgb(156, 34, 34) !important;
     border: none !important;
 }
 
