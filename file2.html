@@ -58,48 +58,63 @@
       <div class="row g-4">
         <!-- Formulario subida -->
         <div class="col-md-4">
-          <form id="upload-form" class="management-card shadow-lg p-4" enctype="multipart/form-data">
-            <h4 class="fs-5 fw-bold text-center mb-4">🚀 Subir Trabajo</h4>
-
-            <div id="upload-controls">
-              <div class="mb-3">
-                <label for="curso-select" class="form-label fw-semibold mb-1">Curso</label>
-                <select id="curso-select" name="curso" class="form-select rounded-3">
-                  <option>Arquitectura de Software</option>
-                  <option>Machine Learning</option>
-                  <option>Inglés</option>
-                </select>
-              </div>
+          <div class="management-card shadow-lg p-4 mb-4 bg-light">
+              <h4 class="fs-5 fw-bold text-center mb-4">🔍 Filtrar Trabajos</h4>
 
               <div class="mb-3">
-                <label for="semana-select" class="form-label fw-semibold mb-1">Semana</label>
-                <select id="semana-select" name="semana" class="form-select rounded-3">
-                  <option>Semana 1</option>
-                  <option>Semana 2</option>
-                  <option>Semana 3</option>
-                  <option>Semana 4</option>
-                </select>
+                  <label for="filter-curso-select" class="form-label fw-semibold mb-1">Curso</label>
+                  <select id="filter-curso-select" class="form-select rounded-3">
+                      <option value="">Todos los Cursos</option> <option>Arquitectura de Software</option>
+                      <option>Machine Learning</option>
+                      <option>Inglés</option>
+                  </select>
               </div>
-            </div>
 
-            <div class="mb-4">
-              <label for="file-input" class="form-label fw-semibold mb-1">Archivo</label>
-              <input
-                type="file"
-                id="file-input"
-                name="documento"
-                class="form-control rounded-3"
-                required
-              />
-            </div>
+              <div class="mb-4">
+                  <label for="filter-semana-select" class="form-label fw-semibold mb-1">Semana</label>
+                  <select id="filter-semana-select" class="form-select rounded-3">
+                      <option value="">Todas las Semanas</option> <option>Semana 1</option>
+                      <option>Semana 2</option>
+                      <option>Semana 3</option>
+                      <option>Semana 4</option>
+                  </select>
+              </div>
+              
+              <p id="filter-status" class="mt-3 text-center small fw-bold text-info d-none"></p>
+              
+          </div>
+          
+          <form id="upload-form" class="management-card shadow-lg p-4 bg-white">
+              <h4 class="fs-5 fw-bold text-center mb-4">🚀 Subir Archivo</h4>
 
-            <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-semibold fs-5">
-              Subir
-            </button>
+              <div class="mb-3">
+                  <label for="upload-curso-display" class="form-label fw-semibold mb-1">Curso</label>
+                  <input type="text" id="upload-curso-display" name="curso" class="form-control rounded-3" readonly value="Selecciona en filtro">
+              </div>
 
-            <p id="file-status" class="mt-3 text-center small fw-bold text-primary d-none"></p>
+              <div class="mb-4">
+                  <label for="upload-semana-display" class="form-label fw-semibold mb-1">Semana</label>
+                  <input type="text" id="upload-semana-display" name="semana" class="form-control rounded-3" readonly value="Selecciona en filtro">
+              </div>
+              
+              <div class="mb-4">
+                  <label for="file-input" class="form-label fw-semibold mb-1">Archivo a Subir</label>
+                  <input
+                      type="file"
+                      id="file-input"
+                      name="documento"
+                      class="form-control rounded-3"
+                      required
+                  />
+              </div>
+
+              <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-semibold fs-5">
+                  Subir
+              </button>
+
+              <p id="file-status" class="mt-3 text-center small fw-bold text-primary d-none"></p>
           </form>
-        </div>
+       </div>
 
         <!-- Tabla archivos -->
         <div class="col-md-8">

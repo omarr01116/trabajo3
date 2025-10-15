@@ -17,35 +17,48 @@ const SUPABASE_URL = 'https://bazwwhwjruwgyfomyttp.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhend3aHdqcnV3Z3lmb215dHRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxNjA1NTAsImV4cCI6MjA3MzczNjU1MH0.RzpCKpYV-GqNIhTklsQtRqyiPCGGmV1Us7q_BeBHxUo'; 
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 🌐 CONFIGURACIÓN APPWRITE (Usando tu variable de .env)
+// 🌐 CONFIGURACIÓN APPWRITE
 const APPWRITE_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1'; 
-const APPWRITE_PROJECT_ID = '68ea7b28002bd7addb54';          
-const APPWRITE_BUCKET_ID = '68ebd7b1000a707b10f2';  
+const APPWRITE_PROJECT_ID = '68ea7b28002bd7addb54';          
+const APPWRITE_BUCKET_ID = '68ebd7b1000a707b10f2';  
 
 // =======================================================
-// 🔹 Variables del DOM
+// 🔹 Variables del DOM (ACTUALIZADAS PARA EL FILTRO)
 // =======================================================
 const uploadForm = document.getElementById('upload-form');
 const uploadControls = document.getElementById('upload-controls');
-const cursoSelect = document.getElementById('curso-select');
-const semanaSelect = document.getElementById('semana-select');
 const fileInput = document.getElementById('file-input');
 const fileListBody = document.getElementById('file-list-body');
-const fileStatus = document.getElementById('file-status');
+
+// 💡 Nuevo: Variables de estado del Formulario de Subida y Filtros
+const fileStatus = document.getElementById('file-status'); // Estado de la subida
+const filterStatus = document.getElementById('filter-status'); // Estado del filtro/carga
+
+// 💡 Nuevo: Elementos de Filtro (SELECTS de la parte izquierda)
+const filterCursoSelect = document.getElementById('filter-curso-select');
+const filterSemanaSelect = document.getElementById('filter-semana-select');
+
+// 💡 Nuevo: Elementos de Display (INPUTS READONLY del formulario de Subida)
+const uploadCursoDisplay = document.getElementById('upload-curso-display'); 
+const uploadSemanaDisplay = document.getElementById('upload-semana-display'); 
+
 const roleDisplay = document.getElementById('role-display');
 const logoutBtn = document.getElementById('logout-btn');
 const dynamicTitle = document.getElementById('dynamic-title');
-const previewModal = new bootstrap.Modal(document.getElementById('previewModal'), {}); 
+
+// Variables del Modal
+const previewModalElement = document.getElementById('previewModal');
+const previewModal = new bootstrap.Modal(previewModalElement, {}); 
 const previewContent = document.getElementById('preview-content');
 const previewLink = document.getElementById('preview-link');
-const previewFileNameSpan = document.getElementById('preview-filename'); 
+const previewFileNameSpan = document.getElementById('preview-filename');
 
 let role = localStorage.getItem('role') || 'usuario';
 let urlCourse = null;
 let urlWeek = null;
 
 // =======================================================
-// 🔹 Funciones Utilitarias
+// 🔹 Funciones Utilitarias (ACTUALIZADAS Y GENÉRICAS)
 // =======================================================
 function detectType(name) {
     const ext = name.split(".").pop().toLowerCase();
@@ -55,18 +68,40 @@ function detectType(name) {
     return "other";
 }
 
-function setEstado(msg, isError = false) {
-    fileStatus.textContent = msg;
-    fileStatus.classList.remove('d-none');
-    fileStatus.classList.toggle('text-danger', isError); 
+// 💡 FUNCIÓN MODIFICADA: Ahora usa 'targetElement'
+function setEstado(msg, targetElement = fileStatus, isError = false) {
+    if (!targetElement) return;
+
+    targetElement.textContent = msg;
+    targetElement.classList.remove('d-none', 'text-danger', 'text-primary', 'text-info', 'text-success');
+    targetElement.classList.add(isError ? 'text-danger' : 'text-info'); 
+    targetElement.classList.remove('d-none');
 }
 
-function clearEstado() {
-    fileStatus.textContent = '';
-    fileStatus.classList.add('d-none');
+// 💡 FUNCIÓN MODIFICADA: Ahora usa 'targetElement'
+function clearEstado(targetElement = fileStatus) {
+    if (!targetElement) return;
+    targetElement.textContent = '';
+    targetElement.classList.add('d-none');
 }
+
 // =======================================================
-// 🔹 Funciones de Acción de la Tabla (SOLUCIÓN DEFINITIVA CORREGIDA)
+// 🔹 Función para actualizar el display de Subida (NUEVA)
+// =======================================================
+function updateUploadDisplay() {
+    if (!filterCursoSelect || !filterSemanaSelect || !uploadCursoDisplay || !uploadSemanaDisplay) return;
+
+    // Lee los valores de los SELECTS de FILTRO
+    const cursoValue = filterCursoSelect.value;
+    const semanaValue = filterSemanaSelect.value;
+    
+    // Muestra el curso/semana a subir en los inputs readonly
+    uploadCursoDisplay.value = cursoValue || "Selecciona un curso";
+    uploadSemanaDisplay.value = semanaValue || "Selecciona una semana";
+}
+
+// =======================================================
+// 🔹 Funciones de Acción de la Tabla (SIN CAMBIOS)
 // =======================================================
 function openPreview(fileName, fileId) {
     const type = detectType(fileName);
@@ -77,40 +112,34 @@ function openPreview(fileName, fileId) {
     const internalUrl = `${FILES_API}/${fileId}`; 
     
     // 2. URL base para archivos públicos de Appwrite (quitando el /v1 temporalmente)
-    // Esto asegura que la URL de vista previa/descarga sea correcta.
     const appwriteBase = APPWRITE_ENDPOINT.replace('/v1', '');
     
-    // 3. Ruta base del recurso de Appwrite (usando el endpoint /v1 correctamente para archivos)
+    // 3. Ruta base del recurso de Appwrite
     const appwriteResourceBase = `${appwriteBase}/v1/storage/buckets/${APPWRITE_BUCKET_ID}/files/${fileId}`;
     
     let embedUrl = '';
-    let linkUrl = internalUrl; // Por defecto, 'Abrir en nueva pestaña' usa tu API de Render
+    let linkUrl = internalUrl;
 
     if (type === "image") {
-        // ✅ IMAGEN: Usa el endpoint de 'preview' de Appwrite.
         embedUrl = `${appwriteResourceBase}/preview?project=${APPWRITE_PROJECT_ID}&quality=80&width=800&height=600`;
         previewContent.innerHTML = `<img src="${embedUrl}" class="img-fluid mx-auto d-block" style="max-height: 80vh;">`;
         linkUrl = embedUrl; 
     
     } else if (type === "pdf" || type === "document") {
-        // ✅ PDF y OFFICE: Usamos el endpoint de 'view' de Appwrite para los visores externos.
         
         const appwriteViewUrl = `${appwriteResourceBase}/view?project=${APPWRITE_PROJECT_ID}`;
         const encodedUrl = encodeURIComponent(appwriteViewUrl);
         linkUrl = appwriteViewUrl;
         
         if (type === "pdf") {
-            // Google Docs Viewer para PDF
             embedUrl = `https://docs.google.com/gview?url=${encodedUrl}&embedded=true`;
             
         } else if (type === "document") {
-            // Office Viewer para DOCX, XLSX, PPTX
             embedUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodedUrl}`;
         }
         
         previewContent.innerHTML = `<iframe src="${embedUrl}" width="100%" height="600px" class="border-0" allowfullscreen></iframe>`;
         
-        // Mensaje de fallback para documentos de Office/PDF
         previewContent.innerHTML += `<p class="text-center text-muted p-4 small">
             Si la previsualización falla, haz clic en 
             <a href="${linkUrl}" target="_blank" class="text-decoration-underline">Abrir en nueva pestaña</a> 
@@ -118,16 +147,15 @@ function openPreview(fileName, fileId) {
         </p>`;
 
     } else {
-        // ❌ OTROS TIPOS: Mensaje por defecto
         previewContent.innerHTML = `<p class="text-center text-muted p-4">
             No se puede previsualizar este tipo de archivo. Por favor, <button class="btn btn-link p-0 fw-bold btn-action btn-action-download" data-filename="${fileName}" data-file-id="${fileId}">descárgalo</button> para abrirlo.
         </p>`;
     }
 
-    // El enlace "Abrir en nueva pestaña" usará la URL de Appwrite para vista/descarga directa
     previewLink.href = linkUrl;
     previewModal.show();
 }
+
 async function handleDownload(fileName, fileId) {
     setEstado(`⏳ Descargando ${fileName}...`);
     try {
@@ -145,18 +173,18 @@ async function handleDownload(fileName, fileId) {
         window.URL.revokeObjectURL(downloadUrl);
         clearEstado();
     } catch (err) {
-        setEstado(`❌ Error al descargar: ${err.message}`, true);
+        setEstado(`❌ Error al descargar: ${err.message}`, fileStatus, true);
     }
 }
 
 async function handleDelete(recordId, fileName, fileId) { 
-    if (!fileId) return setEstado("⚠️ Error interno: ID de archivo no encontrado.", true);
+    if (!fileId) return setEstado("⚠️ Error interno: ID de archivo no encontrado.", fileStatus, true);
     if (!confirm(`¿Eliminar "${fileName}"?`)) return;
 
     const token = localStorage.getItem('token'); 
-    if (!token) return setEstado("⚠️ Sesión no válida.", true);
+    if (!token) return setEstado("⚠️ Sesión no válida.", fileStatus, true);
 
-    setEstado("⏳ Eliminando...");
+    setEstado("⏳ Eliminando...", fileStatus);
 
     try {
         const response = await fetch(`${BACKEND_API_WORKS}/${recordId}?fileId=${fileId}`, { 
@@ -169,23 +197,23 @@ async function handleDelete(recordId, fileName, fileId) {
             throw new Error(errorData.error || response.statusText);
         }
 
-        setEstado("🗑️ Archivo eliminado.");
+        setEstado("🗑️ Archivo eliminado.", fileStatus);
         cargarArchivos();
     } catch (err) {
         console.error("Error al eliminar:", err);
-        setEstado(`❌ Error: ${err.message}`, true);
+        setEstado(`❌ Error: ${err.message}`, fileStatus, true);
     }
 }
 
 async function handleRename(recordId, oldFileName) {
     const newFileName = prompt(`Nuevo nombre para el archivo:`, oldFileName);
-    if (!newFileName) return setEstado("⚠️ No se cambió el nombre.", true);
+    if (!newFileName) return setEstado("⚠️ No se cambió el nombre.", fileStatus, true);
 
     const token = localStorage.getItem('token'); 
-    if (!token) return setEstado("⚠️ Sesión no válida.", true);
+    if (!token) return setEstado("⚠️ Sesión no válida.", fileStatus, true);
     
     try {
-        setEstado("⏳ Renombrando...");
+        setEstado("⏳ Renombrando...", fileStatus);
         const response = await fetch(`${BACKEND_API_WORKS}/${recordId}`, {
             method: 'PUT',
             headers: { 
@@ -200,97 +228,96 @@ async function handleRename(recordId, oldFileName) {
             throw new Error(errorData.error || response.statusText);
         }
         
-        setEstado("✅ Archivo renombrado.");
+        setEstado("✅ Archivo renombrado.", fileStatus);
         cargarArchivos(); 
     } catch (err) {
         console.error("Error al renombrar:", err);
-        setEstado(`❌ Error: ${err.message}`, true);
+        setEstado(`❌ Error: ${err.message}`, fileStatus, true);
     }
 }
 
-// =======================================================
-// 🔹 Autenticación con Supabase
-// =======================================================
-async function checkAuthAndInit() {
-    const { data: { session }, error: authError } = await supabaseClient.auth.getSession();
-    if (authError || !session) { 
-        window.location.href = LOGIN_URL; 
-        return; 
-    }
-
-    const userRole = localStorage.getItem('role') || 'usuario';
-    if (userRole !== 'admin') { 
-        window.location.href = USER_PAGE_URL; 
-        return;
-    }
-
-    role = userRole; 
-    if (roleDisplay) roleDisplay.textContent = role.toUpperCase();
-    if (uploadControls) uploadControls.classList.remove('d-none'); 
-
-    checkUrlParams(); 
-    await cargarArchivos(); 
-
-    if (uploadForm) uploadForm.addEventListener('submit', handleUpload);
-    document.addEventListener('click', handleActionClick); 
-    if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
-}
-
-async function handleLogout() {
-    await supabaseClient.auth.signOut(); 
-    localStorage.clear();
-    window.location.href = LOGIN_URL; 
-}
 
 // =======================================================
-// 🔹 Cargar archivos (GET)
+// 🔹 Cargar archivos (GET) - CON FILTRO AUTOMÁTICO
 // =======================================================
 async function cargarArchivos() {
     if (!fileListBody) return;
     
-    setEstado("⏳ Conectando y buscando documentos...");
+    // 💡 LEE LOS VALORES DE LOS SELECTS DE FILTRO
+    const cursoFiltro = filterCursoSelect ? filterCursoSelect.value : '';
+    const semanaFiltro = filterSemanaSelect ? filterSemanaSelect.value : '';
 
+    let url = BACKEND_API_WORKS;
+    let params = [];
+
+    // Solo agrega parámetros si el valor no es vacío ("Todos...")
+    if (cursoFiltro) params.push(`curso=${encodeURIComponent(cursoFiltro)}`);
+    if (semanaFiltro) params.push(`semana=${encodeURIComponent(semanaFiltro)}`);
+
+    if (params.length > 0) {
+        url += '?' + params.join('&');
+    }
+
+    // Usa filterStatus para mensajes de carga
+    setEstado("⏳ Buscando documentos...", filterStatus);
+    
     fileListBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-secondary">Buscando documentos...</td></tr>`;
-
+    
+    // Actualizar el display del título para reflejar el filtro
+    let title = "Gestión de Archivos";
+    if (cursoFiltro && semanaFiltro) {
+        title = `Archivos: ${cursoFiltro} / ${semanaFiltro}`;
+    } else if (cursoFiltro) {
+        title = `Archivos de: ${cursoFiltro}`;
+    } else if (semanaFiltro) {
+        title = `Archivos de: ${semanaFiltro}`;
+    }
+    if (dynamicTitle) dynamicTitle.textContent = title;
+    
     try {
-        const response = await fetch(BACKEND_API_WORKS);
+        const response = await fetch(url);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const records = await response.json();
         fileListBody.innerHTML = ''; 
 
         if (records.length === 0) {
-            fileListBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-secondary">Aún no hay archivos subidos.</td></tr>`;
-            clearEstado(); 
+            fileListBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-secondary">No se encontraron archivos con ese filtro.</td></tr>`;
+            clearEstado(filterStatus); 
             return;
         }
 
         records.forEach(record => renderFileRow(record));
-        clearEstado();
+        clearEstado(filterStatus);
     } catch (err) {
         console.error("❌ [ERROR CRÍTICO] Fallo general al cargar archivos:", err);
         const errorMessage = `❌ ERROR: ${err.message || "Fallo de red o servidor inactivo."}`;
-        setEstado(errorMessage, true); 
+        setEstado(errorMessage, filterStatus, true); 
         fileListBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-danger">${errorMessage}</td></tr>`;
     }
 }
 
 // =======================================================
-// 🔹 Subir archivo (POST)
+// 🔹 Subir archivo (POST) - AHORA USA LOS VALORES DEL DISPLAY READONLY
 // =======================================================
 async function handleUpload(e) {
     e.preventDefault();
     const file = fileInput.files[0];
-    if (!file) return setEstado("⚠️ Selecciona un archivo.", true);
+    if (!file) return setEstado("⚠️ Selecciona un archivo.", fileStatus, true);
 
     const token = localStorage.getItem('token'); 
-    if (!token) return setEstado("⚠️ Sesión no válida.", true);
+    if (!token) return setEstado("⚠️ Sesión no válida.", fileStatus, true);
 
-    const curso = urlCourse || (cursoSelect ? cursoSelect.value : '');
-    const semana = urlWeek || (semanaSelect ? semanaSelect.value : '');
-    if (!curso || !semana) return setEstado("⚠️ Selecciona curso y semana válidos.", true);
+    // 💡 LEE LOS VALORES DE LOS INPUTS READONLY (SINÓNIMO DEL FILTRO)
+    const curso = uploadCursoDisplay ? uploadCursoDisplay.value : '';
+    const semana = uploadSemanaDisplay ? uploadSemanaDisplay.value : '';
+    
+    // Validar que se haya seleccionado un filtro para poder subir
+    if (curso === "Selecciona un curso" || curso === "" || semana === "Selecciona una semana" || semana === "") {
+        return setEstado("⚠️ Debes seleccionar Curso y Semana en el panel de Filtros para subir el archivo.", fileStatus, true);
+    }
 
-    setEstado("⏳ Subiendo archivo...");
+    setEstado("⏳ Subiendo archivo...", fileStatus);
 
     const formData = new FormData();
     formData.append('curso', curso);
@@ -305,21 +332,21 @@ async function handleUpload(e) {
         });
 
         if (response.ok) {
-            setEstado("✅ Archivo subido con éxito");
+            setEstado("✅ Archivo subido con éxito", fileStatus);
             fileInput.value = ''; 
-            cargarArchivos(); 
+            cargarArchivos(); // Recargar la tabla con el filtro aplicado
         } else {
             const errorData = await response.json().catch(() => ({ error: 'Fallo desconocido' }));
-            setEstado(`❌ Error al subir: ${errorData.error || response.statusText}`, true);
+            setEstado(`❌ Error al subir: ${errorData.error || response.statusText}`, fileStatus, true);
         }
     } catch (error) {
         console.error("❌ Error de red:", error);
-        setEstado('❌ Error de red. Verifica Render.', true);
+        setEstado('❌ Error de red. Verifica Render.', fileStatus, true);
     }
 }
 
 // =======================================================
-// 🔹 Render de tabla
+// 🔹 Render de tabla (SIN CAMBIOS)
 // =======================================================
 function renderFileRow(record) {
     const recordId = record.$id || record.id;
@@ -327,7 +354,7 @@ function renderFileRow(record) {
     const fileName = record.fileName || "Archivo";
 
     const row = fileListBody.insertRow();
-    row.className = ''; // Solo Bootstrap, sin Tailwind
+    row.className = ''; 
 
     const nameCell = row.insertCell();
     nameCell.className = 'py-3 px-4'; 
@@ -350,7 +377,7 @@ function renderFileRow(record) {
 }
 
 // =======================================================
-// 🔹 Acciones y Vista Previa
+// 🔹 Acciones y Vista Previa (SIN CAMBIOS)
 // =======================================================
 function handleActionClick(e) {
     const btn = e.target.closest('.btn-action'); 
@@ -366,21 +393,55 @@ function handleActionClick(e) {
     if (btn.classList.contains('btn-action-edit')) handleRename(recordId, fileName);
 }
 
-// =======================================================
-// 🔹 Inicialización
-// =======================================================
-function checkUrlParams() {
-    const params = new URLSearchParams(window.location.search);
-    const c = params.get('c');
-    const s = params.get('s');
 
-    if (c && s) {
-        urlCourse = c;
-        urlWeek = s;
-        if (dynamicTitle) dynamicTitle.textContent = `${c} - ${s}`;
-    } else {
-        if (dynamicTitle) dynamicTitle.textContent = "Selecciona un curso/semana";
+// =======================================================
+// 🔹 Autenticación e Inicialización (FINAL)
+// =======================================================
+async function checkAuthAndInit() {
+    const { data: { session }, error: authError } = await supabaseClient.auth.getSession();
+    if (authError || !session) { 
+        window.location.href = LOGIN_URL; 
+        return; 
     }
+
+    const userRole = localStorage.getItem('role') || 'usuario';
+    if (userRole !== 'admin') { 
+        window.location.href = USER_PAGE_URL; 
+        return;
+    }
+
+    role = userRole; 
+    if (roleDisplay) roleDisplay.textContent = role.toUpperCase();
+    if (uploadControls) uploadControls.classList.remove('d-none'); 
+
+    // 1. Inicializar displays de subida con la selección inicial del filtro
+    updateUploadDisplay(); 
+    
+    // 2. Cargar archivos con los filtros iniciales (vacío = todo)
+    await cargarArchivos(); 
+
+    // 3. Conectar eventos
+    if (uploadForm) uploadForm.addEventListener('submit', handleUpload);
+    document.addEventListener('click', handleActionClick); 
+    if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+    
+    // 🎯 EVENTOS: CARGA AUTOMÁTICA AL CAMBIAR EL FILTRO
+    if (filterCursoSelect) filterCursoSelect.addEventListener('change', () => {
+        updateUploadDisplay(); // Actualiza el display de subida
+        cargarArchivos();       // Carga la tabla
+    });
+    if (filterSemanaSelect) filterSemanaSelect.addEventListener('change', () => {
+        updateUploadDisplay(); // Actualiza el display de subida
+        cargarArchivos();       // Carga la tabla
+    });
 }
+
+async function handleLogout() {
+    await supabaseClient.auth.signOut(); 
+    localStorage.clear();
+    window.location.href = LOGIN_URL; 
+}
+
+// La función checkUrlParams fue eliminada.
 
 document.addEventListener('DOMContentLoaded', checkAuthAndInit);
