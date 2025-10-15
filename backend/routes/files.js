@@ -8,24 +8,24 @@ router.get("/:fileId", async (req, res) => {
   try {
     const { fileId } = req.params;
 
-    // Obtén el archivo de Appwrite
-    const file = await storage.getFileDownload({
-      bucketId: process.env.BUCKET_ID,
+    if (!process.env.APPWRITE_BUCKET_ID) {
+      console.error("❌ APPWRITE_BUCKET_ID no está definido en las variables de entorno.");
+      return res.status(500).json({ error: "Configuración de servidor incorrecta" });
+    }
+
+    // Obtén el archivo de Appwrite como stream
+    const fileStream = await storage.getFileDownload({
+      bucketId: process.env.APPWRITE_BUCKET_ID, // CORREGIDO
       fileId,
     });
 
-    // Convertir a buffer para Node.js
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    // Configurar headers para enviar archivo al frontend
+    res.setHeader("Content-Disposition", `inline; filename="${fileId}"`);
+    res.setHeader("Content-Type", fileStream.headers.get("content-type"));
 
-    // Obtener el nombre original y tipo MIME
-    const fileName = file.name || fileId;
-    const contentType = file.type || "application/octet-stream";
+    // Pipe del stream directamente a la respuesta
+    fileStream.body.pipe(res);
 
-    // Enviar archivo al frontend
-    res.setHeader("Content-Disposition", `inline; filename="${fileName}"`);
-    res.setHeader("Content-Type", contentType);
-    res.send(buffer);
   } catch (err) {
     console.error("Error al obtener archivo:", err);
     res.status(404).json({ error: "Archivo no encontrado" });
