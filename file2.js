@@ -64,19 +64,52 @@ function clearEstado() {
 // =======================================================
 // 🔹 Funciones de Acción de la Tabla
 // =======================================================
+// =======================================================
+// 🔹 Funciones de Acción de la Tabla (CÓDIGO CORREGIDO PARA VISUALIZACIÓN)
+// =======================================================
 function openPreview(fileName, fileId) {
     const type = detectType(fileName);
     previewContent.innerHTML = '';
     previewFileNameSpan.textContent = fileName;
-    const url = `${FILES_API}/${fileId}`; // Preview usando backend
-    previewLink.href = url;
+    
+    // URL que sirve tu backend para descargar/visualizar el archivo binario
+    const internalUrl = `${FILES_API}/${fileId}`; 
+    previewLink.href = internalUrl; // El enlace 'Abrir en nueva pestaña' apunta a tu API
+
+    let embedUrl = '';
 
     if (type === "image") {
-        previewContent.innerHTML = `<img src="${url}" class="img-fluid mx-auto d-block" style="max-height: 80vh;">`;
+        // ✅ IMÁGENES: Usa la URL de tu backend directamente (funciona bien)
+        previewContent.innerHTML = `<img src="${internalUrl}" class="img-fluid mx-auto d-block" style="max-height: 80vh;">`;
+    
     } else if (type === "pdf") {
-        previewContent.innerHTML = `<iframe src="${url}" width="100%" height="600px" class="border-0"></iframe>`;
+        // ✅ PDF: Usamos Google Docs Viewer para mayor robustez
+        const encodedUrl = encodeURIComponent(internalUrl);
+        // Google Docs Viewer es más fiable para PDFs servidos desde APIs
+        embedUrl = `https://docs.google.com/gview?url=${encodedUrl}&embedded=true`;
+        
+        previewContent.innerHTML = `<iframe src="${embedUrl}" width="100%" height="600px" class="border-0" allowfullscreen></iframe>`;
+    
+    } else if (type === "document") {
+        // ✅ DOCUMENTOS DE OFFICE (DOCX, PPTX, XLSX): Usamos Microsoft Office Online Viewer
+        // Es la ÚNICA forma de visualizar estos archivos sin librerías de terceros
+        const encodedUrl = encodeURIComponent(internalUrl);
+        embedUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodedUrl}`;
+
+        previewContent.innerHTML = `<iframe src="${embedUrl}" width="100%" height="600px" class="border-0" allowfullscreen></iframe>`;
+        
+        // Mensaje de fallback si el visor externo falla
+        previewContent.innerHTML += `<p class="text-center text-muted p-4 small">
+            Si la previsualización falla, haz clic en 
+            <a href="${internalUrl}" target="_blank" class="text-decoration-underline">Abrir en nueva pestaña</a> 
+            para iniciar la descarga e intentar abrirlo localmente o usa el botón 'Descargar'.
+        </p>`;
+
     } else {
-        previewContent.innerHTML = `<p class="text-center text-muted p-4">No se puede previsualizar este tipo de archivo.</p>`;
+        // ❌ OTROS TIPOS: Mensaje por defecto
+        previewContent.innerHTML = `<p class="text-center text-muted p-4">
+            No se puede previsualizar este tipo de archivo (.${type}). Por favor, descárgalo para abrirlo.
+        </p>`;
     }
 
     previewModal.show();
