@@ -114,64 +114,47 @@ body {
     color: white;
 }
 
-/* =================================================================
-   TABLAS
-================================================================= */
-.table {
-    --bs-table-bg: transparent;
-    --bs-table-color: white;
-    border-color: rgba(203, 196, 196, 0.855);
+/* ================================================================
+   AJUSTE: LISTADO DE ARCHIVOS CON ENCABEZADOS BLANCOS
+================================================================ */
+.table thead th {
+    color: #ffffff !important;       /* Letras blancas */
+    background-color: transparent !important; /* Fondo igual que antes */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.table-striped > tbody > tr > * {
-    background-color: var(--color-table-row-bg) !important;
-    color: var(--color-table-text) !important;
+/* El resto del contenido (filas y celdas) se mantiene igual */
+.table tbody td {
+    color: #000000 !important; /* Texto negro en las filas, fondo igual */
 }
 
-.table-hover > tbody > tr:hover > * {
-    background-color: #f0f0f0 !important;
-}
-
-.table th, .table td { border-color: rgba(0,0,0,0.1); }
-
-/* Ocultar columna ID */
-.table th:first-child,
-.table td:first-child { display: none; }
-
-/* Nombre archivo resaltado */
-.table td:nth-child(2) {
-    font-size: 1.15rem;
-    font-weight: 600;
-}
-
-/* =================================================================
-   BOTONES DE ACCIÓN
-================================================================= */
-#file-list-body td:last-child .d-flex {
-    display: flex !important;
-    flex-direction: row !important;
-    gap: 0.35rem !important;
-    justify-content: center !important;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
+/* ================================================================
+   BOTONES DE ACCIÓN EN COLOR MAGENTA CON TEXTO BLANCO
+================================================================ */
 .btn-action-view,
 .btn-action-download,
 .btn-action-edit,
 .btn-action-delete {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 90px;
-    height: 32px;
-    border-radius: 0.3rem !important;
-    padding: 0.4rem 0.6rem !important;
-    font-size: 0.75rem !important;
-    line-height: 1;
-    text-align: center;
-    color: rgb(156, 34, 34) !important;
+    background-color: var(--color-magenta) !important;
+    color: #ffffff !important;
     border: none !important;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-/* Colores específico*
+/* Íconos blancos también */
+.btn-action-view i,
+.btn-action-download i,
+.btn-action-edit i,
+.btn-action-delete i {
+    color: #ffffff !important;
+}
+
+/* Hover más oscuro */
+.btn-action-view:hover,
+.btn-action-download:hover,
+.btn-action-edit:hover,
+.btn-action-delete:hover {
+    background-color: var(--color-magenta-dark) !important;
+    transform: translateY(-2px);
+}
+
