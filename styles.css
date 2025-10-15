@@ -188,6 +188,15 @@ body {
   font-weight: 600;
 }
 
+/* Quita color de fondo y mantiene texto legible en columna "Archivo" */
+#file-list-body td:nth-child(2),
+#file-list-body td:nth-child(2) a {
+  background-color: transparent !important;
+  color: #ffffff !important; /* o #000000 si tu fondo es claro */
+  text-decoration: none !important;
+}
+
+
 /* =================================================================
    BOTONES DE ACCIÓN
    ================================================================= */
