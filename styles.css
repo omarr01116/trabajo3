@@ -1,50 +1,177 @@
 /* =================================================================
- * 1. Estilos Globales, Tarjetas y Modo Oscuro (Adaptado a las nuevas clases)
- * ================================================================= */
+   VARIABLES DE COLOR Y FUENTE
+================================================================= */
+:root {
+    --color-magenta: #ff3399; /* Magenta vibrante */
+    --color-magenta-dark: #cc0077;
+    --color-dark-overlay: rgba(0, 0, 0, 0.85); /* Overlay oscuro */
+    --color-ui-bg: rgba(255, 255, 255, 0.1); /* Fondo para tarjetas y controles */
+    --color-ui-border: rgba(255, 255, 255, 0.2); /* Borde de tarjetas e inputs */
+}
 
+/* =================================================================
+   ESTILOS BASE Y FONDO
+================================================================= */
 body {
-    /* ... (Mantener tus estilos de fondo aquí) ... */
-    min-height: 100vh; 
-    padding-top: 4.5rem; 
+    background-image: url('imagen/fondo principal.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-position: center;
+    font-family: sans-serif;
+    color: #fff;
+    min-height: 100vh;
+    scroll-behavior: smooth;
 }
 
-/* Contenedores de control (Estilo del bloque "Tu Estado de Sesión" / "Subir Archivo") */
-.admin-controls {
-    background-color: rgba(0, 0, 0, 0.5) !important; /* Más oscuro para que el contenido resalte */
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 0.75rem; /* Un poco más de redondeo */
-    padding: 1.5rem !important;
-    margin-bottom: 1.5rem;
-    color: var(--color-text-light); 
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+/* =================================================================
+   NAVBAR Y BOTONES GLOBALES
+================================================================= */
+.navbar-brand img { 
+    height: 40px; 
+    width: auto; 
 }
 
-/* Contenedor principal de la lista (Estilo del bloque "Lista de Usuarios Registrados" / "Listado de Archivos") */
-.user-list-card {
-    background-color: rgba(0, 0, 0, 0.4) !important; 
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 0.75rem; 
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
-    color: var(--color-text-light); 
+.navbar-dark .navbar-nav .nav-link { color: rgba(255,255,255,.75); }
+.navbar-dark .navbar-nav .nav-link:hover { 
+    color: var(--color-magenta); 
+    font-weight: 600; 
 }
 
-/* Estilo para inputs y selects oscuros (replica la imagen) */
-.input-dark, 
-.select-dark {
-    background-color: rgba(255, 255, 255, 0.15) !important;
-    color: white !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+.btn-primary, .badge.bg-primary { 
+    background-color: var(--color-magenta) !important; 
+    border-color: var(--color-magenta) !important;
+    transition: all 0.3s ease;
 }
-.input-dark::placeholder {
-    color: rgba(255, 255, 255, 0.6) !important;
+.btn-primary:hover { 
+    background-color: var(--color-magenta-dark) !important; 
+    border-color: var(--color-magenta-dark) !important;
+    transform: translateY(-1px);
 }
-.input-dark:focus, 
-.select-dark:focus {
-    border-color: var(--color-magenta) !important; 
-    box-shadow: 0 0 0 0.2rem rgba(255, 51, 153, 0.4) !important;
-}
+.btn-danger { transition: all 0.3s ease; }
 
-/* Ajuste para el contenido principal debido al fixed-top navbar */
+/* =================================================================
+   SECCIÓN PRINCIPAL: OVERLAY Y CONTENIDO
+================================================================= */
 #main-content {
-    padding-top: 6rem !important; 
+    position: relative;
+    padding-top: 7rem !important; 
+    padding-bottom: 5rem !important; 
+    min-height: 100vh;
+}
+
+#main-content::before {
+    content: '';
+    position: absolute;
+    inset: 0; /* Top, right, bottom, left = 0 */
+    background: var(--color-dark-overlay);
+    z-index: 1;
+}
+
+#main-content > .container-xl { 
+    position: relative;
+    z-index: 2;
+}
+
+.page-title {
+    color: var(--color-magenta); 
+    text-shadow: 0 0 10px rgba(255, 51, 153, 0.3); 
+}
+
+/* =================================================================
+   ADMIN: TARJETAS Y FORMULARIOS
+================================================================= */
+.admin-controls,
+.user-list-card {
+    background-color: var(--color-ui-bg);
+    border-radius: 0.75rem;
+    border: 1px solid var(--color-ui-border);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+}
+
+.admin-controls { padding: 2rem; margin-bottom: 2rem; }
+.user-list-card { padding: 0; margin-bottom: 2rem; overflow: hidden; }
+
+/* Inputs y selects oscuros */
+.input-dark,
+.form-select.select-dark {
+    background-color: rgba(255,255,255,0.15) !important;
+    color: white !important;
+    border: 1px solid var(--color-ui-border) !important;
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.25em auto;
+    transition: all 0.2s;
+}
+
+.input-dark::placeholder { color: rgba(255,255,255,0.5); }
+
+.input-dark:focus,
+.form-select.select-dark:focus {
+    background-color: rgba(255,255,255,0.2) !important;
+    border-color: var(--color-magenta) !important;
+    box-shadow: 0 0 0 0.25rem rgba(255,51,153,0.4) !important;
+    outline: none;
+}
+
+.form-select.select-dark option {
+    background-color: #1a1a1a;
+    color: white;
+}
+
+/* =================================================================
+   TABLAS DARK MODE
+================================================================= */
+.table {
+    --bs-table-bg: transparent;
+    --bs-table-color: white;
+    border-color: rgba(255,255,255,0.1);
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * { background-color: rgba(255,255,255,0.05); }
+.table-hover > tbody > tr:hover > * { background-color: rgba(255,255,255,0.15) !important; }
+.table th, .table td { border-color: rgba(255,255,255,0.1); }
+
+/* --------------------------------------------------------
+   AJUSTES DE TABLA DE ARCHIVOS
+-------------------------------------------------------- */
+.table th:first-child, 
+.table td:first-child { display: none; } /* Ocultar ID */
+.table td:nth-child(2) { 
+    font-size: 1.15rem; 
+    font-weight: 600; 
+    color: var(--color-magenta); 
+}
+
+/* =================================================================
+   BOTONES DE ACCIÓN EN FILA
+================================================================= */
+#file-list-body td:last-child .d-flex {
+    display: flex !important; 
+    flex-direction: row !important; 
+    gap: 0.35rem !important; 
+    justify-content: center !important; 
+    flex-wrap: wrap; 
+}
+
+.btn-sm.btn-action-view,
+.btn-sm.btn-action-download,
+.btn-sm.btn-action-delete {
+    border-radius: 0.3rem !important; 
+    padding: 0.4rem 0.6rem !important; 
+    font-size: 0.75rem !important; 
+    white-space: nowrap; 
+    line-height: 1;
+    color: white !important;
+}
+
+.btn-action-view { background-color: #0d6efd !important; border-color: #3f444c !important; }
+.btn-action-download { background-color: #198754 !important; border-color: #198754 !important; }
+.btn-action-delete { background-color: #dc3545 !important; border-color: #dc3545 !important; }
+
+/* =================================================================
+   RESPONSIVIDAD
+================================================================= */
+@media (max-width: 991.98px) { 
+    #main-content { padding-top: 5rem !important; }
 }
