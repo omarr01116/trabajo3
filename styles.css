@@ -1,70 +1,50 @@
 /* =================================================================
-    ASIGNAR ROLES - ESTILOS ESPECÍFICOS
-    ================================================================= */
+ * 1. Estilos Globales, Tarjetas y Modo Oscuro (Adaptado a las nuevas clases)
+ * ================================================================= */
 
-/* Ajustes de anchos de columna para la tabla de usuarios */
-.table thead th:nth-child(1),
-.table tbody td:nth-child(1) {
-    width: 35%; /* Correo y ID */
-}
-
-.table thead th:nth-child(2),
-.table tbody td:nth-child(2) {
-    width: 20%; /* Rol */
+body {
+    /* ... (Mantener tus estilos de fondo aquí) ... */
+    min-height: 100vh; 
+    padding-top: 4.5rem; 
 }
 
-.table thead th:nth-child(3),
-.table tbody td:nth-child(3) {
-    width: 25%; /* Último Acceso */
+/* Contenedores de control (Estilo del bloque "Tu Estado de Sesión" / "Subir Archivo") */
+.admin-controls {
+    background-color: rgba(0, 0, 0, 0.5) !important; /* Más oscuro para que el contenido resalte */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.75rem; /* Un poco más de redondeo */
+    padding: 1.5rem !important;
+    margin-bottom: 1.5rem;
+    color: var(--color-text-light); 
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
 }
 
-.table thead th:nth-child(4),
-.table tbody td:nth-child(4) {
-    width: 20%; /* Acciones */
-    text-align: center;
+/* Contenedor principal de la lista (Estilo del bloque "Lista de Usuarios Registrados" / "Listado de Archivos") */
+.user-list-card {
+    background-color: rgba(0, 0, 0, 0.4) !important; 
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.75rem; 
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    color: var(--color-text-light); 
 }
 
-/* Estilo para los badges de rol en la tabla */
-.user-role-badge {
-    padding: 0.4em 0.8em;
-    border-radius: 0.5rem;
-    font-size: 0.75rem;
-    font-weight: 700;
-    min-width: 70px; /* Asegura un ancho mínimo para que no se vea aplastado */
-    display: inline-block; /* Para que respete el min-width y padding */
+/* Estilo para inputs y selects oscuros (replica la imagen) */
+.input-dark, 
+.select-dark {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+.input-dark::placeholder {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+.input-dark:focus, 
+.select-dark:focus {
+    border-color: var(--color-magenta) !important; 
+    box-shadow: 0 0 0 0.2rem rgba(255, 51, 153, 0.4) !important;
 }
 
-/* Colores específicos para los badges de rol */
-.user-role-badge.bg-success { /* Para "Usuario" (verde) */
-    background-color: var(--color-green) !important;
-    color: #fff;
-}
-.user-role-badge.bg-danger { /* Para "Admin" (rojo, como en la imagen) */
-    background-color: #dc3545 !important; 
-    color: #fff;
-}
-
-/* Color para el texto del ID de usuario */
-.user-id-text {
-    color: rgba(255, 255, 255, 0.5); /* Gris claro semitransparente */
-    font-size: 0.75rem;
-    margin-top: 0.2rem;
-    display: block;
-}
-
-/* Estilo para el botón "Editar Rol" */
-.btn-action-edit-role { /* Si necesitas un color diferente al amarillo de 'Renombrar' */
-    background-color: #ffc107 !important; /* Amarillo de Bootstrap 'warning' */
-    border-color: #ffc107 !important;
-    color: #333 !important; /* Texto oscuro para contraste */
-}
-.btn-action-edit-role:hover {
-    background-color: #e0a800 !important; /* Tono más oscuro al pasar el ratón */
-    border-color: #e0a800 !important;
-}
-
-/* Asegurar que el nav-link de "Asignar Roles" esté activo cuando se está en esta página */
-.navbar-nav .nav-item .nav-link.active {
-    color: var(--color-magenta) !important; /* Magenta vibrante */
-    font-weight: 600;
+/* Ajuste para el contenido principal debido al fixed-top navbar */
+#main-content {
+    padding-top: 6rem !important; 
 }
