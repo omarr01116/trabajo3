@@ -1,116 +1,241 @@
-/* =======================================================
-   🌌 FONDO GENERAL
-======================================================= */
+/* =================================================================
+   VARIABLES DE COLOR Y FUENTE
+   ================================================================= */
+:root {
+  --color-magenta: #ff3399;
+  --color-magenta-dark: #cc0077;
+  --color-dark-overlay: rgba(0, 0, 0, 0.85);
+  --color-ui-bg: rgba(255, 255, 255, 0.1);
+  --color-ui-border: rgba(255, 255, 255, 0.2);
+  --color-table-row-bg: #ffffff;
+  --color-table-text: #000000;
+}
+
+/* =================================================================
+   ESTILOS BASE Y FONDO
+   ================================================================= */
 body {
-  background: url("imagenes/fondo_principal.jpg") no-repeat center center fixed;
+  background-image: url('imagen/fondo principal.jpg');
   background-size: cover;
-  color: #fff;
-  font-family: "Segoe UI", sans-serif;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-position: center;
+  font-family: sans-serif;
+  color: #6d8365;
+  min-height: 100vh;
+  scroll-behavior: smooth;
 }
 
-/* Fondo oscuro translúcido para secciones */
-.user-list-card,
-.admin-controls {
-  background-color: rgba(20, 20, 20, 0.9);
-  border-radius: 1rem;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+/* =================================================================
+   NAVBAR Y BOTONES GLOBALES
+   ================================================================= */
+.navbar-brand img {
+  height: 40px;
+  width: auto;
 }
 
-/* =======================================================
-   🧾 TABLA DE ARCHIVOS (AJUSTADA Y ESTABLE)
-======================================================= */
-.table {
-  color: #f1f1f1;
-  background-color: transparent;
-  table-layout: fixed; /* 🔹 Mantiene proporciones */
-  width: 100%;
-  margin-bottom: 0;
+.navbar-dark .navbar-nav .nav-link {
+  color: rgba(255,255,255,.75);
 }
 
-.table thead th {
-  text-align: center;
-  border-color: #444 !important;
-  vertical-align: middle;
+.navbar-dark .navbar-nav .nav-link:hover {
+  color: var(--color-magenta);
   font-weight: 600;
-  text-transform: uppercase;
 }
 
-/* 🔹 Proporción fija de columnas */
+.btn-primary, .badge.bg-primary {
+  background-color: var(--color-magenta) !important;
+  border-color: var(--color-magenta) !important;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-magenta-dark) !important;
+  border-color: var(--color-magenta-dark) !important;
+  transform: translateY(-1px);
+}
+
+.btn-danger {
+  transition: all 0.3s ease;
+}
+
+/* =================================================================
+   SECCIÓN PRINCIPAL: OVERLAY Y CONTENIDO
+   ================================================================= */
+#main-content {
+  position: relative;
+  padding-top: 7rem !important;
+  padding-bottom: 5rem !important;
+  min-height: 100vh;
+}
+
+#main-content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--color-dark-overlay);
+  z-index: 1;
+}
+
+#main-content > .container-xl {
+  position: relative;
+  z-index: 2;
+}
+
+.page-title {
+  color: var(--color-magenta);
+  text-shadow: 0 0 10px rgba(255, 51, 153, 0.3);
+}
+
+/* =================================================================
+   TARJETAS Y FORMULARIOS
+   ================================================================= */
+.admin-controls, .user-list-card {
+  background-color: var(--color-ui-bg);
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-ui-border);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+}
+
+.admin-controls {
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.user-list-card {
+  padding: 0;
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.input-dark, .form-select.select-dark {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  color: white !important;
+  border: 1px solid var(--color-ui-border) !important;
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.25em auto;
+  transition: all 0.2s;
+}
+
+.input-dark::placeholder {
+  color: rgba(255,255,255,0.5);
+}
+
+.input-dark:focus, .form-select.select-dark:focus {
+  background-color: rgba(255,255,255,0.2) !important;
+  border-color: var(--color-magenta) !important;
+  box-shadow: 0 0 0 0.25rem rgba(255,51,153,0.4) !important;
+  outline: none;
+}
+
+.form-select.select-dark option {
+  background-color: #1a1a1a;
+  color: white;
+}
+
+/* =================================================================
+   TABLAS
+   ================================================================= */
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-color: white;
+  border-color: rgba(203, 196, 196, 0.855);
+}
+
+.table-striped > tbody > tr > * {
+  background-color: var(--color-table-row-bg) !important;
+  color: var(--color-table-text) !important;
+}
+
+.table-hover > tbody > tr:hover > * {
+  background-color: #f0f0f0 !important;
+}
+
+.table th, .table td {
+  border-color: rgba(0,0,0,0.1);
+}
+
+/* Encabezado blanco */
+.table thead th {
+  color: #ffffff !important;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Proporciones de columnas */
 .table th:nth-child(1),
 .table td:nth-child(1) {
-  width: 20%; /* Archivo */
-  text-align: center;
-  word-wrap: break-word;
+  width: 20%;
+  text-align: left;
 }
 
 .table th:nth-child(2),
 .table td:nth-child(2) {
-  width: 20%; /* Curso / Semana */
-  text-align: center;
-  word-wrap: break-word;
+  width: 20%;
+  text-align: left;
 }
 
 .table th:nth-child(3),
 .table td:nth-child(3) {
-  width: 60%; /* Acciones */
+  width: 60%;
   text-align: center;
 }
 
-/* =======================================================
-   ⚙️ BOTONES DE ACCIÓN (MAGENTA Y CENTRADOS)
-======================================================= */
+/* Nombre archivo más grande */
+.table td:nth-child(1) {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* =================================================================
+   BOTONES DE ACCIÓN
+   ================================================================= */
 #file-list-body td:last-child .d-flex {
   display: flex !important;
   flex-wrap: wrap;
   justify-content: center !important;
   align-items: center !important;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 
-/* 🔹 Botones uniformes */
 .btn-action-view,
 .btn-action-download,
 .btn-action-edit,
 .btn-action-delete {
-  background-color: #c1128d !important; /* Magenta */
-  color: #fff !important;
+  background-color: var(--color-magenta) !important;
+  color: #ffffff !important;
   border: none !important;
-  width: 95px;
+  width: 90px;
   height: 36px;
-  border-radius: 0.4rem !important;
-  font-size: 0.85rem;
+  border-radius: 0.3rem !important;
+  font-size: 0.8rem !important;
   font-weight: 500;
-  text-align: center;
   line-height: 1.2;
+  text-align: center;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: all 0.25s ease-in-out;
 }
 
-/* Hover efecto */
 .btn-action-view:hover,
 .btn-action-download:hover,
 .btn-action-edit:hover,
 .btn-action-delete:hover {
-  background-color: #e61eb0 !important;
-  transform: scale(1.04);
-  box-shadow: 0 0 10px rgba(230, 30, 176, 0.4);
+  background-color: var(--color-magenta-dark) !important;
+  transform: translateY(-2px);
 }
 
-/* =======================================================
-   📱 RESPONSIVE: en pantallas pequeñas (botones en columna)
-======================================================= */
+/* =================================================================
+   RESPONSIVE
+   ================================================================= */
 @media (max-width: 768px) {
-  #file-list-body td:last-child .d-flex {
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-
   .btn-action-view,
   .btn-action-download,
   .btn-action-edit,
   .btn-action-delete {
-    width: 80%;
+    width: 100px;
+    margin-bottom: 0.3rem;
   }
 }
