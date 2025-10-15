@@ -163,50 +163,28 @@ body {
   vertical-align: middle;
 }
 
-/* Proporciones de columnas */
-.table th:nth-child(1),
-.table td:nth-child(1) {
-  width: 20%;
-  text-align: left;
-}
-
-.table th:nth-child(2),
-.table td:nth-child(2) {
-  width: 20%;
-  text-align: left;
-}
-
-.table th:nth-child(3),
-.table td:nth-child(3) {
-  width: 60%;
-  text-align: left;
-}
-
 /* Nombre archivo más grande */
 .table td:nth-child(1) {
   font-size: 1rem;
   font-weight: 600;
 }
 /* =================================================================
-   BOTONES DE ACCIÓN (versión 2x2 estable)
+   BOTONES DE ACCIÓN (ajuste estable 2x2 con Bootstrap)
    ================================================================= */
-#file-list-body td:last-child {
-  text-align: center;
-  vertical-align: middle;
-}
 
-/* contenedor que agrupa los botones */
+/* Contenedor de los botones en la columna Acciones */
 #file-list-body td:last-child .d-flex {
-  display: grid !important;
-  grid-template-columns: repeat(2, 1fr); /* 2 columnas iguales */
-  justify-items: center;
-  align-items: center;
-  gap: 0.6rem; /* separación entre botones */
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 0.5rem;
   width: 100%;
+  max-width: 230px; /* controla que formen 2 columnas */
   margin: 0 auto;
 }
 
-/* estilo individual de cada botón */
+/* Cada botón: mismos tamaños y centrado del texto */
 .btn-action-view,
 .btn-action-download,
 .btn-action-edit,
@@ -225,19 +203,13 @@ body {
   transition: all 0.25s ease-in-out;
 }
 
+/* Hover */
 .btn-action-view:hover,
 .btn-action-download:hover,
 .btn-action-edit:hover,
 .btn-action-delete:hover {
   background-color: var(--color-magenta-dark) !important;
   transform: translateY(-2px);
-}
-
-/* Ajuste para pantallas pequeñas */
-@media (max-width: 768px) {
-  #file-list-body td:last-child .d-flex {
-    grid-template-columns: 1fr; /* se apilan en móvil */
-  }
 }
 
 /* =================================================================
