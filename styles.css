@@ -169,22 +169,20 @@ body {
   font-weight: 600;
 }
 /* =================================================================
-   BOTONES DE ACCIÓN (ajuste estable 2x2 con Bootstrap)
+   BOTONES DE ACCIÓN — Distribución 2x2 dentro de columna Acciones
    ================================================================= */
-
-/* Contenedor de los botones en la columna Acciones */
 #file-list-body td:last-child .d-flex {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  justify-content: center !important;
-  align-items: center !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr); /* dos columnas iguales */
   gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
   width: 100%;
-  max-width: 230px; /* controla que formen 2 columnas */
   margin: 0 auto;
+  text-align: center;
 }
 
-/* Cada botón: mismos tamaños y centrado del texto */
+/* Tamaño y estilo uniforme de los botones */
 .btn-action-view,
 .btn-action-download,
 .btn-action-edit,
@@ -192,7 +190,7 @@ body {
   background-color: var(--color-magenta) !important;
   color: #ffffff !important;
   border: none !important;
-  width: 100px;
+  width: 100%;
   height: 36px;
   border-radius: 0.3rem !important;
   font-size: 0.8rem !important;
@@ -203,7 +201,7 @@ body {
   transition: all 0.25s ease-in-out;
 }
 
-/* Hover */
+/* Efecto hover */
 .btn-action-view:hover,
 .btn-action-download:hover,
 .btn-action-edit:hover,
