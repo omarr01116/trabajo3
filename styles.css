@@ -1,345 +1,70 @@
-/*
- * Archivo: styles.css
- * Descripción: Estilos para file2.html (Administración de Archivos)
- * * Basado en la paleta oscura moderna, usando clases de Bootstrap 5.
- * Optimizado para la estructura de tabla de 3 columnas (Archivo, Curso/Semana, Acciones).
- */
-
 /* =================================================================
-    CONFIGURACIÓN DEL FONDO GLOBAL Y BASE (Diseño Oscuro)
-    ================================================================= */
-body {
-    /* Mantiene tu fondo de imagen */
-    background-image: url('imagen/fondo principal.jpg');
-    background-size: cover;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
-    background-position: center;
-    font-family: sans-serif;
-    color: #fff; /* Texto blanco sobre fondo oscuro */
-}
-
-/* Variables de Color de Marca */
-:root {
-    --color-magenta: #ff3399; /* Magenta vibrante */
-    --color-magenta-dark: #cc0077; 
-    --color-green: #00b300; /* Verde para éxito/descarga */
-    --color-dark-overlay: rgba(0, 0, 0, 0.9); /* Overlay oscuro */
-    --color-text-light: #f8f9fa; /* Gris muy claro */
-    --color-card-bg: rgba(255, 255, 255, 0.1); /* Fondo de tarjeta semitransparente */
-    --color-card-border: rgba(255, 255, 255, 0.2); /* Borde de tarjeta */
-}
-
-/* =================================================================
-    NAVBAR Y BOTONES DE ACCESO
+    ASIGNAR ROLES - ESTILOS ESPECÍFICOS
     ================================================================= */
 
-/* Estilo para el logo */
-.navbar-brand img {
-    height: 40px; 
-    width: auto;
-}
-
-/* Enlaces de navegación */
-.navbar-light .navbar-nav .nav-link {
-    /* La navbar es oscura, así que el color debe ser claro o magenta */
-    color: rgba(255,255,255,.9) !important; 
-}
-.navbar-light .navbar-nav .nav-link:hover,
-.navbar-light .navbar-nav .nav-link.active {
-    color: var(--color-magenta) !important; 
-    font-weight: 600;
-}
-
-/* Badge de Rol */
-.badge.bg-primary {
-    background-color: var(--color-magenta) !important; 
-    color: white;
-}
-
-/* Botón de Cerrar Sesión */
-.btn-danger {
-    background-color: #333 !important;
-    border-color: #333 !important;
-    transition: all 0.3s ease;
-    color: white;
-}
-.btn-danger:hover {
-    background-color: var(--color-magenta) !important; 
-    border-color: var(--color-magenta) !important;
-}
-
-/* =================================================================
-    SECCIÓN PRINCIPAL: OVERLAY Y BASE DE CONTENIDO
-    ================================================================= */
-
-/* Ajuste de padding (sustituyendo pt-28 por la clase de Bootstrap) */
-.pt-7 { /* Ajuste si necesitas más espacio superior que pt-5 */
-    padding-top: 7rem !important; 
-} 
-#main-files {
-    position: relative;
-    padding-top: 7rem !important; 
-    padding-bottom: 5rem !important; 
-    min-height: 100vh;
-}
-
-/* Overlay Oscuro */
-#main-files::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--color-dark-overlay); 
-    z-index: 1;
-}
-
-#main-files > .container-xl {
-    position: relative;
-    z-index: 2;
-    color: white; 
-}
-
-/* Título principal en Magenta */
-#main-files .display-6 {
-    color: var(--color-magenta); 
-}
-
-/* =================================================================
-    CONTENEDORES (CARDS) MODERNOS DE GESTIÓN
-    ================================================================= */
-
-.management-card {
-    background-color: var(--color-card-bg) !important; 
-    border: 1px solid var(--color-card-border); 
-    border-radius: 1rem !important; 
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-    padding: 1.5rem !important;
-    height: 100%;
-    color: var(--color-text-light); 
-    transition: box-shadow 0.3s ease;
-}
-.management-card:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
-}
-
-/* =================================================================
-    FORMULARIO DE SUBIDA
-    ================================================================= */
-
-/* Título del formulario */
-.text-pink-600 { 
-    color: var(--color-magenta) !important; 
-}
-
-/* Estilo base de inputs y selects */
-.form-select,
-.form-control {
-    background-color: rgba(255, 255, 255, 0.2) !important; 
-    border-color: rgba(255, 255, 255, 0.3) !important; 
-    color: white !important; 
-}
-.form-select option {
-    /* Forzar el fondo de las opciones para que el texto blanco sea legible */
-    background-color: #333; 
-    color: #f8f9fa; /* Texto claro en las opciones */
-}
-
-/* Foco en inputs */
-.form-select:focus,
-.form-control:focus {
-    border-color: var(--color-magenta) !important; 
-    box-shadow: 0 0 0 0.2rem rgba(255, 51, 153, 0.4) !important;
-}
-
-/* Botón de Subir */
-.btn-gradient-upload {
-    background: linear-gradient(to right, var(--color-magenta), var(--color-magenta-dark)); 
-    border: none;
-    color: white;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-.btn-gradient-upload:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(255, 51, 153, 0.6);
-    background: linear-gradient(to left, var(--color-magenta), var(--color-magenta-dark)); 
-    color: white;
-}
-
-/* Mensajes de Estado */
-.text-pink-700 { color: var(--color-magenta-dark) !important; }
-
-/* =================================================================
-    LISTADO DE ARCHIVOS (TABLA) - SOLUCIÓN 3 COLUMNAS (40/35/25)
-    ================================================================= */
-
-/* Título del listado */
-.text-green-700 { color: var(--color-green) !important; }
-
-.table {
-    color: var(--color-text-light); 
-    margin-bottom: 0;
-    background-color: transparent !important; 
-    /* 💡 CLAVE 1: Define el layout fijo para respetar los anchos de columna */
-    table-layout: fixed; 
-    width: 100%;
-}
-
-/* 💡 CLAVE 2: Columna 1 (Archivo - 40%) */
+/* Ajustes de anchos de columna para la tabla de usuarios */
 .table thead th:nth-child(1),
 .table tbody td:nth-child(1) {
-    width: 40%; /* Ancho para el nombre del archivo */
+    width: 35%; /* Correo y ID */
 }
 
-/* 💡 CLAVE 3: Columna 2 (Curso / Semana - 35%) */
 .table thead th:nth-child(2),
 .table tbody td:nth-child(2) {
-    width: 35%; /* Ancho para el curso y la semana */
+    width: 20%; /* Rol */
 }
 
-/* 💡 CLAVE 4: Columna 3 (Acciones - 25%) */
 .table thead th:nth-child(3),
 .table tbody td:nth-child(3) {
-    width: 25%; /* Ancho para los botones */
-    text-align: center; /* Centra los botones */
+    width: 25%; /* Último Acceso */
 }
 
-/* Encabezado de la tabla */
-.table thead th {
-    border-top: none;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.3); 
-    background-color: rgba(255, 255, 255, 0.1); 
-    color: var(--color-text-light);
-}
-/* Celdas de la tabla */
-.table > :not(caption) > * > * {
-    padding: 0.85rem 1rem; 
-    border-color: rgba(255, 255, 255, 0.15); 
-}
-/* Resaltado de fila */
-.table-hover tbody tr:hover {
-    color: white;
-    /* Usar un color más suave que magenta para el hover de fila */
-    background-color: rgba(255, 51, 153, 0.08) !important; 
-}
-.table-hover tbody tr {
-    transition: background-color 0.2s ease;
+.table thead th:nth-child(4),
+.table tbody td:nth-child(4) {
+    width: 20%; /* Acciones */
+    text-align: center;
 }
 
-/* Texto del ID del archivo (para la legibilidad) */
-.file-id-text {
+/* Estilo para los badges de rol en la tabla */
+.user-role-badge {
+    padding: 0.4em 0.8em;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    min-width: 70px; /* Asegura un ancho mínimo para que no se vea aplastado */
+    display: inline-block; /* Para que respete el min-width y padding */
+}
+
+/* Colores específicos para los badges de rol */
+.user-role-badge.bg-success { /* Para "Usuario" (verde) */
+    background-color: var(--color-green) !important;
+    color: #fff;
+}
+.user-role-badge.bg-danger { /* Para "Admin" (rojo, como en la imagen) */
+    background-color: #dc3545 !important; 
+    color: #fff;
+}
+
+/* Color para el texto del ID de usuario */
+.user-id-text {
     color: rgba(255, 255, 255, 0.5); /* Gris claro semitransparente */
     font-size: 0.75rem;
     margin-top: 0.2rem;
-    display: block; /* Para que quede debajo del nombre */
+    display: block;
 }
 
-
-/* =======================================================
-    AJUSTES DE BOTONES DE ACCIÓN (Manteniendo Apilado/d-grid si se usa)
-    ======================================================= */
-
-/* 1. Ajuste de redondeo y tamaño para los botones de acción */
-.btn-sm.btn-action,
-.btn-sm.btn-success,
-.btn-sm.btn-warning,
-.btn-sm.btn-dark {
-    border-radius: 0.5rem !important; 
-    padding: 0.4rem 0.75rem !important; 
-    font-size: 0.85rem !important;
-}
-
-/* 2. Colores personalizados (usando clases de Bootstrap con !important donde se requiera) */
-.btn-primary { 
-    background-color: var(--color-magenta) !important; 
-    border-color: var(--color-magenta) !important;
-}
-.btn-primary:hover {
-    background-color: var(--color-magenta-dark) !important;
-    border-color: var(--color-magenta-dark) !important;
-}
-.btn-dark {
-    background-color: #555 !important; 
-    border-color: #555 !important;
-}
-.btn-dark:hover {
-    background-color: #333 !important;
-    border-color: #333 !important;
-}
-
-/* Sobreescribir los colores de Bootstrap para los botones de la tabla y usar los iconos */
-.btn-action-view { /* Usaremos 'primary' para vista/link */
-    background-color: #0d6efd !important; /* Azul */
-    border-color: #0d6efd !important;
-}
-.btn-action-download { /* Usaremos 'success' para descargar */
-    background-color: var(--color-green) !important; /* Verde */
-    border-color: var(--color-green) !important;
-}
-.btn-action-edit { /* Usaremos 'warning' para renombrar */
-    background-color: #ffc107 !important; /* Amarillo */
+/* Estilo para el botón "Editar Rol" */
+.btn-action-edit-role { /* Si necesitas un color diferente al amarillo de 'Renombrar' */
+    background-color: #ffc107 !important; /* Amarillo de Bootstrap 'warning' */
     border-color: #ffc107 !important;
-    color: #333 !important; /* Texto oscuro para el amarillo */
+    color: #333 !important; /* Texto oscuro para contraste */
 }
-.btn-action-delete { /* Usaremos 'danger' para borrar */
-    background-color: #dc3545 !important; /* Rojo */
-    border-color: #dc3545 !important;
-}
-
-
-/* =================================================================
-    MODAL DE VISTA PREVIA
-    ================================================================= */
-
-.modal-content {
-    background-color: rgba(0, 0, 0, 0.95); 
-    color: white;
-}
-.modal-header {
-    background-color: rgba(0, 0, 0, 0.8) !important; 
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-.modal-header .modal-title {
-    color: var(--color-text-light);
-}
-.modal-body-content { 
-    /* Altura basada en el 90vh del modal-dialog */
-    height: calc(90vh - 80px); 
-    overflow-y: auto; 
-    background-color: #222 !important; 
-}
-.modal-header .btn-close {
-    filter: invert(1); 
+.btn-action-edit-role:hover {
+    background-color: #e0a800 !important; /* Tono más oscuro al pasar el ratón */
+    border-color: #e0a800 !important;
 }
 
-
-/* =================================================================
-    RESPONSIVIDAD
-    ================================================================= */
-
-@media (max-width: 991.98px) { 
-    /* Pequeños ajustes en móvil */
-    #main-files {
-        padding-top: 5rem !important; 
-    }
-    .management-card {
-        padding: 1.5rem;
-    }
-    .navbar-collapse .d-flex {
-        flex-direction: column;
-        align-items: flex-start !important;
-        margin-top: 1rem;
-    }
-    .navbar-collapse .d-flex .badge {
-        margin-bottom: 0.5rem;
-    }
-    
-    /* En móvil, los botones de acción se verán mejor si ocupan el 100% de su celda */
-    .table tbody td:nth-child(3) .d-flex {
-        flex-direction: column;
-        gap: 0.5rem !important; /* Más espacio entre botones apilados */
-    }
+/* Asegurar que el nav-link de "Asignar Roles" esté activo cuando se está en esta página */
+.navbar-nav .nav-item .nav-link.active {
+    color: var(--color-magenta) !important; /* Magenta vibrante */
+    font-weight: 600;
 }
