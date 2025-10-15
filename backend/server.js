@@ -6,6 +6,9 @@ import dotenv from "dotenv";
 import worksRouter from "./routes/works.js"; // Importa tu router de trabajos
 import authRouter from "./routes/auth.js";   // Importa tu router de autenticación
 
+import filesRouter from "./routes/files.js";
+app.use("/api/files", filesRouter);
+
 // Cargar variables de entorno del archivo .env
 dotenv.config();
 
