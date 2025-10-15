@@ -26,7 +26,7 @@ const APPWRITE_BUCKET_ID = '68ebd7b1000a707b10f2';  
 // 🔹 Variables del DOM (AJUSTADAS)
 // =======================================================
 const uploadForm = document.getElementById('upload-form');
-const uploadControls = document.getElementById('upload-controls');
+// const uploadControls = document.getElementById('upload-controls'); // Eliminado del HTML, comentado
 const fileInput = document.getElementById('file-input');
 const fileListBody = document.getElementById('file-list-body');
 
@@ -37,10 +37,6 @@ const filterStatus = document.getElementById('filter-status'); // Estado del fil
 // 💡 Nuevo: Elementos de Filtro (SELECTS de la parte izquierda)
 const filterCursoSelect = document.getElementById('filter-curso-select');
 const filterSemanaSelect = document.getElementById('filter-semana-select');
-
-// ❌ ELIMINADAS: uploadCursoDisplay y uploadSemanaDisplay ya no existen en el HTML
-// const uploadCursoDisplay = document.getElementById('upload-curso-display'); 
-// const uploadSemanaDisplay = document.getElementById('upload-semana-display'); 
 
 const roleDisplay = document.getElementById('role-display');
 const logoutBtn = document.getElementById('logout-btn');
@@ -54,11 +50,11 @@ const previewLink = document.getElementById('preview-link');
 const previewFileNameSpan = document.getElementById('preview-filename');
 
 let role = localStorage.getItem('role') || 'usuario';
-let urlCourse = null;
-let urlWeek = null;
+// let urlCourse = null; // Eliminado
+// let urlWeek = null; // Eliminado
 
 // =======================================================
-// 🔹 Funciones Utilitarias (ACTUALIZADAS Y GENÉRICAS)
+// 🔹 Funciones Utilitarias 
 // =======================================================
 function detectType(name) {
     const ext = name.split(".").pop().toLowerCase();
@@ -74,6 +70,7 @@ function setEstado(msg, targetElement = fileStatus, isError = false) {
 
     targetElement.textContent = msg;
     targetElement.classList.remove('d-none', 'text-danger', 'text-primary', 'text-info', 'text-success');
+    // Usa text-danger para error y text-info para mensajes normales
     targetElement.classList.add(isError ? 'text-danger' : 'text-info'); 
     targetElement.classList.remove('d-none');
 }
@@ -85,23 +82,8 @@ function clearEstado(targetElement = fileStatus) {
     targetElement.classList.add('d-none');
 }
 
-// ❌ FUNCIÓN ELIMINADA: updateUploadDisplay ya no es necesaria, la subida toma directo del filtro.
-/*
-function updateUploadDisplay() {
-    if (!filterCursoSelect || !filterSemanaSelect || !uploadCursoDisplay || !uploadSemanaDisplay) return;
-
-    // Lee los valores de los SELECTS de FILTRO
-    const cursoValue = filterCursoSelect.value;
-    const semanaValue = filterSemanaSelect.value;
-    
-    // Muestra el curso/semana a subir en los inputs readonly
-    uploadCursoDisplay.value = cursoValue || "Selecciona un curso";
-    uploadSemanaDisplay.value = semanaValue || "Selecciona una semana";
-}
-*/
-
 // =======================================================
-// 🔹 Funciones de Acción de la Tabla (SIN CAMBIOS)
+// 🔹 Funciones de Acción de la Tabla (ligeros cambios en setEstado)
 // =======================================================
 function openPreview(fileName, fileId) {
     const type = detectType(fileName);
@@ -148,7 +130,7 @@ function openPreview(fileName, fileId) {
 
     } else {
         previewContent.innerHTML = `<p class="text-center text-muted p-4">
-            No se puede previsualizar este tipo de archivo. Por favor, <button class="btn btn-link p-0 fw-bold btn-action btn-action-download" data-filename="${fileName}" data-file-id="${fileId}">descárgalo</button> para abrirlo.
+            No se puede previsualizar este tipo de archivo. Por favor, <button class="btn btn-link p-0 fw-bold btn-action btn-action-download text-decoration-underline" data-filename="${fileName}" data-file-id="${fileId}">descárgalo</button> para abrirlo.
         </p>`;
     }
 
@@ -157,7 +139,7 @@ function openPreview(fileName, fileId) {
 }
 
 async function handleDownload(fileName, fileId) {
-    setEstado(`⏳ Descargando ${fileName}...`);
+    setEstado(`⏳ Descargando ${fileName}...`, filterStatus); // Usa filterStatus para la tabla
     try {
         const url = `${FILES_API}/${fileId}`;
         const response = await fetch(url);
@@ -171,20 +153,20 @@ async function handleDownload(fileName, fileId) {
         a.click();
         a.remove();
         window.URL.revokeObjectURL(downloadUrl);
-        clearEstado();
+        clearEstado(filterStatus); // Limpia filterStatus
     } catch (err) {
-        setEstado(`❌ Error al descargar: ${err.message}`, fileStatus, true);
+        setEstado(`❌ Error al descargar: ${err.message}`, filterStatus, true); // Usa filterStatus para la tabla
     }
 }
 
 async function handleDelete(recordId, fileName, fileId) { 
-    if (!fileId) return setEstado("⚠️ Error interno: ID de archivo no encontrado.", fileStatus, true);
+    if (!fileId) return setEstado("⚠️ Error interno: ID de archivo no encontrado.", filterStatus, true); // Usa filterStatus para la tabla
     if (!confirm(`¿Eliminar "${fileName}"?`)) return;
 
     const token = localStorage.getItem('token'); 
-    if (!token) return setEstado("⚠️ Sesión no válida.", fileStatus, true);
+    if (!token) return setEstado("⚠️ Sesión no válida.", filterStatus, true); // Usa filterStatus para la tabla
 
-    setEstado("⏳ Eliminando...", fileStatus);
+    setEstado("⏳ Eliminando...", filterStatus); // Usa filterStatus para la tabla
 
     try {
         const response = await fetch(`${BACKEND_API_WORKS}/${recordId}?fileId=${fileId}`, { 
@@ -197,23 +179,24 @@ async function handleDelete(recordId, fileName, fileId) {
             throw new Error(errorData.error || response.statusText);
         }
 
-        setEstado("🗑️ Archivo eliminado.", fileStatus);
+        setEstado("🗑️ Archivo eliminado.", filterStatus); // Usa filterStatus para la tabla
         cargarArchivos();
     } catch (err) {
         console.error("Error al eliminar:", err);
-        setEstado(`❌ Error: ${err.message}`, fileStatus, true);
+        setEstado(`❌ Error: ${err.message}`, filterStatus, true); // Usa filterStatus para la tabla
     }
 }
 
 async function handleRename(recordId, oldFileName) {
     const newFileName = prompt(`Nuevo nombre para el archivo:`, oldFileName);
-    if (!newFileName) return setEstado("⚠️ No se cambió el nombre.", fileStatus, true);
+    if (!newFileName) return clearEstado(filterStatus); // Usa filterStatus
+    if (newFileName.trim() === "") return setEstado("⚠️ El nuevo nombre no puede estar vacío.", filterStatus, true);
 
     const token = localStorage.getItem('token'); 
-    if (!token) return setEstado("⚠️ Sesión no válida.", fileStatus, true);
+    if (!token) return setEstado("⚠️ Sesión no válida.", filterStatus, true);
     
     try {
-        setEstado("⏳ Renombrando...", fileStatus);
+        setEstado("⏳ Renombrando...", filterStatus); // Usa filterStatus
         const response = await fetch(`${BACKEND_API_WORKS}/${recordId}`, {
             method: 'PUT',
             headers: { 
@@ -228,17 +211,17 @@ async function handleRename(recordId, oldFileName) {
             throw new Error(errorData.error || response.statusText);
         }
         
-        setEstado("✅ Archivo renombrado.", fileStatus);
+        setEstado("✅ Archivo renombrado.", filterStatus); // Usa filterStatus
         cargarArchivos(); 
     } catch (err) {
         console.error("Error al renombrar:", err);
-        setEstado(`❌ Error: ${err.message}`, fileStatus, true);
+        setEstado(`❌ Error: ${err.message}`, filterStatus, true); // Usa filterStatus
     }
 }
 
 
 // =======================================================
-// 🔹 Cargar archivos (GET) - CON FILTRO AUTOMÁTICO
+// 🔹 Cargar archivos (GET) - CON FILTRO AUTOMÁTICO (Sin cambios)
 // =======================================================
 async function cargarArchivos() {
     if (!fileListBody) return;
@@ -261,7 +244,8 @@ async function cargarArchivos() {
     // Usa filterStatus para mensajes de carga
     setEstado("⏳ Buscando documentos...", filterStatus);
     
-    fileListBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-secondary">Buscando documentos...</td></tr>`;
+    // CAMBIO: colspan a 3, porque la tabla ahora tiene 3 columnas (Archivo, Curso/Semana, Acciones)
+    fileListBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-secondary">Buscando documentos...</td></tr>`;
     
     // Actualizar el display del título para reflejar el filtro
     let title = "Gestión de Archivos";
@@ -282,7 +266,8 @@ async function cargarArchivos() {
         fileListBody.innerHTML = ''; 
 
         if (records.length === 0) {
-            fileListBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-secondary">No se encontraron archivos con ese filtro.</td></tr>`;
+            // CAMBIO: colspan a 3
+            fileListBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-info">No se encontraron archivos con ese filtro.</td></tr>`;
             clearEstado(filterStatus); 
             return;
         }
@@ -293,12 +278,13 @@ async function cargarArchivos() {
         console.error("❌ [ERROR CRÍTICO] Fallo general al cargar archivos:", err);
         const errorMessage = `❌ ERROR: ${err.message || "Fallo de red o servidor inactivo."}`;
         setEstado(errorMessage, filterStatus, true); 
-        fileListBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-danger">${errorMessage}</td></tr>`;
+        // CAMBIO: colspan a 3
+        fileListBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-danger">${errorMessage}</td></tr>`;
     }
 }
 
 // =======================================================
-// 🔹 Subir archivo (POST) - AHORA USA DIRECTAMENTE LOS VALORES DEL FILTRO
+// 🔹 Subir archivo (POST) - AHORA USA DIRECTAMENTE LOS VALORES DEL FILTRO (Sin cambios funcionales)
 // =======================================================
 async function handleUpload(e) {
     e.preventDefault();
@@ -346,38 +332,57 @@ async function handleUpload(e) {
 }
 
 // =======================================================
-// 🔹 Render de tabla (SIN CAMBIOS)
+// 🔹 Render de tabla (MODIFICADO para botones en fila y nueva columna)
 // =======================================================
 function renderFileRow(record) {
     const recordId = record.$id || record.id;
     const fileId = record.fileId; 
     const fileName = record.fileName || "Archivo";
+    // Nuevas propiedades para la columna de Curso/Semana
+    const curso = record.curso || "N/A";
+    const semana = record.semana || "N/A";
 
     const row = fileListBody.insertRow();
     row.className = ''; 
 
+    // Celda de Nombre del Archivo
     const nameCell = row.insertCell();
     nameCell.className = 'py-3 px-4'; 
     nameCell.innerHTML = `
-        <button class="btn btn-link p-0 btn-action btn-action-view text-decoration-none" data-filename="${fileName}" data-file-id="${fileId}">
+        <button class="btn btn-link p-0 btn-action btn-action-view text-decoration-none text-light fw-bold" data-filename="${fileName}" data-file-id="${fileId}">
             ${fileName}
         </button>
+        <div class="small text-muted">ID: ${fileId ? fileId.substring(0, 8) + '...' : 'N/A'}</div>
     `;
+    
+    // 💡 NUEVA CELDA: Curso / Semana
+    const cursoSemanaCell = row.insertCell();
+    cursoSemanaCell.className = 'py-3 px-4 text-muted small';
+    cursoSemanaCell.textContent = `${curso} / ${semana}`;
 
+    // Celda de Acciones (Botones en Fila)
     const actionsCell = row.insertCell();
     actionsCell.className = 'py-3 px-4 text-center'; 
     actionsCell.innerHTML = `
-        <div class="d-grid gap-2">
-            <button class="btn btn-sm btn-primary btn-action btn-action-view" data-filename="${fileName}" data-file-id="${fileId}">Ver</button>
-            <button class="btn btn-sm btn-success btn-action btn-action-download" data-filename="${fileName}" data-file-id="${fileId}">Descargar</button>
-            <button class="btn btn-sm btn-warning btn-action btn-action-edit" data-record-id="${recordId}" data-filename="${fileName}">Editar</button>
-            <button class="btn btn-sm btn-dark btn-action btn-action-delete" data-record-id="${recordId}" data-file-id="${fileId}" data-filename="${fileName}">Borrar</button> 
+        <div class="d-flex gap-2 justify-content-center">
+            <button class="btn btn-sm btn-outline-primary btn-action btn-action-view" data-filename="${fileName}" data-file-id="${fileId}">
+                <i class="bi bi-eye"></i> Ver
+            </button>
+            <button class="btn btn-sm btn-outline-success btn-action btn-action-download" data-filename="${fileName}" data-file-id="${fileId}">
+                <i class="bi bi-download"></i> Descargar
+            </button>
+            <button class="btn btn-sm btn-warning btn-action btn-action-edit" data-record-id="${recordId}" data-filename="${fileName}">
+                <i class="bi bi-pencil"></i> Renombrar
+            </button>
+            <button class="btn btn-sm btn-danger btn-action btn-action-delete" data-record-id="${recordId}" data-file-id="${fileId}" data-filename="${fileName}">
+                <i class="bi bi-trash"></i> Borrar
+            </button> 
         </div>
     `;
 }
 
 // =======================================================
-// 🔹 Acciones y Vista Previa (SIN CAMBIOS)
+// 🔹 Acciones y Vista Previa (Sin cambios)
 // =======================================================
 function handleActionClick(e) {
     const btn = e.target.closest('.btn-action'); 
@@ -412,26 +417,19 @@ async function checkAuthAndInit() {
 
     role = userRole; 
     if (roleDisplay) roleDisplay.textContent = role.toUpperCase();
-    if (uploadControls) uploadControls.classList.remove('d-none'); 
+    // if (uploadControls) uploadControls.classList.remove('d-none'); // Comentado, ya no es un control separado
 
-    // 1. ❌ updateUploadDisplay ELIMINADO
-    // 2. Cargar archivos con los filtros iniciales (vacío = todo)
+    // 1. Cargar archivos con los filtros iniciales (vacío = todo)
     await cargarArchivos(); 
 
-    // 3. Conectar eventos
+    // 2. Conectar eventos
     if (uploadForm) uploadForm.addEventListener('submit', handleUpload);
     document.addEventListener('click', handleActionClick); 
     if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
     
     // 🎯 EVENTOS: CARGA AUTOMÁTICA AL CAMBIAR EL FILTRO
-    if (filterCursoSelect) filterCursoSelect.addEventListener('change', () => {
-        // ❌ updateUploadDisplay ELIMINADO
-        cargarArchivos();       // Carga la tabla
-    });
-    if (filterSemanaSelect) filterSemanaSelect.addEventListener('change', () => {
-        // ❌ updateUploadDisplay ELIMINADO
-        cargarArchivos();       // Carga la tabla
-    });
+    if (filterCursoSelect) filterCursoSelect.addEventListener('change', cargarArchivos);
+    if (filterSemanaSelect) filterSemanaSelect.addEventListener('change', cargarArchivos);
 }
 
 async function handleLogout() {
@@ -439,7 +437,5 @@ async function handleLogout() {
     localStorage.clear();
     window.location.href = LOGIN_URL; 
 }
-
-// La función checkUrlParams fue eliminada.
 
 document.addEventListener('DOMContentLoaded', checkAuthAndInit);
