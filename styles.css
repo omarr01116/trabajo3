@@ -7,8 +7,6 @@
     --color-dark-overlay: rgba(0, 0, 0, 0.85);
     --color-ui-bg: rgba(255, 255, 255, 0.1);
     --color-ui-border: rgba(255, 255, 255, 0.2);
-    --color-table-row-bg: #ffffff;
-    --color-table-text: #000000;
 }
 
 /* =================================================================
@@ -62,7 +60,7 @@ body {
 #main-content::before {
     content: '';
     position: absolute;
-    inset: 0; /* top, right, bottom, left = 0 */
+    inset: 0;
     background: var(--color-dark-overlay);
     z-index: 1;
 }
@@ -115,33 +113,25 @@ body {
 }
 
 /* ================================================================
-   AJUSTE: LISTADO DE ARCHIVOS CON ENCABEZADOS BLANCOS
+   LISTADO DE ARCHIVOS (ENCABEZADO Y FILAS)
 ================================================================ */
 .table thead th {
-    color: #ffffff !important;       /* Letras blancas */
-    background-color: transparent !important; /* Fondo igual que antes */
+    color: #ffffff !important; /* Letras blancas */
+    background-color: transparent !important; /* Fondo igual */
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* El resto del contenido (filas y celdas) se mantiene igual */
 .table tbody td {
-    color: #000000 !important; /* Texto negro en las filas, fondo igual */
-}
-/* ================================================================
-   1️⃣ Nombre de archivo sin color magenta
-================================================================ */
-.table td:nth-child(2) {
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: #000000 !important; /* Texto negro */
+    color: #000000 !important; /* Letras negras en filas */
+    background-color: #ffffff !important; /* Fondo blanco para contraste */
 }
 
 /* ================================================================
-   2️⃣ Botones de acción magenta, organizados en 2 columnas (2x2)
+   BOTONES DE ACCIÓN MAGENTA (2x2)
 ================================================================ */
 #file-list-body td:last-child .d-flex {
     display: grid !important;
-    grid-template-columns: repeat(2, 1fr); /* 2 columnas */
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.5rem !important;
     justify-items: center;
     align-items: center;
@@ -180,4 +170,3 @@ body {
     background-color: var(--color-magenta-dark) !important;
     transform: translateY(-2px);
 }
-
