@@ -1,77 +1,237 @@
-/* ================================================================
-   LISTADO DE ARCHIVOS (ENCABEZADO Y FILAS)
-================================================================ */
+/* =================================================================
+   VARIABLES DE COLOR Y FUENTE
+================================================================= */
+:root {
+  --color-magenta: #ff3399;
+  --color-magenta-dark: #cc0077;
+  --color-dark-overlay: rgba(0, 0, 0, 0.85);
+  --color-ui-bg: rgba(255, 255, 255, 0.1);
+  --color-ui-border: rgba(255, 255, 255, 0.2);
+  --color-table-row-bg: #ffffff;
+  --color-table-text: #000000;
+}
+
+/* =================================================================
+   ESTILOS BASE Y FONDO
+================================================================= */
+body {
+  background-image: url("imagen/fondo principal.jpg");
+  background-size: cover;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-position: center;
+  font-family: sans-serif;
+  color: #6d8365;
+  min-height: 100vh;
+  scroll-behavior: smooth;
+}
+
+/* =================================================================
+   NAVBAR Y BOTONES GLOBALES
+================================================================= */
+.navbar-brand img {
+  height: 40px;
+  width: auto;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+  color: var(--color-magenta);
+  font-weight: 600;
+}
+
+.btn-primary,
+.badge.bg-primary {
+  background-color: var(--color-magenta) !important;
+  border-color: var(--color-magenta) !important;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-magenta-dark) !important;
+  border-color: var(--color-magenta-dark) !important;
+  transform: translateY(-1px);
+}
+
+.btn-danger {
+  transition: all 0.3s ease;
+}
+
+/* =================================================================
+   SECCIÓN PRINCIPAL: OVERLAY Y CONTENIDO
+================================================================= */
+#main-content {
+  position: relative;
+  padding-top: 7rem !important;
+  padding-bottom: 5rem !important;
+  min-height: 100vh;
+}
+
+#main-content::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--color-dark-overlay);
+  z-index: 1;
+}
+
+#main-content > .container-xl {
+  position: relative;
+  z-index: 2;
+}
+
+.page-title {
+  color: var(--color-magenta);
+  text-shadow: 0 0 10px rgba(255, 51, 153, 0.3);
+}
+
+/* =================================================================
+   TARJETAS Y FORMULARIOS
+================================================================= */
+.admin-controls,
+.user-list-card {
+  background-color: var(--color-ui-bg);
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-ui-border);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+}
+
+.admin-controls {
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.user-list-card {
+  padding: 0;
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.input-dark,
+.form-select.select-dark {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  color: white !important;
+  border: 1px solid var(--color-ui-border) !important;
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.25em auto;
+  transition: all 0.2s;
+}
+
+.input-dark::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.input-dark:focus,
+.form-select.select-dark:focus {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-color: var(--color-magenta) !important;
+  box-shadow: 0 0 0 0.25rem rgba(255, 51, 153, 0.4) !important;
+  outline: none;
+}
+
+.form-select.select-dark option {
+  background-color: #1a1a1a;
+  color: white;
+}
+
+/* =================================================================
+   TABLAS
+================================================================= */
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-color: white;
+  border-color: rgba(203, 196, 196, 0.855);
+}
+
+/* Fondo y color general de filas */
+.table-striped > tbody > tr > * {
+  background-color: var(--color-ui-bg) !important;
+  color: #ffffff !important;
+}
+
+/* Hover sobre filas */
+.table-hover > tbody > tr:hover > * {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Encabezados blancos */
 .table thead th {
-    color: #ffffff !important; /* Letras blancas */
-    background-color: transparent !important; /* Fondo igual */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-    text-align: center;
+  color: #ffffff !important;
+  background-color: rgba(0, 0, 0, 0.4) !important;
+  border-bottom: 2px solid var(--color-ui-border);
+  text-align: center;
 }
 
-.table tbody td {
-    color: #000000 !important; /* Letras negras en filas */
-    background-color: #ffffff !important; /* Fondo blanco */
-    vertical-align: middle !important;
-    text-align: center;
+/* Celdas normales */
+.table th,
+.table td {
+  border-color: rgba(255, 255, 255, 0.15);
+  text-align: center;
+  vertical-align: middle;
 }
 
-/* ================================================================
-   ARCHIVO (nombre con fondo transparente)
-================================================================ */
-.table td:first-child span,
-.table td:first-child a {
-    background-color: transparent !important; /* Sin fondo */
-    color: #000000 !important; /* Texto negro */
-    font-weight: 600;
-    font-size: 1rem;
-    border: none !important;
-    padding: 0 !important;
-    text-decoration: none !important;
+/* Ocultar columna ID */
+.table th:first-child,
+.table td:first-child {
+  display: none;
 }
 
-/* ================================================================
-   BOTONES DE ACCIÓN MAGENTA (2x2)
-================================================================ */
+/* Nombre archivo */
+.table td:nth-child(2) {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff !important;
+  background-color: transparent !important;
+}
+
+/* =================================================================
+   BOTONES DE ACCIÓN
+================================================================= */
 #file-list-body td:last-child .d-flex {
-    display: flex !important;
-    flex-wrap: wrap !important; /* Permite que haya 2 filas */
-    justify-content: center !important;
-    align-items: center !important;
-    gap: 0.5rem !important;
-    padding: 0.5rem 0;
+  display: flex !important;
+  flex-wrap: wrap !important; /* permite 2x2 */
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  padding: 0.5rem 0;
 }
 
+/* Botones principales */
 .btn-action-view,
 .btn-action-download,
 .btn-action-edit,
 .btn-action-delete {
-    background-color: var(--color-magenta) !important;
-    color: #ffffff !important;
-    border: none !important;
-    width: 100px !important;
-    height: 38px !important;
-    border-radius: 0.4rem !important;
-    font-size: 0.85rem !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 38px;
+  border-radius: 0.4rem !important;
+  font-size: 0.85rem !important;
+  border: none !important;
+  background-color: var(--color-magenta) !important;
+  color: #ffffff !important;
+  transition: all 0.3s ease;
 }
 
-/* íconos dentro de los botones */
+/* Iconos blancos */
 .btn-action-view i,
 .btn-action-download i,
 .btn-action-edit i,
 .btn-action-delete i {
-    color: #ffffff !important;
-    margin-right: 5px;
+  color: #ffffff !important;
+  margin-right: 5px;
 }
 
-/* Hover */
+/* Hover más oscuro */
 .btn-action-view:hover,
 .btn-action-download:hover,
 .btn-action-edit:hover,
 .btn-action-delete:hover {
-    background-color: var(--color-magenta-dark) !important;
-    transform: translateY(-2px);
+  background-color: var(--color-magenta-dark) !important;
+  transform: translateY(-2px);
 }
