@@ -187,27 +187,26 @@ body {
   font-size: 1rem;
   font-weight: 600;
 }
-
-/* Quita color de fondo y mantiene texto legible en columna "Archivo" */
-#file-list-body td:nth-child(2),
-#file-list-body td:nth-child(2) a {
-  background-color: transparent !important;
-  color: #ffffff !important; /* o #000000 si tu fondo es claro */
-  text-decoration: none !important;
+/* =================================================================
+   BOTONES DE ACCIÓN (versión 2x2 estable)
+   ================================================================= */
+#file-list-body td:last-child {
+  text-align: center;
+  vertical-align: middle;
 }
 
-
-/* =================================================================
-   BOTONES DE ACCIÓN
-   ================================================================= */
+/* contenedor que agrupa los botones */
 #file-list-body td:last-child .d-flex {
   display: grid !important;
-  flex-wrap: wrap;
-  justify-content: center !important;
-  align-items: center !important;
-  gap: 0.6rem;
+  grid-template-columns: repeat(2, 1fr); /* 2 columnas iguales */
+  justify-items: center;
+  align-items: center;
+  gap: 0.6rem; /* separación entre botones */
+  width: 100%;
+  margin: 0 auto;
 }
 
+/* estilo individual de cada botón */
 .btn-action-view,
 .btn-action-download,
 .btn-action-edit,
@@ -215,14 +214,12 @@ body {
   background-color: var(--color-magenta) !important;
   color: #ffffff !important;
   border: none !important;
-  width: 140px;
+  width: 100px;
   height: 36px;
   border-radius: 0.3rem !important;
   font-size: 0.8rem !important;
   font-weight: 500;
-  line-height: 1.2;
-  text-align: center;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.25s ease-in-out;
@@ -234,6 +231,13 @@ body {
 .btn-action-delete:hover {
   background-color: var(--color-magenta-dark) !important;
   transform: translateY(-2px);
+}
+
+/* Ajuste para pantallas pequeñas */
+@media (max-width: 768px) {
+  #file-list-body td:last-child .d-flex {
+    grid-template-columns: 1fr; /* se apilan en móvil */
+  }
 }
 
 /* =================================================================
