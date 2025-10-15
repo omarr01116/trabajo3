@@ -17,6 +17,12 @@ const SUPABASE_URL = 'https://bazwwhwjruwgyfomyttp.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhend3aHdqcnV3Z3lmb215dHRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxNjA1NTAsImV4cCI6MjA3MzczNjU1MH0.RzpCKpYV-GqNIhTklsQtRqyiPCGGmV1Us7q_BeBHxUo'; 
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// 🌐 CONFIGURACIÓN APPWRITE (Sacado de tu .env)
+// NOTA CLAVE: Quitamos el '/v1' del endpoint de Appwrite para la URL de archivos públicos.
+const APPWRITE_ENDPOINT_BASE = 'https://nyc.cloud.appwrite.io'; 
+const APPWRITE_PROJECT_ID = '68ea7b28002bd7addb54';          
+const APPWRITE_BUCKET_ID = '68ebd7b1000a707b10f2'; 
+
 // =======================================================
 // 🔹 Variables del DOM
 // =======================================================
@@ -62,59 +68,66 @@ function clearEstado() {
 }
 
 // =======================================================
-// 🔹 Funciones de Acción de la Tabla
-// =======================================================
-// =======================================================
-// 🔹 Funciones de Acción de la Tabla (CÓDIGO CORREGIDO PARA VISUALIZACIÓN)
+// 🔹 Funciones de Acción de la Tabla (CORRECCIÓN FINAL)
 // =======================================================
 function openPreview(fileName, fileId) {
     const type = detectType(fileName);
     previewContent.innerHTML = '';
     previewFileNameSpan.textContent = fileName;
     
-    // URL que sirve tu backend para descargar/visualizar el archivo binario
+    // 1. URL de la API de Render (Para DESCARGA y fallback, tu backend)
     const internalUrl = `${FILES_API}/${fileId}`; 
-    previewLink.href = internalUrl; // El enlace 'Abrir en nueva pestaña' apunta a tu API
-
+    
+    // 2. Base URL de Archivo Público de Appwrite (Corregida)
+    const appwritePublicBaseUrl = `${APPWRITE_ENDPOINT_BASE}/storage/buckets/${APPWRITE_BUCKET_ID}/files/${fileId}`;
+    
     let embedUrl = '';
+    let linkUrl = internalUrl; // Por defecto, el botón 'Abrir en nueva pestaña' usa tu API
 
     if (type === "image") {
-        // ✅ IMÁGENES: Usa la URL de tu backend directamente (funciona bien)
-        previewContent.innerHTML = `<img src="${internalUrl}" class="img-fluid mx-auto d-block" style="max-height: 80vh;">`;
+        // ✅ IMAGEN: Usamos el endpoint de 'preview' de Appwrite.
+        embedUrl = `${appwritePublicBaseUrl}/preview?project=${APPWRITE_PROJECT_ID}&quality=80&width=800&height=600`;
+        previewContent.innerHTML = `<img src="${embedUrl}" class="img-fluid mx-auto d-block" style="max-height: 80vh;">`;
+        linkUrl = embedUrl; // El enlace 'Abrir en nueva pestaña' usa la URL de preview de Appwrite.
     
     } else if (type === "pdf") {
-        // ✅ PDF: Usamos Google Docs Viewer para mayor robustez
-        const encodedUrl = encodeURIComponent(internalUrl);
-        // Google Docs Viewer es más fiable para PDFs servidos desde APIs
+        // ✅ PDF: Usamos Google Docs Viewer con la URL de 'view' de Appwrite.
+        // El endpoint 'view' es la forma más directa de obtener el archivo sin forzar la descarga.
+        const appwriteViewUrl = `${appwritePublicBaseUrl}/view?project=${APPWRITE_PROJECT_ID}`;
+        const encodedUrl = encodeURIComponent(appwriteViewUrl);
+
         embedUrl = `https://docs.google.com/gview?url=${encodedUrl}&embedded=true`;
         
         previewContent.innerHTML = `<iframe src="${embedUrl}" width="100%" height="600px" class="border-0" allowfullscreen></iframe>`;
+        linkUrl = appwriteViewUrl; // Enlace público de Appwrite
     
     } else if (type === "document") {
-        // ✅ DOCUMENTOS DE OFFICE (DOCX, PPTX, XLSX): Usamos Microsoft Office Online Viewer
-        // Es la ÚNICA forma de visualizar estos archivos sin librerías de terceros
-        const encodedUrl = encodeURIComponent(internalUrl);
+        // ✅ OFFICE (DOCX/PPTX): Usamos Office Viewer con la URL de 'view' de Appwrite.
+        const appwriteViewUrl = `${appwritePublicBaseUrl}/view?project=${APPWRITE_PROJECT_ID}`;
+        const encodedUrl = encodeURIComponent(appwriteViewUrl);
+
         embedUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodedUrl}`;
 
         previewContent.innerHTML = `<iframe src="${embedUrl}" width="100%" height="600px" class="border-0" allowfullscreen></iframe>`;
+        linkUrl = appwriteViewUrl; 
         
-        // Mensaje de fallback si el visor externo falla
         previewContent.innerHTML += `<p class="text-center text-muted p-4 small">
             Si la previsualización falla, haz clic en 
-            <a href="${internalUrl}" target="_blank" class="text-decoration-underline">Abrir en nueva pestaña</a> 
-            para iniciar la descarga e intentar abrirlo localmente o usa el botón 'Descargar'.
+            <a href="${linkUrl}" target="_blank" class="text-decoration-underline">Abrir en nueva pestaña</a> 
+            para iniciar la descarga.
         </p>`;
 
     } else {
         // ❌ OTROS TIPOS: Mensaje por defecto
         previewContent.innerHTML = `<p class="text-center text-muted p-4">
-            No se puede previsualizar este tipo de archivo (.${type}). Por favor, descárgalo para abrirlo.
+            No se puede previsualizar este tipo de archivo. Por favor, <button class="btn btn-link p-0 fw-bold btn-action btn-action-download" data-filename="${fileName}" data-file-id="${fileId}">descárgalo</button> para abrirlo.
         </p>`;
     }
 
+    // Actualiza el enlace "Abrir en nueva pestaña" con la URL de vista de Appwrite (más estable)
+    previewLink.href = linkUrl;
     previewModal.show();
 }
-
 async function handleDownload(fileName, fileId) {
     setEstado(`⏳ Descargando ${fileName}...`);
     try {
