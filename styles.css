@@ -7,8 +7,8 @@
     --color-dark-overlay: rgba(0, 0, 0, 0.85);
     --color-ui-bg: rgba(255, 255, 255, 0.1);
     --color-ui-border: rgba(255, 255, 255, 0.2);
-    --color-table-row-bg: #ffffff; /* Fondo de filas de tabla */
-    --color-table-text: #000000; /* Texto de filas de tabla */
+    --color-table-row-bg: #ffffff;
+    --color-table-text: #000000;
 }
 
 /* =================================================================
@@ -149,9 +149,10 @@ body {
 ================================================================= */
 #file-list-body td:last-child .d-flex {
     display: flex !important;
-    flex-direction: column !important;
+    flex-direction: row !important;
     gap: 0.35rem !important;
     justify-content: center !important;
+    flex-wrap: wrap;
     align-items: center;
 }
 
@@ -159,7 +160,9 @@ body {
 .btn-action-download,
 .btn-action-edit,
 .btn-action-delete {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     min-width: 90px;
     height: 32px;
     border-radius: 0.3rem !important;
@@ -171,14 +174,4 @@ body {
     border: none !important;
 }
 
-.btn-action-view { background-color: #0d66c5 !important; }
-.btn-action-download { background-color: #198754 !important; }
-.btn-action-edit { background-color: #ffc107 !important; color: #000 !important; }
-.btn-action-delete { background-color: #dc3545 !important; }
-
-/* =================================================================
-   RESPONSIVIDAD
-================================================================= */
-@media (max-width: 991.98px) { 
-    #main-content { padding-top: 5rem !important; }
-}
+/* Colores específico*
