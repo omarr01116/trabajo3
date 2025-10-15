@@ -192,7 +192,7 @@ body {
    BOTONES DE ACCIÓN
    ================================================================= */
 #file-list-body td:last-child .d-flex {
-  display: flex !important;
+  display: grid !important;
   flex-wrap: wrap;
   justify-content: center !important;
   align-items: center !important;
