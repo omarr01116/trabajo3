@@ -127,10 +127,27 @@ body {
 .table tbody td {
     color: #000000 !important; /* Texto negro en las filas, fondo igual */
 }
+/* ================================================================
+   1️⃣ Nombre de archivo sin color magenta
+================================================================ */
+.table td:nth-child(2) {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #000000 !important; /* Texto negro */
+}
 
 /* ================================================================
-   BOTONES DE ACCIÓN EN COLOR MAGENTA CON TEXTO BLANCO
+   2️⃣ Botones de acción magenta, organizados en 2 columnas (2x2)
 ================================================================ */
+#file-list-body td:last-child .d-flex {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr); /* 2 columnas */
+    gap: 0.5rem !important;
+    justify-items: center;
+    align-items: center;
+    padding: 0.3rem 0;
+}
+
 .btn-action-view,
 .btn-action-download,
 .btn-action-edit,
@@ -138,18 +155,24 @@ body {
     background-color: var(--color-magenta) !important;
     color: #ffffff !important;
     border: none !important;
+    width: 100px !important;
+    height: 36px !important;
+    border-radius: 0.4rem !important;
+    font-size: 0.8rem !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-/* Íconos blancos también */
 .btn-action-view i,
 .btn-action-download i,
 .btn-action-edit i,
 .btn-action-delete i {
     color: #ffffff !important;
+    margin-right: 6px;
 }
 
-/* Hover más oscuro */
 .btn-action-view:hover,
 .btn-action-download:hover,
 .btn-action-edit:hover,
