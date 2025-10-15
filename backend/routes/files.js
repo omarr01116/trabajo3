@@ -13,18 +13,28 @@ router.get("/:fileId", async (req, res) => {
       return res.status(500).json({ error: "Configuración de servidor incorrecta" });
     }
 
-    // Obtén el archivo de Appwrite como stream
-    const fileStream = await storage.getFileDownload({
-      bucketId: process.env.APPWRITE_BUCKET_ID, // CORREGIDO
+    // 🔹 Obtener información del archivo (nombre real y MIME)
+    const fileInfo = await storage.getFile({
+      bucketId: process.env.APPWRITE_BUCKET_ID,
       fileId,
     });
 
-    // Configurar headers para enviar archivo al frontend
-    res.setHeader("Content-Disposition", `inline; filename="${fileId}"`);
-    res.setHeader("Content-Type", fileStream.headers.get("content-type"));
+    const fileName = fileInfo.name || fileId;
+    const contentType = fileInfo.mimeType || "application/octet-stream";
 
-    // Pipe del stream directamente a la respuesta
-    fileStream.body.pipe(res);
+    // 🔹 Descargar el archivo
+    const fileData = await storage.getFileDownload({
+      bucketId: process.env.APPWRITE_BUCKET_ID,
+      fileId,
+    });
+
+    const arrayBuffer = await fileData.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // 🔹 Enviar archivo al frontend
+    res.setHeader("Content-Disposition", `inline; filename="${fileName}"`);
+    res.setHeader("Content-Type", contentType);
+    res.send(buffer);
 
   } catch (err) {
     console.error("Error al obtener archivo:", err);
