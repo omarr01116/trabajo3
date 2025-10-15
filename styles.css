@@ -179,7 +179,7 @@ body {
 .table th:nth-child(3),
 .table td:nth-child(3) {
   width: 60%;
-  text-align: center;
+  text-align: left;
 }
 
 /* Nombre archivo más grande */
