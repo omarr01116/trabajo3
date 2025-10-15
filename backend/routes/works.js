@@ -12,11 +12,9 @@ import { verificarToken, soloAdmin } from "../middleware/auth.js";
 
 // ======================================================================
 // ⚙️ Compatibilidad ESM + CommonJS con node-appwrite
-// ======================================================================
-const require = createRequire(import.meta.url);
-const Appwrite = require("node-appwrite");
-const { ID } = Appwrite;
-
+// =====================================================================
+import { ID } from "node-appwrite";         // Para generar IDs únicos
+import { InputFile } from "node-appwrite/file";  // Para manejar archivos
 // ======================================================================
 // 📁 Router
 // ======================================================================
@@ -85,20 +83,14 @@ router.post(
       const fileBuffer = await fsp.readFile(filePath);
 
       // ✅ Crear InputFile compatible con Appwrite moderno
-      const InputFile =
-        Appwrite.InputFile || Appwrite.default?.InputFile || null;
-
-      if (!InputFile) {
-        throw new Error("InputFile no está disponible en node-appwrite.");
-      }
-
+      // Crear InputFile directamente
       const inputFile = InputFile.fromBuffer(fileBuffer, fileName);
 
-      // ✅ Subir archivo a Appwrite
+      // Subir archivo a Appwrite
       const uploadedFile = await storage.createFile(
-        BUCKET_ID,
-        ID.unique(),
-        inputFile
+          BUCKET_ID,
+          ID.unique(),
+          inputFile
       );
 
       console.log("✅ Archivo subido correctamente a Appwrite:", uploadedFile.$id);
