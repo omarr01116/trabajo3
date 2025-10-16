@@ -1,5 +1,5 @@
 // ======================================================================
-// semana.js - CÓDIGO CORREGIDO Y OPTIMIZADO
+// semana.js - CÓDIGO FINAL CORREGIDO Y OPTIMIZADO
 // ======================================================================
 
 // 🌐 CONFIGURACIÓN BACKEND (Consistente con los otros archivos)
@@ -18,7 +18,6 @@ const APPWRITE_BUCKET_ID = '68ebd7b1000a707b10f2';
 const backButton = document.getElementById('back-to-course-btn');
 const courseNameDisplay = document.getElementById('course-name-display');
 const weekNameDisplay = document.getElementById('week-name-display');
-const weekTitleShort = document.getElementById('week-title-short');
 const fileStatus = document.getElementById('file-status');
 const filesContainer = document.getElementById('files-container'); 
 
@@ -83,7 +82,7 @@ function openPreview(fileName, fileId) {
     let linkUrl = internalUrl;
 
     if (type === "image") {
-        embedUrl = `${appwriteResourceBase}/preview?project=${APPWRITE_PROJECT_ID}&quality=80&width=800&height=600`;
+        embedUrl = `${appwriteResourceBase}/preview?project=${APPWRITE_PROJECT_ID}&quality=80&width=1200`;
         previewContent.innerHTML = `<img src="${embedUrl}" class="img-fluid mx-auto d-block" style="max-height: 80vh; object-fit: contain;">`;
         linkUrl = embedUrl; 
     
@@ -98,12 +97,14 @@ function openPreview(fileName, fileId) {
             embedUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodedUrl}`;
         }
         
-        previewContent.innerHTML = `<iframe src="${embedUrl}" width="100%" height="100%" class="border-0" allowfullscreen></iframe>
-        <div class="text-center p-2 bg-secondary w-100 flex-shrink-0 border-top">
-            <small class="text-white-50">Si la previsualización falla, use el botón "Abrir en nueva pestaña".</small>
-        </div>`;
+        previewContent.innerHTML = `<iframe src="${embedUrl}" width="100%" height="100%" class="border-0" allowfullscreen></iframe>`;
     } else {
-        previewContent.innerHTML = `<p class="text-center text-white-50 p-5">No se puede previsualizar este tipo de archivo.</p>`;
+        previewContent.innerHTML = `<div class="text-center p-5">
+            <p class="text-white-50">No se puede previsualizar este tipo de archivo.</p>
+            <button class="btn btn-primary btn-action-download-modal" data-filename="${fileName}" data-file-id="${fileId}">
+                <i class="fa-solid fa-download me-2"></i>Descargar Archivo
+            </button>
+        </div>`;
     }
 
     previewLink.href = linkUrl;
@@ -132,7 +133,7 @@ async function handleDownload(fileName, fileId) {
 }
 
 // =======================================================
-// 🔹 Carga y renderizado de archivos (LÓGICA PRINCIPAL CORREGIDA)
+// 🔹 Carga y renderizado de archivos (FUNCIÓN CORREGIDA)
 // =======================================================
 function renderFileCard(record) {
     const fileId = record.fileId; 
@@ -143,23 +144,25 @@ function renderFileCard(record) {
     const colDiv = document.createElement('div');
     colDiv.className = 'col';
 
-    // Generamos la URL de la miniatura directamente desde Appwrite para las imágenes
-    const appwritePreviewUrl = `${APPWRITE_ENDPOINT}/storage/buckets/${APPWRITE_BUCKET_ID}/files/${fileId}/preview?project=${APPWRITE_PROJECT_ID}&width=400&height=300`;
-
-    let previewHtml = (fileType === 'image')
-        ? `<img src="${appwritePreviewUrl}" alt="${fileName}" class="card-img-top">`
-        : `<i class="fa-solid ${fileIcon} icon-overlay"></i>`;
+    // ⭐ CORRECCIÓN: Siempre se muestra el ícono, nunca la imagen de vista previa.
+    let previewHtml = `<i class="fa-solid ${fileIcon} icon-overlay"></i>`;
     
     colDiv.innerHTML = `
         <div class="file-card h-100">
-            <div class="card-preview p-3">
+            <div class="card-preview">
                 ${previewHtml}
             </div>
             <div class="card-body p-3 d-flex flex-column">
                 <h6 class="card-title text-white fw-bold mb-3 flex-grow-1">${fileName}</h6>
-                <div class="d-flex justify-content-between gap-2 mt-auto">
-                    <button class="btn btn-sm btn-magenta w-100 btn-action" data-action="view" data-filename="${fileName}" data-file-id="${fileId}">Ver</button>
-                    <button class="btn btn-sm btn-outline-light w-100 btn-action" data-action="download" data-filename="${fileName}" data-file-id="${fileId}">Descargar</button>
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-auto">
+                    
+                    <button class="btn btn-sm btn-magenta w-100 btn-action" data-action="view" data-filename="${fileName}" data-file-id="${fileId}">
+                        <i class="fa-solid fa-eye me-1"></i> Ver
+                    </button>
+                    
+                    <button class="btn btn-sm btn-outline-light w-100 btn-action" data-action="download" data-filename="${fileName}" data-file-id="${fileId}">
+                        <i class="fa-solid fa-download me-1"></i> Descargar
+                    </button>
                 </div>
             </div>
         </div>`;
@@ -176,7 +179,6 @@ async function cargarArchivos() {
     
     setEstado(`⏳ Buscando archivos de ${currentWeek}...`);
 
-    // ⭐ CAMBIO CLAVE: El filtrado se hace en el backend enviando los parámetros en la URL
     const url = `${BACKEND_API_WORKS}?curso=${encodeURIComponent(currentCourse)}&semana=${encodeURIComponent(currentWeek)}`;
     
     try {
@@ -228,7 +230,6 @@ function init() {
     document.title = `${currentWeek || 'Semana'} de ${currentCourse || 'Curso'} - OMAR`;
     if (courseNameDisplay) courseNameDisplay.textContent = currentCourse || 'Curso';
     if (weekNameDisplay) weekNameDisplay.textContent = currentWeek || 'Semana';
-    if (weekTitleShort) weekTitleShort.textContent = currentWeek || 'Semana';
 
     if (backButton && currentCourse) {
         backButton.href = `curso.html?name=${encodeURIComponent(currentCourse)}`;

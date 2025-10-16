@@ -2,63 +2,76 @@
    VARIABLES DE COLOR Y FUENTE
    ================================================================= */
 :root {
-    --color-magenta: #ff3399; /* Magenta vibrante */
-    --color-magenta-dark: #cc0077;
-    --color-dark-overlay: rgba(0, 0, 0, 0.85);
-    --color-card-bg: rgba(255, 255, 255, 0.05); /* Fondo de Card */
-    --color-card-border: rgba(255, 255, 255, 0.15); /* Borde de Card */
+    --color-magenta: #ff3399;
+    --color-magenta-dark: #e62e8a;
+    --color-dark-overlay: rgba(10, 2, 20, 0.8); /* Overlay un poco más claro y con tono púrpura */
+    --color-card-bg: rgba(255, 255, 255, 0.1);  /* Fondo de Card más opaco */
+    --color-card-border: rgba(255, 255, 255, 0.2); /* Borde de Card más visible */
+    --color-navbar-bg: rgba(15, 15, 15, 0.6); /* Fondo para la navbar */
 }
 
 /* =================================================================
    ESTILOS BASE Y FONDO
    ================================================================= */
 body {
-    /* Fondo fijo con overlay oscuro */
     background-image: url('imagen/fondo principal.jpg');
     background-size: cover;
     background-attachment: fixed;
-    background-repeat: no-repeat;
     background-position: center;
-    font-family: sans-serif;
-    color: #fff; 
-}
-
-/* Navbar y Botones (Consistente con tu diseño) */
-.navbar-brand img { height: 40px; width: auto; }
-.navbar-light .navbar-nav .nav-link { color: rgba(0,0,0,.55); }
-.navbar-light .navbar-nav .nav-link:hover { color: var(--color-magenta); font-weight: 600; }
-.btn-black { 
-    background-color: #000; 
-    border-color: #000; 
-    color: white; 
-    transition: all 0.3s ease; 
-}
-.btn-black:hover { 
-    background-color: #333; 
-    border-color: #333; 
-    color: white; 
+    font-family: 'Segoe UI', 'Roboto', sans-serif;
+    color: #fff;
 }
 
 /* =================================================================
-   SECCIÓN PRINCIPAL: OVERLAY Y CONTENIDO
+   NUEVA NAVBAR PERSONALIZADA
    ================================================================= */
+.navbar-custom {
+    background-color: var(--color-navbar-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); /* Soporte para Safari */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
 
+.navbar-custom .navbar-brand img {
+    height: 40px;
+}
+
+.navbar-custom .nav-link {
+    color: rgba(255, 255, 255, 0.75);
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.navbar-custom .nav-link:hover, .navbar-custom .nav-link.active {
+    color: var(--color-magenta);
+}
+
+.btn-black {
+    background-color: #000;
+    border-color: #000;
+    color: white;
+    transition: all 0.3s ease;
+}
+.btn-black:hover {
+    background-color: #333;
+    border-color: #333;
+}
+
+/* =================================================================
+   SECCIÓN PRINCIPAL Y TÍTULOS
+   ================================================================= */
 #main-content {
     position: relative;
-    padding-top: 7rem !important; 
-    padding-bottom: 5rem !important; 
+    padding-top: 7rem;
+    padding-bottom: 5rem;
     min-height: 100vh;
 }
 
-/* Overlay Oscuro */
 #main-content::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--color-dark-overlay); 
+    inset: 0;
+    background: var(--color-dark-overlay);
     z-index: 1;
 }
 
@@ -67,13 +80,15 @@ body {
     z-index: 2;
 }
 
-/* Título Principal */
 .page-title {
-    color: var(--color-magenta); 
-    text-shadow: 0 0 10px rgba(255, 51, 153, 0.3); 
+    color: #fff;
+    font-weight: 700;
+}
+.page-title span { /* Resaltamos el curso y semana con el color magenta */
+    color: var(--color-magenta);
+    text-shadow: 0 0 10px rgba(255, 51, 153, 0.5);
 }
 
-/* Botón de Volver a Curso */
 .btn-back-course {
     background-color: transparent;
     border: 2px solid var(--color-magenta);
@@ -84,50 +99,55 @@ body {
 .btn-back-course:hover {
     background-color: var(--color-magenta);
     color: white;
-    transform: translateX(-5px);
+    transform: scale(1.05);
 }
 
 /* =================================================================
-   ESTILOS PARA LAS CARDS DE ARCHIVO
+   TARJETAS DE ARCHIVO (FILE-CARD) CON EFECTO VIDRIO
    ================================================================= */
 .file-card {
-    background-color: var(--color-card-bg); 
+    background-color: var(--color-card-bg);
     border: 1px solid var(--color-card-border);
-    border-radius: 0.75rem; 
+    border-radius: 1rem;
     overflow: hidden;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    /* EFECTO VIDRIO ESMERILADO */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     height: 100%;
     display: flex;
     flex-direction: column;
 }
 
 .file-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-5px);
     border-color: var(--color-magenta);
-    box-shadow: 0 8px 20px rgba(255, 51, 153, 0.3);
+    box-shadow: 0 0 25px rgba(255, 51, 153, 0.4);
 }
 
 .card-preview {
-    height: 150px; /* Altura fija para la imagen de referencia */
-    background-color: #1a1a1a;
+    height: 160px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 3rem;
-    color: #ccc;
+    background-color: rgba(0, 0, 0, 0.2);
 }
 
-.card-preview img {
-    max-height: 100%;
-    max-width: 100%;
-    object-fit: contain;
-}
-
-/* Ícono de overlay (cuando no hay imagen) */
+/* Ícono grande para el tipo de archivo */
 .icon-overlay {
-    font-size: 4rem;
+    font-size: 5rem; /* Ícono más grande */
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.3s ease;
+}
+
+.file-card:hover .icon-overlay {
     color: var(--color-magenta);
+    transform: scale(1.1);
+}
+
+.card-title {
+    word-break: break-word; /* Evita que nombres largos rompan el diseño */
 }
 
 /* Botones dentro de la Card */
@@ -135,22 +155,11 @@ body {
     background-color: var(--color-magenta);
     border-color: var(--color-magenta);
     color: white;
-    transition: all 0.3s;
-    font-weight: 500;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
 }
 .btn-magenta:hover {
     background-color: var(--color-magenta-dark);
     border-color: var(--color-magenta-dark);
     color: white;
-}
-.btn-outline-light {
-    font-weight: 500;
-}
-
-
-/* =================================================================
-   RESPONSIVIDAD
-   ================================================================= */
-@media (max-width: 991.98px) { 
-    #main-content { padding-top: 5rem !important; }
 }
