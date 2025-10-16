@@ -1,46 +1,55 @@
-// =======================================================
-// file1.js (ROL USUARIO) - MIGRADO A RENDER/APPWRITE
-// =======================================================
+// ======================================================================
+// file1.js (ROL USUARIO) - CÓDIGO CORREGIDO Y ALINEADO CON file2.js
+// ======================================================================
 
-// 🔑 Supabase para la AUTENTICACIÓN
+// 🔑 Cliente Supabase (solo para autenticación)
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"; 
 
-// 🛑 CONFIG BACKEND (Render)
+// 🌐 CONFIGURACIÓN BACKEND
 const RENDER_BASE_URL = 'https://trabajo-backend.onrender.com';
 const BACKEND_API_WORKS = `${RENDER_BASE_URL}/api/works`;
+const FILES_API = `${RENDER_BASE_URL}/api/files`; // Endpoint para descargar/previsualizar archivos
 const LOGIN_URL = "./login.html"; 
-const ADMIN_PAGE_URL = 'file2.html'; 
+const ADMIN_PAGE_URL = 'file2.html'; // URL a la que se redirige si el usuario es admin
 
-// 🚨 CONFIGURACIÓN DE SUPABASE (AUTH)
+// ⚙️ CONFIGURACIÓN SUPABASE
 const SUPABASE_URL = 'https://bazwwhwjruwgyfomyttp.supabase.co'; 
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhend3aHdqcnV3Z3lmb215dHRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxNjA1NTAsImV4cCI6MjA3MzczNjU1MH0.RzpCKpYV-GqNIhTklsQtRqyiPCGGmVlUs7q_BeBHxUo'; 
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// =================================================================
-// 🔹 Variables
-// =================================================================
+// 🌐 CONFIGURACIÓN APPWRITE (NECESARIA PARA PREVISUALIZAR)
+const APPWRITE_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1'; 
+const APPWRITE_PROJECT_ID = '68ea7b28002bd7addb54';         
+const APPWRITE_BUCKET_ID = '68ebd7b1000a707b10f2';  
+
+// =======================================================
+// 🔹 Variables del DOM (Consistentes con file2.js)
+// =======================================================
 const uploadForm = document.getElementById('upload-form');
-const uploadControls = document.getElementById('upload-controls');
-const cursoSelect = document.getElementById('curso-select');
-const semanaSelect = document.getElementById('semana-select');
 const fileInput = document.getElementById('file-input');
 const fileListBody = document.getElementById('file-list-body');
-const fileStatus = document.getElementById('file-status');
+
+const fileStatus = document.getElementById('file-status'); 
+const filterStatus = document.getElementById('file-status'); // Usamos el mismo elemento para ambos estados
+
+const filterCursoSelect = document.getElementById('curso-select'); // Renombrado para consistencia
+const filterSemanaSelect = document.getElementById('semana-select'); // Renombrado para consistencia
+
 const roleDisplay = document.getElementById('role-display');
 const logoutBtn = document.getElementById('logout-btn');
 const dynamicTitle = document.getElementById('dynamic-title');
-const previewModal = new bootstrap.Modal(document.getElementById('previewModal'), {});
+
+const previewModalElement = document.getElementById('previewModal');
+const previewModal = new bootstrap.Modal(previewModalElement, {}); 
 const previewContent = document.getElementById('preview-content');
 const previewLink = document.getElementById('preview-link');
-const previewFileNameSpan = document.getElementById('preview-filename'); 
+const previewFileNameSpan = document.getElementById('preview-filename');
 
 let role = localStorage.getItem('role') || 'usuario';
-let urlCourse = null;
-let urlWeek = null;
 
-// =================================================================
-// 🔹 Utilidad
-// =================================================================
+// =======================================================
+// 🔹 Funciones Utilitarias (Idénticas a file2.js)
+// =======================================================
 function detectType(name) {
     const ext = name.split(".").pop().toLowerCase();
     if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) return "image";
@@ -49,249 +58,284 @@ function detectType(name) {
     return "other";
 }
 
-function setEstado(msg, isError = false) {
-    fileStatus.textContent = msg;
-    fileStatus.classList.remove('d-none');
-    fileStatus.classList.toggle('text-pink-700', !isError); 
-    fileStatus.classList.toggle('text-danger', isError); 
+function setEstado(msg, targetElement = fileStatus, isError = false) {
+    if (!targetElement) return;
+
+    targetElement.textContent = msg;
+    targetElement.classList.remove('d-none', 'text-danger', 'text-primary', 'text-info', 'text-success');
+    targetElement.classList.add(isError ? 'text-danger' : 'text-info'); 
+    targetElement.classList.remove('d-none');
 }
 
-function clearEstado() {
-    fileStatus.textContent = '';
-    fileStatus.classList.add('d-none');
+function clearEstado(targetElement = fileStatus) {
+    if (!targetElement) return;
+    targetElement.textContent = '';
+    targetElement.classList.add('d-none');
 }
 
-// =================================================================
-// 🔹 Autenticación Supabase
-// =================================================================
+// =======================================================
+// 🔹 Funciones de Acción (Ver y Descargar - Idénticas a file2.js)
+// =======================================================
+function openPreview(fileName, fileId) {
+    const type = detectType(fileName);
+    previewContent.innerHTML = '';
+    previewFileNameSpan.textContent = fileName;
+    
+    const internalUrl = `${FILES_API}/${fileId}`; 
+    const appwriteBase = APPWRITE_ENDPOINT.replace('/v1', '');
+    const appwriteResourceBase = `${appwriteBase}/v1/storage/buckets/${APPWRITE_BUCKET_ID}/files/${fileId}`;
+    
+    let embedUrl = '';
+    let linkUrl = internalUrl;
+
+    if (type === "image") {
+        embedUrl = `${appwriteResourceBase}/preview?project=${APPWRITE_PROJECT_ID}&quality=80&width=800&height=600`;
+        previewContent.innerHTML = `<img src="${embedUrl}" class="img-fluid mx-auto d-block" style="max-height: 80vh;">`;
+        linkUrl = embedUrl; 
+    
+    } else if (type === "pdf" || type === "document") {
+        
+        const appwriteViewUrl = `${appwriteResourceBase}/view?project=${APPWRITE_PROJECT_ID}`;
+        const encodedUrl = encodeURIComponent(appwriteViewUrl);
+        linkUrl = appwriteViewUrl;
+        
+        if (type === "pdf") {
+            embedUrl = `https://docs.google.com/gview?url=${encodedUrl}&embedded=true`;
+            
+        } else if (type === "document") {
+            embedUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodedUrl}`;
+        }
+        
+        previewContent.innerHTML = `<iframe src="${embedUrl}" width="100%" height="600px" class="border-0" allowfullscreen></iframe>`;
+        
+        previewContent.innerHTML += `<p class="text-center text-muted p-4 small">
+            Si la previsualización falla, haz clic en 
+            <a href="${linkUrl}" target="_blank" class="text-decoration-underline">Abrir en nueva pestaña</a> 
+            para iniciar la descarga.
+        </p>`;
+
+    } else {
+        previewContent.innerHTML = `<p class="text-center text-muted p-4">
+            No se puede previsualizar este tipo de archivo. Por favor, <button class="btn btn-link p-0 fw-bold btn-action btn-action-download text-decoration-underline" data-filename="${fileName}" data-file-id="${fileId}">descárgalo</button> para abrirlo.
+        </p>`;
+    }
+
+    previewLink.href = linkUrl;
+    previewModal.show();
+}
+
+async function handleDownload(fileName, fileId) {
+    setEstado(`⏳ Descargando ${fileName}...`, filterStatus); 
+    try {
+        const url = `${FILES_API}/${fileId}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(downloadUrl);
+        clearEstado(filterStatus); 
+    } catch (err) {
+        setEstado(`❌ Error al descargar: ${err.message}`, filterStatus, true); 
+    }
+}
+
+// =======================================================
+// 🔹 Cargar archivos (GET) - LÓGICA MEJORADA idéntica a file2.js
+// =======================================================
+async function cargarArchivos() {
+    if (!fileListBody) return;
+    
+    // Los filtros se leen directamente de los selectores
+    const cursoFiltro = filterCursoSelect ? filterCursoSelect.value : '';
+    const semanaFiltro = filterSemanaSelect ? filterSemanaSelect.value : '';
+
+    let url = BACKEND_API_WORKS;
+    let params = [];
+
+    if (cursoFiltro && cursoFiltro !== 'default') params.push(`curso=${encodeURIComponent(cursoFiltro)}`);
+    if (semanaFiltro && semanaFiltro !== 'default') params.push(`semana=${encodeURIComponent(semanaFiltro)}`);
+
+    if (params.length > 0) {
+        url += '?' + params.join('&');
+    }
+
+    setEstado("⏳ Buscando documentos...", filterStatus);
+    
+    fileListBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-secondary">Buscando documentos...</td></tr>`;
+    
+    let title = "Mis Archivos";
+    if (cursoFiltro && semanaFiltro && cursoFiltro !== 'default' && semanaFiltro !== 'default') {
+        title = `Archivos: ${cursoFiltro} / ${semanaFiltro}`;
+    }
+    if (dynamicTitle) dynamicTitle.textContent = title;
+    
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const records = await response.json();
+        fileListBody.innerHTML = ''; 
+
+        if (records.length === 0) {
+            fileListBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-info">No se encontraron archivos con ese filtro.</td></tr>`;
+            clearEstado(filterStatus); 
+            return;
+        }
+
+        records.forEach(record => renderFileRow(record));
+        clearEstado(filterStatus);
+    } catch (err) {
+        console.error("❌ Fallo al cargar archivos:", err);
+        const errorMessage = `❌ ERROR: ${err.message || "Fallo de red o servidor inactivo."}`;
+        setEstado(errorMessage, filterStatus, true); 
+        fileListBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-danger">${errorMessage}</td></tr>`;
+    }
+}
+
+// =======================================================
+// 🔹 Subir archivo (POST) - LÓGICA MEJORADA idéntica a file2.js
+// =======================================================
+async function handleUpload(e) {
+    e.preventDefault();
+    const file = fileInput.files[0];
+    if (!file) return setEstado("⚠️ Selecciona un archivo.", fileStatus, true);
+
+    const token = localStorage.getItem('token'); 
+    if (!token) return setEstado("⚠️ Sesión no válida.", fileStatus, true);
+
+    const curso = filterCursoSelect ? filterCursoSelect.value : '';
+    const semana = filterSemanaSelect ? filterSemanaSelect.value : '';
+    
+    if (!curso || curso === "default" || !semana || semana === "default") {
+        return setEstado("⚠️ Debes seleccionar un Curso y una Semana válidos para subir el archivo.", fileStatus, true);
+    }
+
+    setEstado("⏳ Subiendo archivo...", fileStatus);
+
+    const formData = new FormData();
+    formData.append('curso', curso);
+    formData.append('semana', semana);
+    formData.append('documento', file);
+
+    try {
+        const response = await fetch(BACKEND_API_WORKS, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData,
+        });
+
+        if (response.ok) {
+            setEstado("✅ Archivo subido con éxito", fileStatus);
+            fileInput.value = ''; 
+            cargarArchivos(); 
+        } else {
+            const errorData = await response.json().catch(() => ({ error: 'Fallo desconocido' }));
+            setEstado(`❌ Error al subir: ${errorData.error || response.statusText}`, fileStatus, true);
+        }
+    } catch (error) {
+        console.error("❌ Error de red:", error);
+        setEstado('❌ Error de red. Verifica tu conexión.', fileStatus, true);
+    }
+}
+
+// =======================================================
+// 🔹 Render de tabla (MODIFICADO para ROL USUARIO)
+// =======================================================
+function renderFileRow(record) {
+    const recordId = record.$id || record.id;
+    const fileId = record.fileId; 
+    const fileName = record.fileName || "Archivo";
+    const curso = record.curso || "N/A";
+    const semana = record.semana || "N/A";
+
+    const row = fileListBody.insertRow();
+    row.className = ''; 
+
+    // Celda de Nombre del Archivo
+    const nameCell = row.insertCell();
+    nameCell.className = 'py-3 px-4'; 
+    nameCell.innerHTML = `
+        <button class="btn btn-link p-0 btn-action btn-action-view text-decoration-none text-light fw-bold" data-filename="${fileName}" data-file-id="${fileId}">
+            ${fileName}
+        </button>
+        <div class="file-id-text">${fileId ? 'ID: ' + fileId.substring(0, 8) + '...' : 'ID: N/A'}</div>
+    `;
+    
+    // Celda: Curso / Semana
+    const cursoSemanaCell = row.insertCell();
+    cursoSemanaCell.className = 'py-3 px-4 text-muted small';
+    cursoSemanaCell.textContent = `${curso} / ${semana}`;
+
+    // Celda de Acciones (SOLO VER Y DESCARGAR)
+    const actionsCell = row.insertCell();
+    actionsCell.className = 'py-3 px-4 text-center'; 
+    actionsCell.innerHTML = `
+        <div class="d-flex gap-2 justify-content-center">
+            <button class="btn btn-sm btn-action btn-action-view" data-filename="${fileName}" data-file-id="${fileId}">
+                <i class="bi bi-eye"></i> Ver
+            </button>
+            <button class="btn btn-sm btn-action btn-action-download" data-filename="${fileName}" data-file-id="${fileId}">
+                <i class="bi bi-download"></i> Descargar
+            </button>
+            </div>
+    `;
+}
+
+// =======================================================
+// 🔹 Delegación de eventos (SIMPLIFICADO para ROL USUARIO)
+// =======================================================
+function handleActionClick(e) {
+    const btn = e.target.closest('.btn-action'); 
+    if (!btn) return;
+
+    const fileName = btn.getAttribute('data-filename');
+    const fileId = btn.getAttribute('data-file-id');
+
+    if (btn.classList.contains('btn-action-view')) openPreview(fileName, fileId);
+    if (btn.classList.contains('btn-action-download')) handleDownload(fileName, fileId); 
+    // No hay lógica para 'delete' o 'edit'
+}
+
+// =======================================================
+// 🔹 Autenticación e Inicialización (Adaptado para ROL USUARIO)
+// =======================================================
 async function checkAuthAndInit() {
     const { data: { session }, error: authError } = await supabaseClient.auth.getSession();
     if (authError || !session) { 
         window.location.href = LOGIN_URL; 
         return; 
     }
-    
-    const userRole = localStorage.getItem('role') || 'usuario';
 
-    if (userRole === 'invitado') {
-        window.location.href = './portafolio.html'; 
+    const userRole = localStorage.getItem('role') || 'usuario';
+    // Si el usuario es un admin, lo enviamos a su página correcta
+    if (userRole === 'admin') { 
+        window.location.href = ADMIN_PAGE_URL; 
         return;
     }
-    
+
     role = userRole; 
     if (roleDisplay) roleDisplay.textContent = role.toUpperCase();
-    if (uploadControls) uploadControls.classList.remove('d-none'); 
 
-    checkUrlParams(); 
     await cargarArchivos(); 
 
-    if (uploadForm) uploadForm.addEventListener('submit', handleUpload); 
+    if (uploadForm) uploadForm.addEventListener('submit', handleUpload);
     document.addEventListener('click', handleActionClick); 
     if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
-
-    if (!urlCourse && !urlWeek) {
-        if (cursoSelect) cursoSelect.addEventListener('change', cargarArchivos);
-        if (semanaSelect) semanaSelect.addEventListener('change', cargarArchivos);
-    }
+    
+    if (filterCursoSelect) filterCursoSelect.addEventListener('change', cargarArchivos);
+    if (filterSemanaSelect) filterSemanaSelect.addEventListener('change', cargarArchivos);
 }
 
 async function handleLogout() {
-    await supabaseClient.auth.signOut();
+    await supabaseClient.auth.signOut(); 
     localStorage.clear();
     window.location.href = LOGIN_URL; 
 }
 
-// =================================================================
-// 🔹 Subir archivo (Render / Appwrite)
-// =================================================================
-async function handleUpload(e) {
-    e.preventDefault();
-
-    const file = fileInput.files[0];
-    const token = localStorage.getItem('token'); 
-
-    if (!token) return setEstado("⚠️ Sesión no válida. Inicia sesión.", true);
-    if (!file) return setEstado("⚠️ Selecciona un archivo.", true);
-    
-    const curso = urlCourse || (cursoSelect ? cursoSelect.value : '');
-    const semana = urlWeek || (semanaSelect ? semanaSelect.value : '');
-
-    if (!curso || !semana || curso === 'default' || semana === 'default') {
-        return setEstado("⚠️ Selecciona curso y semana válidos.", true);
-    }
-    
-    setEstado("⏳ Subiendo archivo...");
-
-    const formData = new FormData();
-    formData.append('documento', file); 
-    // Usa el nombre del archivo como título automáticamente
-    formData.append('titulo', `[${curso}] - [${semana}] - ${file.name}`);
-    // Descripción automática opcional
-    formData.append('descripcion', 'Archivo subido por usuario');
-
-    try {
-        const response = await fetch(BACKEND_API_WORKS, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }, 
-            body: formData,
-        });
-
-        if (response.ok) {
-            setEstado("✅ Archivo subido con éxito");
-            fileInput.value = ''; 
-            cargarArchivos(); 
-        } else {
-            const errorData = await response.json().catch(() => ({error: 'Fallo desconocido'}));
-            setEstado(`❌ Error al subir: ${errorData.error || response.statusText}`, true);
-        }
-    } catch (error) {
-        console.error('Error de red:', error);
-        setEstado('❌ Error de red o servidor.', true);
-    }
-}
-
-// =================================================================
-// 🔹 Leer archivos (Render / Appwrite)
-// =================================================================
-async function cargarArchivos() {
-    if (!fileListBody) return;
-    
-    setEstado("⏳ Cargando archivos...");
-    
-    const curso = urlCourse || (cursoSelect ? cursoSelect.value : '');
-    const semana = urlWeek || (semanaSelect ? semanaSelect.value : '');
-    const shouldFilter = !!curso && !!semana && curso !== 'default' && semana !== 'default';
-
-    fileListBody.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-secondary font-semibold">Buscando documentos...</td></tr>`;
-
-    try {
-        const response = await fetch(BACKEND_API_WORKS, { method: 'GET' });
-        if (!response.ok) throw new Error(`Error ${response.status}`);
-
-        const records = await response.json(); 
-        let filtered = records;
-
-        if (shouldFilter) {
-            const cursoTerm = `[${curso.toLowerCase()}]`;
-            const semanaTerm = `[${semana.toLowerCase()}]`;
-            filtered = records.filter(r => {
-                const titulo = r.titulo ? r.titulo.toLowerCase() : '';
-                return titulo.includes(cursoTerm) && titulo.includes(semanaTerm);
-            });
-        }
-        
-        fileListBody.innerHTML = ''; 
-
-        if (filtered.length === 0) {
-            setEstado(`📭 Sin archivos para ${curso} - ${semana}`);
-            fileListBody.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-secondary font-semibold">📭 No hay archivos.</td></tr>`;
-            return;
-        }
-        
-        filtered.forEach(record => renderFileRow(record)); 
-        clearEstado();
-
-    } catch (err) {
-        console.error("Error al cargar:", err);
-        setEstado(`❌ No se pudo cargar: ${err.message}`, true);
-    }
-}
-
-function getFileUrl(record) {
-    return record.fileUrl; 
-}
-
-function renderFileRow(record) {
-    const fileUrl = getFileUrl(record); 
-    const fileName = record.fileName || record.titulo; 
-    const row = fileListBody.insertRow();
-    row.className = 'border-t hover:bg-light transition';
-
-    row.insertCell().innerHTML = `
-        <button class="btn btn-link p-0 text-decoration-none text-start btn-action btn-action-view" 
-            data-filename="${fileName}" data-fileurl="${fileUrl}">
-            ${record.titulo}
-        </button>`;
-
-    row.insertCell().innerHTML = `
-        <div class="btn-group">
-            <button class="btn btn-sm btn-primary btn-action-view" data-filename="${fileName}" data-fileurl="${fileUrl}">Ver</button>
-            <button class="btn btn-sm btn-success btn-action-download" data-filename-download="${fileName}" data-fileurl="${fileUrl}">Descargar</button>
-        </div>`;
-}
-
-// =================================================================
-// 🔹 Vista y descarga
-// =================================================================
-async function handleDownload(fileName, fileUrl) {
-    setEstado(`⏳ Descargando ${fileName}...`);
-    try {
-        const response = await fetch(fileUrl); 
-        if (!response.ok) throw new Error(`Error ${response.status}`);
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName; 
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-        clearEstado();
-    } catch (error) {
-        setEstado(`❌ Error: ${error.message}`, true);
-    }
-}
-
-function handleActionClick(e) {
-    const view = e.target.closest('.btn-action-view');
-    if (view) openPreview(view.dataset.filename, view.dataset.fileurl);
-    const dl = e.target.closest('.btn-action-download');
-    if (dl) handleDownload(dl.dataset.filenameDownload, dl.dataset.fileurl);
-}
-
-function openPreview(fileName, url) {
-    const type = detectType(fileName);
-    if (!url) return setEstado("⚠️ Sin URL de archivo.", true);
-    previewContent.innerHTML = ''; 
-    previewFileNameSpan.textContent = fileName;
-    previewLink.href = url;
-    
-    let contentHTML;
-    if (type === "image") {
-        contentHTML = `<img src="${url}" alt="${fileName}" class="img-fluid d-block mx-auto">`;
-    } else if (type === "pdf" || type === "document") {
-        const src = type === "document" ? 
-            `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true` : url;
-        contentHTML = `<iframe src="${src}" class="w-100 border-0" style="height: 500px;"></iframe>`;
-    } else {
-        contentHTML = `<p class="text-center text-muted p-5">No se puede previsualizar.</p>`;
-    }
-    previewContent.innerHTML = contentHTML;
-    previewModal.show();
-}
-
-// =================================================================
-// 🔹 Manejo de URL
-// =================================================================
-function checkUrlParams() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const c = urlParams.get('c');
-    const s = urlParams.get('s');
-
-    if (c && s) { 
-        urlCourse = c;
-        urlWeek = s;
-        cursoSelect.style.display = 'none';
-        semanaSelect.style.display = 'none';
-        uploadControls.classList.remove('d-none');
-        dynamicTitle.textContent = `Documentos de ${c} - ${s}`;
-    } else {
-        uploadControls.classList.remove('d-none'); 
-        dynamicTitle.textContent = "Selecciona un curso/semana";
-        cursoSelect.style.display = '';
-        semanaSelect.style.display = '';
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => checkAuthAndInit());
+document.addEventListener('DOMContentLoaded', checkAuthAndInit);
