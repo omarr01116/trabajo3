@@ -81,6 +81,7 @@ function openPreview(fileName, fileId) {
     previewContent.innerHTML = '';
     previewFileNameSpan.textContent = fileName;
     
+    // Usa FILES_API del archivo actual
     const internalUrl = `${FILES_API}/${fileId}`; 
     const appwriteBase = APPWRITE_ENDPOINT.replace('/v1', '');
     const appwriteResourceBase = `${appwriteBase}/v1/storage/buckets/${APPWRITE_BUCKET_ID}/files/${fileId}`;
@@ -89,9 +90,10 @@ function openPreview(fileName, fileId) {
     let linkUrl = internalUrl;
 
     if (type === "image") {
-        embedUrl = `${appwriteResourceBase}/preview?project=${APPWRITE_PROJECT_ID}&quality=80&width=800&height=600`;
-        previewContent.innerHTML = `<img src="${embedUrl}" class="img-fluid mx-auto d-block" style="max-height: 80vh;">`;
-        linkUrl = embedUrl; 
+        // Usa el preview de Appwrite con configuración optimizada
+        embedUrl = `${appwriteResourceBase}/preview?project=${APPWRITE_PROJECT_ID}&quality=80&width=1200`;
+        previewContent.innerHTML = `<img src="${embedUrl}" class="img-fluid mx-auto d-block" style="max-height: 80vh; object-fit: contain;">`;
+        linkUrl = embedUrl; // El enlace directo ahora va al preview de Appwrite
     
     } else if (type === "pdf" || type === "document") {
         
@@ -100,30 +102,40 @@ function openPreview(fileName, fileId) {
         linkUrl = appwriteViewUrl;
         
         if (type === "pdf") {
+            // Usar Google Viewer para PDF
             embedUrl = `https://docs.google.com/gview?url=${encodedUrl}&embedded=true`;
             
         } else if (type === "document") {
+            // Usar Office Online Viewer para documentos
             embedUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodedUrl}`;
         }
         
-        previewContent.innerHTML = `<iframe src="${embedUrl}" width="100%" height="600px" class="border-0" allowfullscreen></iframe>`;
+        // Alto de 100% para ocupar el máximo del modal
+        previewContent.innerHTML = `<iframe src="${embedUrl}" width="100%" height="100%" class="border-0" allowfullscreen></iframe>`;
         
+        // Mensaje de soporte (adaptado para el estilo de file2.js)
         previewContent.innerHTML += `<p class="text-center text-muted p-4 small">
             Si la previsualización falla, haz clic en 
             <a href="${linkUrl}" target="_blank" class="text-decoration-underline">Abrir en nueva pestaña</a> 
-            para iniciar la descarga.
+            para forzar la visualización o iniciar la descarga.
         </p>`;
 
     } else {
-        previewContent.innerHTML = `<p class="text-center text-muted p-4">
-            No se puede previsualizar este tipo de archivo. Por favor, <button class="btn btn-link p-0 fw-bold btn-action btn-action-download text-decoration-underline" data-filename="${fileName}" data-file-id="${fileId}">descárgalo</button> para abrirlo.
-        </p>`;
+        // Estilo para archivos no previsualizables (adaptado de semana.js pero con texto de file2.js)
+        previewContent.innerHTML = `<div class="text-center p-5">
+            <p class="text-muted">No se puede previsualizar este tipo de archivo.</p>
+            <button class="btn btn-primary btn-action-download-modal btn-action" data-filename="${fileName}" data-file-id="${fileId}">
+                <i class="bi bi-download me-2"></i>Descargar Archivo
+            </button>
+        </div>`;
+        
+        // Usa filterStatus para notificar al administrador
+        setEstado(`⚠️ Archivo de tipo ${type}. Descarga necesaria.`, filterStatus); 
     }
 
     previewLink.href = linkUrl;
     previewModal.show();
 }
-
 async function handleDownload(fileName, fileId) {
     setEstado(`⏳ Descargando ${fileName}...`, filterStatus); 
     try {
